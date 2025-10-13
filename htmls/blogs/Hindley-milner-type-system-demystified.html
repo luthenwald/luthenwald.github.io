@@ -1,137 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-   <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Hindley-milner type system demystified</title>
-      <link rel="stylesheet" href="../style.css" />
-   </head>
-   <body class="blog-page">
-      <aside class="outline-sidebar">
-         <nav class="outline">
-            <a href="#setup" class="h1">setup</a>
-            <a href="#hindley-milner-type-system" class="h1"
-               >hindley-milner type system</a
-            >
-            <a href="#syntax" class="h2">syntax</a>
-            <a href="#expressions" class="h3">expressions</a>
-            <a href="#monotypes" class="h3">monotypes</a>
-            <a href="#polytypes-type-schemes" class="h3"
-               >polytypes (type schemes)</a
-            >
-            <a href="#context--typing" class="h3">context & typing</a>
-            <a href="#free-type-variables" class="h3">free type variables</a>
-            <a href="#ftv-for-monotypes" class="h4">ftv for monotypes</a>
-            <a href="#ftv-for-polytypes" class="h4">ftv for polytypes</a>
-            <a href="#ftv-for-contexts" class="h4">ftv for contexts</a>
-            <a href="#substitutionunification" class="h1"
-               >substitution/unification</a
-            >
-            <a href="#substitution" class="h2">substitution</a>
-            <a href="#apply-for-monotypes" class="h3">apply for monotypes</a>
-            <a href="#apply-for-polytypes" class="h3">apply for polytypes</a>
-            <a href="#apply-for-contexts" class="h3">apply for contexts</a>
-            <a href="#composing-substitutions" class="h3"
-               >composing substitutions</a
-            >
-            <a href="#unification" class="h2">unification</a>
-            <a href="#occurs-check" class="h3">occurs check</a>
-            <a href="#the-unification-monad" class="h3"
-               >the unification monad</a
-            >
-            <a href="#variable-binding" class="h3">variable binding</a>
-            <a href="#most-general-unifier-mgu" class="h3"
-               >most general unifier (mgu)</a
-            >
-            <a href="#case-1-type-variables" class="h4"
-               >case 1: type variables</a
-            >
-            <a href="#case-2-primitives" class="h4">case 2: primitives</a>
-            <a href="#case-3-function-types" class="h4"
-               >case 3: function types</a
-            >
-            <a href="#case-4-incompatible-structures" class="h4"
-               >case 4: incompatible structures</a
-            >
-            <a href="#algorithm-w" class="h1">algorithm w</a>
-            <a href="#inference-monad" class="h2">inference monad</a>
-            <a href="#fresh-type-variables" class="h2">fresh type variables</a>
-            <a href="#generalization" class="h2">generalization</a>
-            <a href="#instantiation" class="h2">instantiation</a>
-            <a href="#type-inference-algorithm" class="h2"
-               >type inference algorithm</a
-            >
-            <a href="#variable-rule" class="h3">variable rule</a>
-            <a href="#application-rule" class="h3">application rule</a>
-            <a href="#abstraction-rule" class="h3">abstraction rule</a>
-            <a href="#let-polymorphism-rule" class="h3"
-               >let-polymorphism rule</a
-            >
-            <a href="#tests--examples" class="h1">tests & examples</a>
-            <a href="#appendices" class="h1">appendices</a>
-            <a href="#notation--symbols" class="h2">notation & symbols</a>
-         </nav>
-         <nav class="bottom-nav">
-            <a href="../index.html">home</a>
-            <a href="../tags/tagcloud.html">tags</a>
-            <a href="../feed.xml">feed</a>
-            <a href="#" id="theme-toggle">dark</a>
-         </nav>
-      </aside>
-      <main class="main-content">
-         <h1>Hindley-milner type system demystified</h1>
-         <div class="metadata">
-            <span class="date">2025-10-14</span>
-            <span class="tags"
-               ><a href="../tags/type-system.html">type-system</a>,
-               <a href="../tags/type-inference.html">type-inference</a>,
-               <a href="../tags/type-theory.html">type-theory</a>,
-               <a href="../tags/haskell.html">haskell</a></span
-            >
-         </div>
-         <div class="description">
-            a guide to hindley-milner type system: types, unification &
-            algorithm w with haskell implementation
-         </div>
-         <h1 id="setup" data-block-id="block-0">setup</h1>
-         <p data-block-id="block-1">
-            a
-            <a
-               href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system"
-               >hindley-milner type system</a
-            >
-            is a
-            <a href="https://en.wikipedia.org/wiki/Type_system">type-system</a>
-            for
-            <a href="https://en.wikipedia.org/wiki/Lambda_calculus"
-               >λcalculus</a
-            >
-            with
-            <a href="https://en.wikipedia.org/wiki/Parametric_polymorphism"
-               >parametric polymorphism</a
-            >
-            (let statements).
-         </p>
-         <p data-block-id="block-2">
-            hm type system is
-            <a href="https://en.wikipedia.org/wiki/Completeness_(logic)"
-               >complete</a
-            >
-            & has the ability to infer the
-            <a href="https://en.wikipedia.org/wiki/Principal_type"
-               >most general type</a
-            >
-            of a given program without programmer-supplied
-            <a href="https://en.wikipedia.org/wiki/Type_signature"
-               >type annotations</a
-            >
-            or other hints.
-         </p>
-         <p data-block-id="block-3">
-            the prose is divided into 3 acts: type system,
-            substitution/unification & algow.
-         </p>
-         <pre data-block-id="block-4"><code>
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Hindley-milner type system demystified</title>
+   <link rel="stylesheet" href="../style.css">
+</head>
+<body class="blog-page">
+   <aside class="outline-sidebar">
+      <nav class="outline">
+         <a href="#setup" class="h1">setup</a>
+         <a href="#hindley-milner-type-system" class="h1">hindley-milner type system</a>
+         <a href="#syntax" class="h2">syntax</a>
+         <a href="#expressions" class="h3">expressions</a>
+         <a href="#monotypes" class="h3">monotypes</a>
+         <a href="#polytypes-type-schemes" class="h3">polytypes (type schemes)</a>
+         <a href="#context--typing" class="h3">context & typing</a>
+         <a href="#free-type-variables" class="h3">free type variables</a>
+         <a href="#ftv-for-monotypes" class="h4">ftv for monotypes</a>
+         <a href="#ftv-for-polytypes" class="h4">ftv for polytypes</a>
+         <a href="#ftv-for-contexts" class="h4">ftv for contexts</a>
+         <a href="#substitutionunification" class="h1">substitution/unification</a>
+         <a href="#substitution" class="h2">substitution</a>
+         <a href="#apply-for-monotypes" class="h3">apply for monotypes</a>
+         <a href="#apply-for-polytypes" class="h3">apply for polytypes</a>
+         <a href="#apply-for-contexts" class="h3">apply for contexts</a>
+         <a href="#composing-substitutions" class="h3">composing substitutions</a>
+         <a href="#unification" class="h2">unification</a>
+         <a href="#occurs-check" class="h3">occurs check</a>
+         <a href="#the-unification-monad" class="h3">the unification monad</a>
+         <a href="#variable-binding" class="h3">variable binding</a>
+         <a href="#most-general-unifier-mgu" class="h3">most general unifier (mgu)</a>
+         <a href="#case-1-type-variables" class="h4">case 1: type variables</a>
+         <a href="#case-2-primitives" class="h4">case 2: primitives</a>
+         <a href="#case-3-function-types" class="h4">case 3: function types</a>
+         <a href="#case-4-incompatible-structures" class="h4">case 4: incompatible structures</a>
+         <a href="#algorithm-w" class="h1">algorithm w</a>
+         <a href="#inference-monad" class="h2">inference monad</a>
+         <a href="#fresh-type-variables" class="h2">fresh type variables</a>
+         <a href="#generalization" class="h2">generalization</a>
+         <a href="#instantiation" class="h2">instantiation</a>
+         <a href="#type-inference-algorithm" class="h2">type inference algorithm</a>
+         <a href="#variable-rule" class="h3">variable rule</a>
+         <a href="#application-rule" class="h3">application rule</a>
+         <a href="#abstraction-rule" class="h3">abstraction rule</a>
+         <a href="#let-polymorphism-rule" class="h3">let-polymorphism rule</a>
+         <a href="#tests--examples" class="h1">tests & examples</a>
+         <a href="#appendices" class="h1">appendices</a>
+         <a href="#notation--symbols" class="h2">notation & symbols</a>
+      </nav>
+      <nav class="bottom-nav">
+         <a href="../../index.html">home</a>
+         <a href="../tags/tagcloud.html">tags</a>
+         <a href="../feed.xml">feed</a>
+         <a href="#" id="theme-toggle">dark</a>
+      </nav>
+   </aside>
+   <main class="main-content">
+      <h1>Hindley-milner type system demystified</h1>
+      <div class="metadata">
+         <span class="date">2025-10-14</span>
+         <span class="tags"><a href="../tags/type-system.html">type-system</a>, <a href="../tags/type-inference.html">type-inference</a>, <a href="../tags/type-theory.html">type-theory</a>, <a href="../tags/haskell.html">haskell</a></span>
+      </div>
+      <div class="description">a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation</div>
+      <h1 id="setup" data-block-id="block-0">setup</h1>
+      <p data-block-id="block-1">a <a href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system">hindley-milner type system</a> is a <a href="https://en.wikipedia.org/wiki/Type_system">type-system</a> for <a href="https://en.wikipedia.org/wiki/Lambda_calculus">λcalculus</a> with <a href="https://en.wikipedia.org/wiki/Parametric_polymorphism">parametric polymorphism</a> (let statements).</p>
+      <p data-block-id="block-2">hm type system is <a href="https://en.wikipedia.org/wiki/Completeness_(logic)">complete</a> & has the ability to infer the <a href="https://en.wikipedia.org/wiki/Principal_type">most general type</a> of a given program without programmer-supplied <a href="https://en.wikipedia.org/wiki/Type_signature">type annotations</a> or other hints.</p>
+      <p data-block-id="block-3">the prose is divided into 3 acts: type system, substitution/unification & algow.</p>
+      <pre data-block-id="block-4"><code>
 <span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span>        <span class='punctuation bracket'>(</span> <span class='type'>replicateM</span> <span class='punctuation bracket'>)</span>
 <span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>Except</span>
 <span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>State</span>
@@ -141,33 +77,17 @@
 <span class='keyword'>import</span> <span class='keyword'>qualified</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Set</span>             <span class='keyword'>as</span> <span class='module'>Set</span>
 
 </code></pre>
-         <h1 id="hindley-milner-type-system" data-block-id="block-5">
-            hindley-milner type system
-         </h1>
-         <p data-block-id="block-6">
-            we (not so) formally describe the type system by
-            <a href="https://en.wikipedia.org/wiki/Formal_grammar"
-               >syntax rules</a
-            >
-            in this act.
-         </p>
-         <h2 id="syntax" data-block-id="block-7">syntax</h2>
-         <p data-block-id="block-8">
-            a type variable (α) is a placeholder symbol that stands for an
-            unknown type which may later be instantiated with any concrete type
-            (int, string, etc.) once more information is available through type
-            inference.
-         </p>
-         <pre data-block-id="block-9"><code>
+      <h1 id="hindley-milner-type-system" data-block-id="block-5">hindley-milner type system</h1>
+      <p data-block-id="block-6">we (not so) formally describe the type system by <a href="https://en.wikipedia.org/wiki/Formal_grammar">syntax rules</a> in this act.</p>
+      <h2 id="syntax" data-block-id="block-7">syntax</h2>
+      <p data-block-id="block-8">a type variable (α) is a placeholder symbol that stands for an unknown type which may later be instantiated with any concrete type (int, string, etc.) once more information is available through type inference.</p>
+      <pre data-block-id="block-9"><code>
 <span class='keyword'>type</span> <span class='type'>TyVar</span> <span class='operator'>=</span> <span class='type'>String</span>
 
 </code></pre>
-         <h3 id="expressions" data-block-id="block-10">expressions</h3>
-         <p data-block-id="block-11">
-            the expressions to be typed are exactly those of the λcalculus
-            extended with a let-expression.
-         </p>
-         <pre data-block-id="block-12"><code>
+      <h3 id="expressions" data-block-id="block-10">expressions</h3>
+      <p data-block-id="block-11">the expressions to be typed are exactly those of the λcalculus extended with a let-expression.</p>
+      <pre data-block-id="block-12"><code>
 <span class='keyword'>data</span> <span class='type'>Expr</span>
    <span class='operator'>=</span> <span class='constructor'>Var</span> <span class='type'>TyVar</span>             -- variable         (x)
    <span class='operator'>|</span> <span class='constructor'>App</span> <span class='type'>Expr</span> <span class='type'>Expr</span>         -- application      (e1e2)
@@ -176,23 +96,16 @@
    <span class='keyword'>deriving</span> <span class='type'>Show</span>
 
 </code></pre>
-         <h3 id="monotypes" data-block-id="block-13">monotypes</h3>
-         <p data-block-id="block-14">
-            a monotype (τ) is either a type variable or an application of a
-            type constructor to a list of monotypes.
-         </p>
-         <pre data-block-id="block-15"><code>
+      <h3 id="monotypes" data-block-id="block-13">monotypes</h3>
+      <p data-block-id="block-14">a monotype (τ) is either a type variable or an application of a type constructor to a list of monotypes.</p>
+      <pre data-block-id="block-15"><code>
 <span class='keyword'>data</span> <span class='type'>Monotype</span>
    <span class='operator'>=</span> <span class='constructor'>TyVar&#39;</span> <span class='type'>TyVar</span>           -- type variable
    <span class='operator'>|</span> <span class='constructor'>TyCon&#39;</span> <span class='type'>String</span> <span class='punctuation bracket'>[</span><span class='type'>Mono</span><span class='punctuation bracket'>]</span>   -- e.g. TyCon&#39; &quot;Int&quot; [], TyCon&#39; &quot;String&quot; [], TyCon&#39; &quot;List&quot; [Mono, Mono]
 
 </code></pre>
-         <p data-block-id="block-16">
-            but for the sake of simplicity, we explicitly abstract the
-            int/string constant types & the function type to illustrate the
-            type inference effectively:
-         </p>
-         <pre data-block-id="block-17"><code>
+      <p data-block-id="block-16">but for the sake of simplicity, we explicitly abstract the int/string constant types & the function type to illustrate the type inference effectively:</p>
+      <pre data-block-id="block-17"><code>
 <span class='keyword'>data</span> <span class='type'>Mono</span>
    <span class='operator'>=</span> <span class='constructor'>TyVar</span> <span class='type'>TyVar</span>       -- variable
    <span class='operator'>|</span> <span class='constructor'>TyInt</span> <span class='type'>Int</span>         -- primitive int type
@@ -212,178 +125,72 @@
          <span class='type'>showFunArg</span> <span class='type'>t</span>             <span class='operator'>=</span> <span class='type'>show</span> <span class='type'>t</span>
 
 </code></pre>
-         <h3 id="polytypes-type-schemes" data-block-id="block-18">
-            polytypes (type schemes)
-         </h3>
-         <p data-block-id="block-19">
-            polytypes are types containing variables bound by zero or more
-            for-all quantifiers, e.g. <code class="inlinecode">∀α.α → α</code>.
-         </p>
-         <p data-block-id="block-20">
-            for instance, a function with polytype
-            <code class="inlinecode">∀α.α → α</code> can map any value of the
-            same type to itself. the identity function is a value for this
-            type.
-         </p>
-         <p data-block-id="block-21">
-            quantifiers can only appear top level. for instance, a type
-            <code class="inlinecode">∀α.α → ∀α.α</code> is excluded by the
-            syntax of types. also monotypes are included in the polytypes, thus
-            a type has the general form
-            <code class="inlinecode">∀α₁… ∀αₙ.τ</code>, where n ≥ 0 and τ is a
-            monotype.
-         </p>
-         <pre data-block-id="block-22"><code>
+      <h3 id="polytypes-type-schemes" data-block-id="block-18">polytypes (type schemes)</h3>
+      <p data-block-id="block-19">polytypes are types containing variables bound by zero or more for-all quantifiers, e.g. <code class="inlinecode">∀α.α → α</code>.</p>
+      <p data-block-id="block-20">for instance, a function with polytype <code class="inlinecode">∀α.α → α</code> can map any value of the same type to itself. the identity function is a value for this type.</p>
+      <p data-block-id="block-21">quantifiers can only appear top level. for instance, a type <code class="inlinecode">∀α.α → ∀α.α</code> is excluded by the syntax of types. also monotypes are included in the polytypes, thus a type has the general form <code class="inlinecode">∀α₁… ∀αₙ.τ</code>, where n ≥ 0 and τ is a monotype.</p>
+      <pre data-block-id="block-22"><code>
 <span class='keyword'>data</span> <span class='type'>Poly</span>
    <span class='operator'>=</span> <span class='constructor'>Mono</span> <span class='type'>Mono</span>
    <span class='operator'>|</span> <span class='constructor'>Forall</span> <span class='punctuation bracket'>[</span><span class='type'>TyVar</span><span class='punctuation bracket'>]</span> <span class='type'>Mono</span> <span class='keyword'>deriving</span> <span class='type'>Show</span>
 
 </code></pre>
-         <h3 id="context--typing" data-block-id="block-23">
-            context & typing
-         </h3>
-         <p data-block-id="block-24">
-            to meaningfully bring together the expressions & types, a third
-            part <span class="highlight">context</span> is needed.
-         </p>
-         <p data-block-id="block-25">
-            syntactically, a context is a map from type variables to polytypes.
-            each item states that typevar xᵢ has the type σᵢ.
-         </p>
-         <p data-block-id="block-26">
-            context, expression & polytypes combined give a
-            <span class="highlight">typing judgment</span> of the form
-            <code class="inlinecode">Γ ⊢ e : σ</code>, stating that under the
-            context (assumptions) Γ, the expression e has type σ.
-         </p>
-         <p data-block-id="block-27">
-            later in the context of type inference, we can also interpret a
-            typing judgment as: we infer the type of expression e as σ under
-            the assumptions Γ.
-         </p>
-         <pre data-block-id="block-28"><code>
+      <h3 id="context--typing" data-block-id="block-23">context & typing</h3>
+      <p data-block-id="block-24">to meaningfully bring together the expressions & types, a third part <span class="highlight">context</span> is needed.</p>
+      <p data-block-id="block-25">syntactically, a context is a map from type variables to polytypes. each item states that typevar xᵢ has the type σᵢ.</p>
+      <p data-block-id="block-26">context, expression & polytypes combined give a <span class="highlight">typing judgment</span> of the form <code class="inlinecode">Γ ⊢ e : σ</code>, stating that under the context (assumptions) Γ, the expression e has type σ.</p>
+      <p data-block-id="block-27">later in the context of type inference, we can also interpret a typing judgment as: we infer the type of expression e as σ under the assumptions Γ.</p>
+      <pre data-block-id="block-28"><code>
 <span class='keyword'>type</span> <span class='type'>Context</span> <span class='operator'>=</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>Map</span> <span class='type'>TyVar</span> <span class='type'>Poly</span>
 <span class='keyword'>data</span> <span class='type'>Judgement</span> <span class='operator'>=</span> <span class='constructor'>Judgement</span> <span class='type'>Context</span> <span class='type'>Expr</span> <span class='type'>Poly</span> <span class='keyword'>deriving</span> <span class='type'>Show</span>
 
 </code></pre>
-         <h3 id="free-type-variables" data-block-id="block-29">
-            free type variables
-         </h3>
-         <p data-block-id="block-30">
-            free type variables are those not bound by a quantifier (∀).
-         </p>
-         <p data-block-id="block-31">
-            intuitively, free type variables are
-            <span class="highlight">unknown types</span> that still need to be
-            determined during type inference, while bound variables are generic
-            placeholders for polymorphism.
-         </p>
-         <pre data-block-id="block-32"><code>
+      <h3 id="free-type-variables" data-block-id="block-29">free type variables</h3>
+      <p data-block-id="block-30">free type variables are those not bound by a quantifier (∀).</p>
+      <p data-block-id="block-31">intuitively, free type variables are <span class="highlight">unknown types</span> that still need to be determined during type inference, while bound variables are generic placeholders for polymorphism.</p>
+      <pre data-block-id="block-32"><code>
 <span class='keyword'>class</span> <span class='type'>Free</span> <span class='type'>a</span> <span class='keyword'>where</span>
    <span class='type'>ftv</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='module'>Set</span><span class='operator'>.</span><span class='type'>Set</span> <span class='type'>TyVar</span>
 
 </code></pre>
-         <h4 id="ftv-for-monotypes" data-block-id="block-33">
-            ftv for monotypes
-         </h4>
-         <p data-block-id="block-34">
-            the implementation collects
-            <span class="highlight">all type variables</span> appearing in a
-            monotype:
-         </p>
-         <p class="l1-list" data-block-id="block-35">
-            <code class="inlinecode">TyVar v</code>: the variable itself is
-            free → <code class="inlinecode">{v}</code>
-         </p>
-         <p class="l1-list" data-block-id="block-36">
-            <code class="inlinecode">TyFun a b</code>: union of free variables
-            from both sides → <code class="inlinecode">ftv(a) ∪ ftv(b)</code>
-         </p>
-         <p class="l1-list" data-block-id="block-37">
-            primitives (<code class="inlinecode">TyInt</code>,
-            <code class="inlinecode">TyStr</code>): no type variables →
-            <code class="inlinecode">{}</code>
-         </p>
-         <p data-block-id="block-38">
-            example:
-            <code class="inlinecode">ftv(α → (β → Int)) = {α, β}</code>
-         </p>
-         <pre data-block-id="block-39"><code>
+      <h4 id="ftv-for-monotypes" data-block-id="block-33">ftv for monotypes</h4>
+      <p data-block-id="block-34">the implementation collects <span class="highlight">all type variables</span> appearing in a monotype:</p>
+      <p class="l1-list" data-block-id="block-35"><code class="inlinecode">TyVar v</code>: the variable itself is free → <code class="inlinecode">{v}</code></p>
+      <p class="l1-list" data-block-id="block-36"><code class="inlinecode">TyFun a b</code>: union of free variables from both sides → <code class="inlinecode">ftv(a) ∪ ftv(b)</code></p>
+      <p class="l1-list" data-block-id="block-37">primitives (<code class="inlinecode">TyInt</code>, <code class="inlinecode">TyStr</code>): no type variables → <code class="inlinecode">{}</code></p>
+      <p data-block-id="block-38">example: <code class="inlinecode">ftv(α → (β → Int)) = {α, β}</code></p>
+      <pre data-block-id="block-39"><code>
 <span class='keyword'>instance</span> <span class='type'>Free</span> <span class='type'>Mono</span> <span class='keyword'>where</span>
    <span class='type'>ftv</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyVar</span> <span class='type'>v</span><span class='punctuation bracket'>)</span></span>   <span class='operator'>=</span> <span class='module'>Set</span><span class='operator'>.</span><span class='type'>singleton</span> <span class='type'>v</span>
    <span class='type'>ftv</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyFun</span> <span class='type'>a</span> <span class='type'>b</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='punctuation bracket'>(</span><span class='type'>ftv</span> <span class='type'>a</span><span class='punctuation bracket'>)</span> <span class='operator'>&lt;&gt;</span> <span class='punctuation bracket'>(</span><span class='type'>ftv</span> <span class='type'>b</span><span class='punctuation bracket'>)</span>
    <span class='type'>ftv</span> <span class='operator'>_</span>           <span class='operator'>=</span> <span class='type'>mempty</span>
 
 </code></pre>
-         <h4 id="ftv-for-polytypes" data-block-id="block-40">
-            ftv for polytypes
-         </h4>
-         <p data-block-id="block-41">
-            the implementation extracts free variables by excluding those bound
-            by ∀ quantifiers:
-         </p>
-         <p class="l1-list" data-block-id="block-42">
-            <code class="inlinecode">Mono m</code>: no quantifiers, just
-            delegate to monotype <code class="inlinecode">ftv</code>
-         </p>
-         <p class="l1-list" data-block-id="block-43">
-            <code class="inlinecode">Forall vars ty</code>: compute
-            <code class="inlinecode">ftv(ty)</code> then remove quantified vars
-            → <code class="inlinecode">ftv(ty) \ vars</code>
-         </p>
-         <p data-block-id="block-44">
-            example:
-            <code class="inlinecode"
-               >ftv(∀α.α → β) = ftv(α → β) \ {α} = {α, β} \ {α} = {β}</code
-            >
-         </p>
-         <p data-block-id="block-45">
-            intuitively, bound variables represent generic polymorphism (known
-            abstraction), while free variables represent unknowns that need to
-            be solved during inference.
-         </p>
-         <pre data-block-id="block-46"><code>
+      <h4 id="ftv-for-polytypes" data-block-id="block-40">ftv for polytypes</h4>
+      <p data-block-id="block-41">the implementation extracts free variables by excluding those bound by ∀ quantifiers:</p>
+      <p class="l1-list" data-block-id="block-42"><code class="inlinecode">Mono m</code>: no quantifiers, just delegate to monotype <code class="inlinecode">ftv</code></p>
+      <p class="l1-list" data-block-id="block-43"><code class="inlinecode">Forall vars ty</code>: compute <code class="inlinecode">ftv(ty)</code> then remove quantified vars → <code class="inlinecode">ftv(ty) \ vars</code></p>
+      <p data-block-id="block-44">example: <code class="inlinecode">ftv(∀α.α → β) = ftv(α → β) \ {α} = {α, β} \ {α} = {β}</code></p>
+      <p data-block-id="block-45">intuitively, bound variables represent generic polymorphism (known abstraction), while free variables represent unknowns that need to be solved during inference.</p>
+      <pre data-block-id="block-46"><code>
 <span class='keyword'>instance</span> <span class='type'>Free</span> <span class='type'>Poly</span> <span class='keyword'>where</span>
    <span class='type'>ftv</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Mono</span> <span class='type'>m</span><span class='punctuation bracket'>)</span></span>         <span class='operator'>=</span> <span class='type'>ftv</span> <span class='type'>m</span>
    <span class='type'>ftv</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Forall</span> <span class='type'>vars</span> <span class='type'>ty</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='module'>Set</span><span class='operator'>.</span><span class='type'>difference</span> <span class='punctuation bracket'>(</span><span class='type'>ftv</span> <span class='type'>ty</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>(</span><span class='module'>Set</span><span class='operator'>.</span><span class='type'>fromList</span> <span class='type'>vars</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h4 id="ftv-for-contexts" data-block-id="block-47">
-            ftv for contexts
-         </h4>
-         <p data-block-id="block-48">
-            the implementation unions all free variables from every polytype in
-            the context. context maps typevars to polytypes, so we extract
-            values, compute <code class="inlinecode">ftv</code> on each, then
-            union all results.
-         </p>
-         <p data-block-id="block-49">
-            example:
-            <code class="inlinecode"
-               >ftv({x : ∀α.α, y : β → γ, z : Int}) = {} ∪ {β, γ} ∪ {} = {β,
-               γ}</code
-            >
-         </p>
-         <p data-block-id="block-50">
-            intuitively, this tells us which type variables are
-            <span class="highlight">in scope</span> but not yet fully
-            determined.
-         </p>
-         <pre data-block-id="block-51"><code>
+      <h4 id="ftv-for-contexts" data-block-id="block-47">ftv for contexts</h4>
+      <p data-block-id="block-48">the implementation unions all free variables from every polytype in the context. context maps typevars to polytypes, so we extract values, compute <code class="inlinecode">ftv</code> on each, then union all results.</p>
+      <p data-block-id="block-49">example: <code class="inlinecode">ftv({x : ∀α.α, y : β → γ, z : Int}) = {} ∪ {β, γ} ∪ {} = {β, γ}</code></p>
+      <p data-block-id="block-50">intuitively, this tells us which type variables are <span class="highlight">in scope</span> but not yet fully determined.</p>
+      <pre data-block-id="block-51"><code>
 <span class='keyword'>instance</span> <span class='type'>Free</span> <span class='type'>Context</span> <span class='keyword'>where</span>
    <span class='type'>ftv</span> <span class='type'>ctx</span> <span class='operator'>=</span> <span class='type'>foldMap</span> <span class='type'>ftv</span> <span class='punctuation bracket'>(</span><span class='module'>Map</span><span class='operator'>.</span><span class='type'>elems</span> <span class='type'>ctx</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h1 id="substitutionunification" data-block-id="block-52">
-            substitution/unification
-         </h1>
-         <h2 id="substitution" data-block-id="block-53">substitution</h2>
-         <p data-block-id="block-54">
-            a substitution is a mapping from type variables to monotypes. it
-            represents a partial solution to type constraints discovered during
-            inference.
-         </p>
-         <pre data-block-id="block-55"><code>
+      <h1 id="substitutionunification" data-block-id="block-52">substitution/unification</h1>
+      <h2 id="substitution" data-block-id="block-53">substitution</h2>
+      <p data-block-id="block-54">a substitution is a mapping from type variables to monotypes. it represents a partial solution to type constraints discovered during inference.</p>
+      <pre data-block-id="block-55"><code>
 -- examples:
 -- [α ↦ Int]               -- maps α to Int
 -- [α ↦ β → γ]             -- maps α to a function type
@@ -391,165 +198,66 @@
 <span class='keyword'>type</span> <span class='type'>Subst</span> <span class='operator'>=</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>Map</span> <span class='type'>TyVar</span> <span class='type'>Mono</span>
 
 </code></pre>
-         <p data-block-id="block-56">
-            we define a <code class="inlinecode">Substitutable</code> typeclass
-            with a single function <code class="inlinecode">apply</code> here.
-         </p>
-         <pre data-block-id="block-57"><code>
+      <p data-block-id="block-56">we define a <code class="inlinecode">Substitutable</code> typeclass with a single function <code class="inlinecode">apply</code> here.</p>
+      <pre data-block-id="block-57"><code>
 <span class='keyword'>class</span> <span class='type'>Substitutable</span> <span class='type'>a</span> <span class='keyword'>where</span>
    <span class='type'>apply</span> <span class='operator'>::</span> <span class='type'>Subst</span> <span class='operator'>-&gt;</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>a</span>
 
 </code></pre>
-         <h3 id="apply-for-monotypes" data-block-id="block-58">
-            apply for monotypes
-         </h3>
-         <p data-block-id="block-59">
-            the implementation recursively replaces type variables according to
-            the substitution:
-         </p>
-         <p class="l1-list" data-block-id="block-60">
-            <code class="inlinecode">TyVar v</code>: look up v in substitution
-            s
-         </p>
-         <p class="l2-list" data-block-id="block-61">
-            if found → return mapped type
-         </p>
-         <p class="l2-list" data-block-id="block-62">
-            if not found → return original variable (identity)
-         </p>
-         <p class="l1-list" data-block-id="block-63">
-            <code class="inlinecode">TyFun l r</code>: apply substitution
-            recursively to both sides
-         </p>
-         <p class="l1-list" data-block-id="block-64">
-            primitives: unchanged (no variables to substitute)
-         </p>
-         <p data-block-id="block-65">
-            example:
-            <code class="inlinecode"
-               >apply [α ↦ Int, β ↦ String] (α → β) = Int → String</code
-            >
-         </p>
-         <pre data-block-id="block-66"><code>
+      <h3 id="apply-for-monotypes" data-block-id="block-58">apply for monotypes</h3>
+      <p data-block-id="block-59">the implementation recursively replaces type variables according to the substitution:</p>
+      <p class="l1-list" data-block-id="block-60"><code class="inlinecode">TyVar v</code>: look up v in substitution s</p>
+      <p class="l2-list" data-block-id="block-61">if found → return mapped type</p>
+      <p class="l2-list" data-block-id="block-62">if not found → return original variable (identity)</p>
+      <p class="l1-list" data-block-id="block-63"><code class="inlinecode">TyFun l r</code>: apply substitution recursively to both sides</p>
+      <p class="l1-list" data-block-id="block-64">primitives: unchanged (no variables to substitute)</p>
+      <p data-block-id="block-65">example: <code class="inlinecode">apply [α ↦ Int, β ↦ String] (α → β) = Int → String</code></p>
+      <pre data-block-id="block-66"><code>
 <span class='keyword'>instance</span> <span class='type'>Substitutable</span> <span class='type'>Mono</span> <span class='keyword'>where</span>
     <span class='type'>apply</span> <span class='type'>s</span> <span class='variable'><span class='variable parameter'><span class='type'>t</span><span class='operator'>@</span><span class='punctuation bracket'>(</span><span class='constructor'>TyVar</span> <span class='type'>v</span><span class='punctuation bracket'>)</span></span></span> <span class='operator'>=</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>findWithDefault</span> <span class='type'>t</span> <span class='type'>v</span> <span class='type'>s</span>
     <span class='type'>apply</span> <span class='type'>s</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyFun</span> <span class='type'>l</span> <span class='type'>r</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>TyFun</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='type'>s</span> <span class='type'>l</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='type'>s</span> <span class='type'>r</span><span class='punctuation bracket'>)</span>
     <span class='type'>apply</span> <span class='operator'>_</span> <span class='type'>t</span>           <span class='operator'>=</span> <span class='type'>t</span>
 
 </code></pre>
-         <h3 id="apply-for-polytypes" data-block-id="block-67">
-            apply for polytypes
-         </h3>
-         <p data-block-id="block-68">
-            the implementation applies substitution while respecting quantifier
-            scope:
-         </p>
-         <p class="l1-list" data-block-id="block-69">
-            <code class="inlinecode">Mono m</code>: no quantifiers, just
-            delegates to monotype <code class="inlinecode">apply</code>
-         </p>
-         <p class="l1-list" data-block-id="block-70">
-            <code class="inlinecode">Forall vs m</code>: bound variables (vs)
-            must not be substituted
-         </p>
-         <p class="l2-list" data-block-id="block-71">
-            remove bound variables from substitution before applying (<code
-               class="inlinecode"
-               >foldr Map.delete s vs</code
-            >)
-         </p>
-         <p class="l2-list" data-block-id="block-72">
-            this prevents capture (shadowing bound vars)
-         </p>
-         <p data-block-id="block-73">
-            example:
-            <code class="inlinecode"
-               >apply [α ↦ Int, β ↦ String] (∀α.α → β) = ∀α.α → String</code
-            >
-            (α not substituted, β substituted)
-         </p>
-         <pre data-block-id="block-74"><code>
+      <h3 id="apply-for-polytypes" data-block-id="block-67">apply for polytypes</h3>
+      <p data-block-id="block-68">the implementation applies substitution while respecting quantifier scope:</p>
+      <p class="l1-list" data-block-id="block-69"><code class="inlinecode">Mono m</code>: no quantifiers, just delegates to monotype <code class="inlinecode">apply</code></p>
+      <p class="l1-list" data-block-id="block-70"><code class="inlinecode">Forall vs m</code>: bound variables (vs) must not be substituted</p>
+      <p class="l2-list" data-block-id="block-71">remove bound variables from substitution before applying (<code class="inlinecode">foldr Map.delete s vs</code>)</p>
+      <p class="l2-list" data-block-id="block-72">this prevents capture (shadowing bound vars)</p>
+      <p data-block-id="block-73">example: <code class="inlinecode">apply [α ↦ Int, β ↦ String] (∀α.α → β) = ∀α.α → String</code>    (α not substituted, β substituted)</p>
+      <pre data-block-id="block-74"><code>
 <span class='keyword'>instance</span> <span class='type'>Substitutable</span> <span class='type'>Poly</span> <span class='keyword'>where</span>
     <span class='type'>apply</span> <span class='type'>s</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Mono</span> <span class='type'>m</span><span class='punctuation bracket'>)</span></span>      <span class='operator'>=</span> <span class='constructor'>Mono</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='type'>s</span> <span class='type'>m</span><span class='punctuation bracket'>)</span>
     <span class='type'>apply</span> <span class='type'>s</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Forall</span> <span class='type'>vs</span> <span class='type'>m</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Forall</span> <span class='type'>vs</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='punctuation bracket'>(</span><span class='type'>foldr</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>delete</span> <span class='type'>s</span> <span class='type'>vs</span><span class='punctuation bracket'>)</span> <span class='type'>m</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h3 id="apply-for-contexts" data-block-id="block-75">
-            apply for contexts
-         </h3>
-         <p data-block-id="block-76">
-            the implementation applies substitution to every polytype in the
-            context. since context is a map from typevars to polytypes, we use
-            <code class="inlinecode">fmap/(<$>)</code> to apply the
-            substitution to each value.
-         </p>
-         <p data-block-id="block-77">
-            this is crucial for propagating type information through the
-            environment as inference proceeds.
-         </p>
-         <p data-block-id="block-78">
-            example:
-            <code class="inlinecode"
-               >apply [α ↦ Int] {x : α, y : α → β} = {x : Int, y : Int →
-               β}</code
-            >
-         </p>
-         <pre data-block-id="block-79"><code>
+      <h3 id="apply-for-contexts" data-block-id="block-75">apply for contexts</h3>
+      <p data-block-id="block-76">the implementation applies substitution to every polytype in the context. since context is a map from typevars to polytypes, we use <code class="inlinecode">fmap/(<$>)</code> to apply the substitution to each value.</p>
+      <p data-block-id="block-77">this is crucial for propagating type information through the environment as inference proceeds.</p>
+      <p data-block-id="block-78">example: <code class="inlinecode">apply [α ↦ Int] {x : α, y : α → β} = {x : Int, y : Int → β}</code></p>
+      <pre data-block-id="block-79"><code>
 <span class='keyword'>instance</span> <span class='type'>Substitutable</span> <span class='type'>Context</span> <span class='keyword'>where</span>
     <span class='type'>apply</span> <span class='type'>s</span> <span class='operator'>=</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;$&gt;</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='type'>s</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h3 id="composing-substitutions" data-block-id="block-80">
-            composing substitutions
-         </h3>
-         <p data-block-id="block-81">
-            we categorically want to implement composition for our substitution
-            monoid.
-         </p>
-         <p data-block-id="block-82">
-            with
-            <code class="inlinecode">compose :: Subst -> Subst -> Subst</code>,
-            we formulate a monoid for
-            <code class="inlinecode">Subst</code> where:
-         </p>
-         <p class="l1-list" data-block-id="block-83">
-            identity element is the empty substitution []
-         </p>
-         <p class="l1-list" data-block-id="block-84">
-            associative binary operation is compose (∘)
-         </p>
-         <p data-block-id="block-85">
-            specifically, <code class="inlinecode">compose s1 s2</code> applies
-            s1 "after" s2, i.e.
-            <code class="inlinecode">(s1 ∘ s2)(α) = s1(s2(α))</code>. right
-            substitution (s2) is applied first, then left (s1) refines the
-            result.
-         </p>
-         <pre data-block-id="block-86"><code>
+      <h3 id="composing-substitutions" data-block-id="block-80">composing substitutions</h3>
+      <p data-block-id="block-81">we categorically want to implement composition for our substitution monoid.</p>
+      <p data-block-id="block-82">with <code class="inlinecode">compose :: Subst -> Subst -> Subst</code>, we formulate a monoid for <code class="inlinecode">Subst</code> where:</p>
+      <p class="l1-list" data-block-id="block-83">identity element is the empty substitution []</p>
+      <p class="l1-list" data-block-id="block-84">associative binary operation is compose (∘)</p>
+      <p data-block-id="block-85">specifically, <code class="inlinecode">compose s1 s2</code> applies s1 "after" s2, i.e. <code class="inlinecode">(s1 ∘ s2)(α) = s1(s2(α))</code>. right substitution (s2) is applied first, then left (s1) refines the result.</p>
+      <pre data-block-id="block-86"><code>
 <span class='function'><span class='function'><span class='type'>compose</span> <span class='operator'>::</span> <span class='type'>Subst</span> <span class='operator'>-&gt;</span> <span class='type'>Subst</span> <span class='operator'>-&gt;</span> <span class='type'>Subst</span></span></span>
 <span class='type'>compose</span> <span class='type'>s1</span> <span class='type'>s2</span> <span class='operator'>=</span> <span class='punctuation bracket'>(</span><span class='type'>apply</span> <span class='type'>s1</span><span class='punctuation bracket'>)</span> <span class='operator'>&lt;$&gt;</span> <span class='type'>s2</span> <span class='operator'>&lt;&gt;</span> <span class='type'>s1</span>
 
 </code></pre>
-         <h2 id="unification" data-block-id="block-87">unification</h2>
-         <p data-block-id="block-88">
-            unification is the process of finding a substitution that makes two
-            types equal.
-         </p>
-         <p data-block-id="block-89">
-            we'll implement
-            <a
-               href="https://en.wikipedia.org/wiki/Unification_(computer_science)#Unification_algorithms"
-               >robinson's unification algorithm</a
-            >, which produces the
-            <span class="highlight">most general unifier</span> (mgu).
-         </p>
-         <h3 id="occurs-check" data-block-id="block-90">occurs check</h3>
-         <p data-block-id="block-91">
-            we need to check if a type variable occurs within a monotype. this
-            prevents creating infinite/recursive types like
-            <code class="inlinecode">α = α → β</code>.
-         </p>
-         <pre data-block-id="block-92"><code>
+      <h2 id="unification" data-block-id="block-87">unification</h2>
+      <p data-block-id="block-88">unification is the process of finding a substitution that makes two types equal.</p>
+      <p data-block-id="block-89">we'll implement <a href="https://en.wikipedia.org/wiki/Unification_(computer_science)#Unification_algorithms">robinson's unification algorithm</a>, which produces the <span class="highlight">most general unifier</span> (mgu).</p>
+      <h3 id="occurs-check" data-block-id="block-90">occurs check</h3>
+      <p data-block-id="block-91">we need to check if a type variable occurs within a monotype. this prevents creating infinite/recursive types like <code class="inlinecode">α = α → β</code>.</p>
+      <pre data-block-id="block-92"><code>
 -- examples:
 -- occursCheck α α       = True   (α occurs in α)
 -- occursCheck α (α → β) = True   (α occurs in function)
@@ -562,62 +270,26 @@
 <span class='type'>occursCheck</span> <span class='operator'>_</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyStr</span> <span class='operator'>_</span><span class='punctuation bracket'>)</span></span>   <span class='operator'>=</span> False
 
 </code></pre>
-         <h3 id="the-unification-monad" data-block-id="block-93">
-            the unification monad
-         </h3>
-         <p data-block-id="block-94">
-            unification can fail, so we need a monad that supports error
-            handling:
-            <code class="inlinecode">UnifyM = Except String</code> provides
-            exactly this capability.
-         </p>
-         <p data-block-id="block-95">unification fails when:</p>
-         <p class="l1-list" data-block-id="block-96">
-            structural mismatch: trying to unify incompatible types (Int vs
-            String)
-         </p>
-         <p class="l1-list" data-block-id="block-97">
-            occurs check failure: would create infinite types (α vs α → β)
-         </p>
-         <p data-block-id="block-98">the Except monad gives us:</p>
-         <p class="l1-list" data-block-id="block-99">
-            automatic error propagation (if any step fails, whole computation
-            fails)
-         </p>
-         <p class="l1-list" data-block-id="block-100">
-            explicit error messages via
-            <code class="inlinecode">throwError</code>
-         </p>
-         <pre data-block-id="block-101"><code>
+      <h3 id="the-unification-monad" data-block-id="block-93">the unification monad</h3>
+      <p data-block-id="block-94">unification can fail, so we need a monad that supports error handling: <code class="inlinecode">UnifyM = Except String</code> provides exactly this capability.</p>
+      <p data-block-id="block-95">unification fails when:</p>
+      <p class="l1-list" data-block-id="block-96">structural mismatch: trying to unify incompatible types (Int vs String)</p>
+      <p class="l1-list" data-block-id="block-97">occurs check failure: would create infinite types (α vs α → β)</p>
+      <p data-block-id="block-98">the Except monad gives us:</p>
+      <p class="l1-list" data-block-id="block-99">automatic error propagation (if any step fails, whole computation fails)</p>
+      <p class="l1-list" data-block-id="block-100">explicit error messages via <code class="inlinecode">throwError</code></p>
+      <pre data-block-id="block-101"><code>
 <span class='keyword'>type</span> <span class='type'>UnifyM</span> <span class='operator'>=</span> <span class='type'>Except</span> <span class='type'>String</span>
 
 </code></pre>
-         <h3 id="variable-binding" data-block-id="block-102">
-            variable binding
-         </h3>
-         <p data-block-id="block-103">
-            the <code class="inlinecode">bind</code> function creates a minimal
-            substitution (<code class="inlinecode">[v ↦ t]</code>) from a
-            typevar v to a monotype t, but only if it's safe.
-         </p>
-         <p data-block-id="block-104">three cases could happen:</p>
-         <p class="l1-list" data-block-id="block-105">
-            reflexive: <code class="inlinecode">t == TyVar v</code> → return
-            <code class="inlinecode">[]</code> (identity, maximally general)
-         </p>
-         <p class="l1-list" data-block-id="block-106">
-            occurs: v occurs in t → error (would create infinite type)
-         </p>
-         <p class="l1-list" data-block-id="block-107">
-            valid: v doesn't occur in t → return
-            <code class="inlinecode">[v ↦ t]</code> (minimal binding)
-         </p>
-         <p data-block-id="block-108">
-            the occurs check is essential: without it, unifying α with
-            <code class="inlinecode">(α → β)</code> would create an infinite
-            type: <code class="inlinecode">α = α → β = (α → β) → β = ...</code>
-         </p>
-         <pre data-block-id="block-109"><code>
+      <h3 id="variable-binding" data-block-id="block-102">variable binding</h3>
+      <p data-block-id="block-103">the <code class="inlinecode">bind</code> function creates a minimal substitution (<code class="inlinecode">[v ↦ t]</code>) from a typevar v to a monotype t, but only if it's safe.</p>
+      <p data-block-id="block-104">three cases could happen:</p>
+      <p class="l1-list" data-block-id="block-105">reflexive: <code class="inlinecode">t == TyVar v</code> → return <code class="inlinecode">[]</code> (identity, maximally general)</p>
+      <p class="l1-list" data-block-id="block-106">occurs: v occurs in t → error (would create infinite type)</p>
+      <p class="l1-list" data-block-id="block-107">valid: v doesn't occur in t → return <code class="inlinecode">[v ↦ t]</code> (minimal binding)</p>
+      <p data-block-id="block-108">the occurs check is essential: without it, unifying α with <code class="inlinecode">(α → β)</code> would create an infinite type: <code class="inlinecode">α = α → β = (α → β) → β = ...</code></p>
+      <pre data-block-id="block-109"><code>
 -- examples:
 -- bind α α             = []                 (identity)
 -- bind α Int           = [α ↦ Int]          (valid binding)
@@ -630,40 +302,14 @@
   <span class='operator'>|</span> otherwise        <span class='operator'>=</span> <span class='type'>return</span> <span class='operator'>$</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>singleton</span> <span class='type'>v</span> <span class='type'>t</span>
 
 </code></pre>
-         <h3 id="most-general-unifier-mgu" data-block-id="block-110">
-            most general unifier (mgu)
-         </h3>
-         <p data-block-id="block-111">
-            the mgu has the property that for any other unifier σ', there
-            exists another unifier θ such that:
-            <code class="inlinecode">σ' = θ ∘ mgu(t1, t2)</code>
-         </p>
-         <p data-block-id="block-112">
-            unification proceeds by structural recursion on type shapes, with
-            four cases:
-         </p>
-         <h4 id="case-1-type-variables" data-block-id="block-113">
-            case 1: type variables
-         </h4>
-         <p data-block-id="block-114">
-            the unification delegates to
-            <code class="inlinecode">bind</code> which performs occurs check
-            and creates minimal substitution
-            <code class="inlinecode">[v ↦ t]</code>:
-         </p>
-         <p data-block-id="block-115">
-            <code class="inlinecode">unify α t → bind α t → [α ↦ t]</code> (or
-            error if occurs check fails)
-         </p>
-         <p data-block-id="block-116">
-            this case is symmetry:
-            <code class="inlinecode">unify α β</code> and
-            <code class="inlinecode">unify β α</code> both produce valid mgu's.
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-117"
-         ><code>example 1: unify α Int
+      <h3 id="most-general-unifier-mgu" data-block-id="block-110">most general unifier (mgu)</h3>
+      <p data-block-id="block-111">the mgu has the property that for any other unifier σ', there exists another unifier θ such that: <code class="inlinecode">σ' = θ ∘ mgu(t1, t2)</code></p>
+      <p data-block-id="block-112">unification proceeds by structural recursion on type shapes, with four cases:</p>
+      <h4 id="case-1-type-variables" data-block-id="block-113">case 1: type variables</h4>
+      <p data-block-id="block-114">the unification delegates to <code class="inlinecode">bind</code> which performs occurs check and creates minimal substitution <code class="inlinecode">[v ↦ t]</code>:</p>
+      <p data-block-id="block-115"><code class="inlinecode">unify α t → bind α t → [α ↦ t]</code> (or error if occurs check fails)</p>
+      <p data-block-id="block-116">this case is symmetry: <code class="inlinecode">unify α β</code> and <code class="inlinecode">unify β α</code> both produce valid mgu's.</p>
+      <pre class="verbatim" data-block-id="block-117"><code>example 1: unify α Int
 result = [α ↦ Int]    (bind α to Int)
 
 example 2: unify α β
@@ -677,23 +323,11 @@ example 4: unify α (α → Int)
 check: α occurs in (α → Int) ✗
 result = error       (would create infinite type)
 </code></pre>
-         <h4 id="case-2-primitives" data-block-id="block-118">
-            case 2: primitives
-         </h4>
-         <p data-block-id="block-119">
-            concrete types must match exactly. no variables to solve, so:
-         </p>
-         <p class="l1-list" data-block-id="block-120">
-            identical types return empty substitution
-            <code class="inlinecode">[]</code> (types already equal)
-         </p>
-         <p class="l1-list" data-block-id="block-121">
-            different types return error (incompatible)
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-122"
-         ><code>example 1: unify Int Int
+      <h4 id="case-2-primitives" data-block-id="block-118">case 2: primitives</h4>
+      <p data-block-id="block-119">concrete types must match exactly. no variables to solve, so:</p>
+      <p class="l1-list" data-block-id="block-120">identical types return empty substitution <code class="inlinecode">[]</code> (types already equal)</p>
+      <p class="l1-list" data-block-id="block-121">different types return error (incompatible)</p>
+      <pre class="verbatim" data-block-id="block-122"><code>example 1: unify Int Int
 result = []           (already equal, no substitution needed)
 
 example 2: unify String String
@@ -702,31 +336,13 @@ result = []
 example 3: unify Int String
 result = error        (incompatible primitive types)
 </code></pre>
-         <h4 id="case-3-function-types" data-block-id="block-123">
-            case 3: function types
-         </h4>
-         <p data-block-id="block-124">
-            the unification structurally decomposes and recursively unifys
-            components:
-         </p>
-         <p class="l1-list" data-block-id="block-125">
-            unify left sides: <code class="inlinecode">s1 = unify l1 l2</code>
-         </p>
-         <p class="l1-list" data-block-id="block-126">
-            apply s1 to right sides before unifying them (propagate
-            constraints)
-         </p>
-         <p class="l1-list" data-block-id="block-127">
-            unify rights:
-            <code class="inlinecode">s2 = unify (s1 r1) (s1 r2)</code>
-         </p>
-         <p class="l1-list" data-block-id="block-128">
-            compose: return <code class="inlinecode">s2 ∘ s1</code>
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-129"
-         ><code>example 1: unify (α → β) (Int → String)
+      <h4 id="case-3-function-types" data-block-id="block-123">case 3: function types</h4>
+      <p data-block-id="block-124">the unification structurally decomposes and recursively unifys components:</p>
+      <p class="l1-list" data-block-id="block-125">unify left sides: <code class="inlinecode">s1 = unify l1 l2</code></p>
+      <p class="l1-list" data-block-id="block-126">apply s1 to right sides before unifying them (propagate constraints)</p>
+      <p class="l1-list" data-block-id="block-127">unify rights: <code class="inlinecode">s2 = unify (s1 r1) (s1 r2)</code></p>
+      <p class="l1-list" data-block-id="block-128">compose: return <code class="inlinecode">s2 ∘ s1</code></p>
+      <pre class="verbatim" data-block-id="block-129"><code>example 1: unify (α → β) (Int → String)
 step 1: s1 = unify α Int           = [α ↦ Int]
 step 2: apply s1 to rights: β, String (no change, β not in s1)
 step 3: s2 = unify β String        = [β ↦ String]
@@ -753,23 +369,15 @@ step 2: apply s1 to rights: γ, Bool (no change)
 step 3: s2 = unify γ Bool          = [γ ↦ Bool]
 step 4: result = s2 ∘ s1           = [α ↦ Int, β ↦ String, γ ↦ Bool]
 </code></pre>
-         <h4 id="case-4-incompatible-structures" data-block-id="block-130">
-            case 4: incompatible structures
-         </h4>
-         <p data-block-id="block-131">
-            if none of the above patterns match, types are fundamentally
-            incompatible.
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-132"
-         ><code>example 1: unify Int (α → β)
+      <h4 id="case-4-incompatible-structures" data-block-id="block-130">case 4: incompatible structures</h4>
+      <p data-block-id="block-131">if none of the above patterns match, types are fundamentally incompatible.</p>
+      <pre class="verbatim" data-block-id="block-132"><code>example 1: unify Int (α → β)
 result = error        (primitive vs function type)
 
 example 2: unify (α → β) String
 result = error        (function type vs primitive)
 </code></pre>
-         <pre data-block-id="block-133"><code>
+      <pre data-block-id="block-133"><code>
 <span class='function'><span class='function'><span class='type'>unify</span> <span class='operator'>::</span> <span class='type'>Mono</span> <span class='operator'>-&gt;</span> <span class='type'>Mono</span> <span class='operator'>-&gt;</span> <span class='type'>UnifyM</span> <span class='type'>Subst</span></span></span>
 <span class='type'>unify</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyVar</span> <span class='type'>v</span><span class='punctuation bracket'>)</span></span> <span class='type'>t</span> <span class='operator'>=</span> <span class='type'>bind</span> <span class='type'>v</span> <span class='type'>t</span>
 <span class='type'>unify</span> <span class='type'>t</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>TyVar</span> <span class='type'>v</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='type'>bind</span> <span class='type'>v</span> <span class='type'>t</span>
@@ -787,58 +395,22 @@ result = error        (function type vs primitive)
   <span class='keyword'>throwError</span> <span class='operator'>$</span> <span class='string'>&quot;Type mismatch: &quot;</span> <span class='operator'>++</span> <span class='type'>show</span> <span class='type'>t1</span> <span class='operator'>++</span> <span class='string'>&quot; vs &quot;</span> <span class='operator'>++</span> <span class='type'>show</span> <span class='type'>t2</span>
 
 </code></pre>
-         <h1 id="algorithm-w" data-block-id="block-134">algorithm w</h1>
-         <p data-block-id="block-135">
-            <a
-               href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system#Algorithm_W"
-               >algorithm w</a
-            >
-            is a sound & complete type inference algorithm for the hm type
-            system.
-         </p>
-         <p data-block-id="block-136">
-            given a context and an expression, it either:
-         </p>
-         <p class="l1-list" data-block-id="block-137">
-            succeeds: returns a substitution and the inferred type
-         </p>
-         <p class="l1-list" data-block-id="block-138">
-            fails: returns an error message
-         </p>
-         <h2 id="inference-monad" data-block-id="block-139">
-            inference monad
-         </h2>
-         <p data-block-id="block-140">
-            type inference needs two computational effects:
-         </p>
-         <p class="l1-list" data-block-id="block-141">
-            fresh variable generation: to create new type variables during
-            inference
-         </p>
-         <p class="l1-list" data-block-id="block-142">
-            error handling: to report type errors
-         </p>
-         <p data-block-id="block-143">
-            the
-            <code class="inlinecode">InferM = ExceptT String (State Int)</code>
-            monad combines both:
-         </p>
-         <p class="l1-list" data-block-id="block-144">
-            <code class="inlinecode">State Int</code>: maintains a counter for
-            generating unique type variables (t0, t1, t2, ...)
-         </p>
-         <p class="l1-list" data-block-id="block-145">
-            <code class="inlinecode">ExceptT String</code>: wraps State to add
-            error handling
-         </p>
-         <p data-block-id="block-146">this gives us access to:</p>
-         <p class="l1-list" data-block-id="block-147">
-            <code class="inlinecode">fresh</code>: generates new type variables
-         </p>
-         <p class="l1-list" data-block-id="block-148">
-            <code class="inlinecode">throwError</code>: reports type errors
-         </p>
-         <pre data-block-id="block-149"><code>
+      <h1 id="algorithm-w" data-block-id="block-134">algorithm w</h1>
+      <p data-block-id="block-135"><a href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system#Algorithm_W">algorithm w</a> is a sound & complete type inference algorithm for the hm type system.</p>
+      <p data-block-id="block-136">given a context and an expression, it either:</p>
+      <p class="l1-list" data-block-id="block-137">succeeds: returns a substitution and the inferred type</p>
+      <p class="l1-list" data-block-id="block-138">fails: returns an error message</p>
+      <h2 id="inference-monad" data-block-id="block-139">inference monad</h2>
+      <p data-block-id="block-140">type inference needs two computational effects:</p>
+      <p class="l1-list" data-block-id="block-141">fresh variable generation: to create new type variables during inference</p>
+      <p class="l1-list" data-block-id="block-142">error handling: to report type errors</p>
+      <p data-block-id="block-143">the <code class="inlinecode">InferM = ExceptT String (State Int)</code> monad combines both:</p>
+      <p class="l1-list" data-block-id="block-144"><code class="inlinecode">State Int</code>: maintains a counter for generating unique type variables (t0, t1, t2, ...)</p>
+      <p class="l1-list" data-block-id="block-145"><code class="inlinecode">ExceptT String</code>: wraps State to add error handling</p>
+      <p data-block-id="block-146">this gives us access to:</p>
+      <p class="l1-list" data-block-id="block-147"><code class="inlinecode">fresh</code>: generates new type variables</p>
+      <p class="l1-list" data-block-id="block-148"><code class="inlinecode">throwError</code>: reports type errors</p>
+      <pre data-block-id="block-149"><code>
 <span class='keyword'>type</span> <span class='type'>InferM</span> <span class='operator'>=</span> <span class='type'>ExceptT</span> <span class='type'>String</span> <span class='punctuation bracket'>(</span><span class='type'>State</span> <span class='type'>Int</span><span class='punctuation bracket'>)</span>
 <span class='comment'>--            ^^^^^^^^^^^^^^ ^^^^^^^^^^^</span>
 <span class='comment'>--            |              |</span>
@@ -846,35 +418,18 @@ result = error        (function type vs primitive)
 <span class='comment'>--            outer: error handling</span>
 
 </code></pre>
-         <p data-block-id="block-150">
-            we define a function to lift unification from
-            <code class="inlinecode">UnifyM</code> into
-            <code class="inlinecode">InferM</code>. this bridges the gap
-            between the two monads so we can use
-            <code class="inlinecode">unify</code> inside
-            <code class="inlinecode">inferW</code>.
-         </p>
-         <pre data-block-id="block-151"><code>
+      <p data-block-id="block-150">we define a function to lift unification from <code class="inlinecode">UnifyM</code> into <code class="inlinecode">InferM</code>. this bridges the gap between the two monads so we can use <code class="inlinecode">unify</code> inside <code class="inlinecode">inferW</code>.</p>
+      <pre data-block-id="block-151"><code>
 <span class='function'><span class='function'><span class='type'>liftUnify</span> <span class='operator'>::</span> <span class='type'>Mono</span> <span class='operator'>-&gt;</span> <span class='type'>Mono</span> <span class='operator'>-&gt;</span> <span class='type'>InferM</span> <span class='type'>Subst</span></span></span>
 <span class='type'>liftUnify</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='type'>liftEither</span> <span class='punctuation bracket'>(</span><span class='type'>runExcept</span> <span class='punctuation bracket'>(</span><span class='type'>unify</span> <span class='type'>a</span> <span class='type'>b</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h2 id="fresh-type-variables" data-block-id="block-152">
-            fresh type variables
-         </h2>
-         <p data-block-id="block-153">
-            we need to generate unique type variables:
-            <code class="inlinecode">t0, t1, t2, ...</code> during a type
-            inference process.
-         </p>
-         <p data-block-id="block-154">this is used when:</p>
-         <p class="l1-list" data-block-id="block-155">
-            inferring function application: need a fresh result type
-         </p>
-         <p class="l1-list" data-block-id="block-156">
-            inferring abstraction: parameter type is initially unknown
-         </p>
-         <pre data-block-id="block-157"><code>
+      <h2 id="fresh-type-variables" data-block-id="block-152">fresh type variables</h2>
+      <p data-block-id="block-153">we need to generate unique type variables: <code class="inlinecode">t0, t1, t2, ...</code> during a type inference process.</p>
+      <p data-block-id="block-154">this is used when:</p>
+      <p class="l1-list" data-block-id="block-155">inferring function application: need a fresh result type</p>
+      <p class="l1-list" data-block-id="block-156">inferring abstraction: parameter type is initially unknown</p>
+      <pre data-block-id="block-157"><code>
 <span class='type'>fresh</span> <span class='operator'>::</span> <span class='type'>InferM</span> <span class='type'>TyVar</span>
 <span class='type'>fresh</span> <span class='operator'>=</span> <span class='keyword'>do</span>
   <span class='type'>n</span> <span class='operator'>&lt;-</span> <span class='type'>get</span>
@@ -886,23 +441,11 @@ result = error        (function type vs primitive)
 <span class='type'>freshN</span> <span class='type'>k</span> <span class='operator'>=</span> <span class='type'>replicateM</span> <span class='type'>k</span> <span class='type'>fresh</span>
 
 </code></pre>
-         <h2 id="generalization" data-block-id="block-158">generalization</h2>
-         <p data-block-id="block-159">
-            generalization turns a monotype into a polytype by quantifying free
-            type variables, where only variables
-            <span class="highlight">not in the context</span> are generalized:
-         </p>
-         <p data-block-id="block-160">
-            <code class="inlinecode"
-               >generalize ctx t = ∀(ftv(t) \ ftv(ctx)).t</code
-            >
-         </p>
-         <p data-block-id="block-161">
-            intuitively, we only generalize variables we
-            <span class="highlight">own</span> (introduced locally), not
-            variables from outer scope (already in context).
-         </p>
-         <pre data-block-id="block-162"><code>
+      <h2 id="generalization" data-block-id="block-158">generalization</h2>
+      <p data-block-id="block-159">generalization turns a monotype into a polytype by quantifying free type variables, where only variables <span class="highlight">not in the context</span> are generalized:</p>
+      <p data-block-id="block-160"><code class="inlinecode">generalize ctx t = ∀(ftv(t) \ ftv(ctx)).t</code></p>
+      <p data-block-id="block-161">intuitively, we only generalize variables we <span class="highlight">own</span> (introduced locally), not variables from outer scope (already in context).</p>
+      <pre data-block-id="block-162"><code>
 -- examples:
 -- generalize {} (α → α)      = ∀α.α → α   (α not in context)
 -- generalize {x:β} (α → β)   = ∀α.α → β   (only α generalized, β in context)
@@ -913,34 +456,14 @@ result = error        (function type vs primitive)
   <span class='keyword'>in</span> <span class='keyword'>if</span> <span class='type'>null</span> <span class='type'>vars</span> <span class='keyword'>then</span> <span class='constructor'>Mono</span> <span class='type'>t</span> <span class='keyword'>else</span> <span class='constructor'>Forall</span> <span class='type'>vars</span> <span class='type'>t</span>
 
 </code></pre>
-         <h2 id="instantiation" data-block-id="block-163">instantiation</h2>
-         <p data-block-id="block-164">
-            instantiation turns a polytype into a monotype by replacing
-            quantified variables with fresh ones. this allows using polymorphic
-            values at different types.
-         </p>
-         <p data-block-id="block-165">
-            by the means of fresh variables, each use of a polymorphic value
-            gets independent types.
-         </p>
-         <p data-block-id="block-166">
-            example:
-            <code class="inlinecode">let id = λx.x in (id 5, id "hi")</code>
-         </p>
-         <p class="l1-list" data-block-id="block-167">
-            first use:
-            <code class="inlinecode">instantiate (∀α.α → α) → t0 → t0</code>,
-            then unify t0 with Int
-         </p>
-         <p class="l1-list" data-block-id="block-168">
-            second use:
-            <code class="inlinecode">instantiate (∀α.α → α) → t1 → t1</code>,
-            then unify t1 with String
-         </p>
-         <p class="l1-list" data-block-id="block-169">
-            if we reused the same α, the two uses would conflict.
-         </p>
-         <pre data-block-id="block-170"><code>
+      <h2 id="instantiation" data-block-id="block-163">instantiation</h2>
+      <p data-block-id="block-164">instantiation turns a polytype into a monotype by replacing quantified variables with fresh ones. this allows using polymorphic values at different types.</p>
+      <p data-block-id="block-165">by the means of fresh variables, each use of a polymorphic value gets independent types.</p>
+      <p data-block-id="block-166">example: <code class="inlinecode">let id = λx.x in (id 5, id "hi")</code></p>
+      <p class="l1-list" data-block-id="block-167">first use: <code class="inlinecode">instantiate (∀α.α → α) → t0 → t0</code>, then unify t0 with Int</p>
+      <p class="l1-list" data-block-id="block-168">second use: <code class="inlinecode">instantiate (∀α.α → α) → t1 → t1</code>, then unify t1 with String</p>
+      <p class="l1-list" data-block-id="block-169">if we reused the same α, the two uses would conflict.</p>
+      <pre data-block-id="block-170"><code>
 -- examples:
 -- instantiate (∀α.α → α)      → t0 → t0   (fresh t0)
 -- instantiate (∀α.∀β.α → β)   → t0 → t1   (fresh t0, t1)
@@ -953,88 +476,39 @@ result = error        (function type vs primitive)
   <span class='type'>return</span> <span class='operator'>$</span> <span class='type'>apply</span> <span class='type'>s</span> <span class='type'>m</span>
 
 </code></pre>
-         <h2 id="type-inference-algorithm" data-block-id="block-171">
-            type inference algorithm
-         </h2>
-         <p data-block-id="block-172">
-            with the type signature:
-            <code class="inlinecode"
-               >inferW :: Context -> Expr -> InferM (Subst, Mono)</code
-            >
-         </p>
-         <p data-block-id="block-173">
-            given a context Γ and an expression e, the inference algo returns
-            (both):
-         </p>
-         <p class="l1-list" data-block-id="block-174">
-            substitution s: constraints discovered during inference
-         </p>
-         <p class="l1-list" data-block-id="block-175">
-            monotype t: the inferred type
-         </p>
-         <p data-block-id="block-176">
-            essentially, the algorithm implements these four typing rules:
-         </p>
-         <h3 id="variable-rule" data-block-id="block-177">variable rule</h3>
-         <pre
-            class="verbatim"
-            data-block-id="block-178"
-         ><code>x : σ ∈ Γ   τ = instantiate(σ)
+      <h2 id="type-inference-algorithm" data-block-id="block-171">type inference algorithm</h2>
+      <p data-block-id="block-172">with the type signature: <code class="inlinecode">inferW :: Context -> Expr -> InferM (Subst, Mono)</code></p>
+      <p data-block-id="block-173">given a context Γ and an expression e, the inference algo returns (both):</p>
+      <p class="l1-list" data-block-id="block-174">substitution s: constraints discovered during inference</p>
+      <p class="l1-list" data-block-id="block-175">monotype t: the inferred type</p>
+      <p data-block-id="block-176">essentially, the algorithm implements these four typing rules:</p>
+      <h3 id="variable-rule" data-block-id="block-177">variable rule</h3>
+      <pre class="verbatim" data-block-id="block-178"><code>x : σ ∈ Γ   τ = instantiate(σ)
 --------------------------------   [VAR]
 Γ ⊢ x : τ, ∅
 </code></pre>
-         <p data-block-id="block-179">
-            the algo look up typevar x in context Γ, instantiate its polytype
-            with fresh variables. then return empty substitution (∅) since no
-            constraints are generated.
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-180"
-         ><code>example: Γ = {id : ∀α.α → α}, infer (id)
+      <p data-block-id="block-179">the algo look up typevar x in context Γ, instantiate its polytype with fresh variables. then return empty substitution (∅) since no constraints are generated.</p>
+      <pre class="verbatim" data-block-id="block-180"><code>example: Γ = {id : ∀α.α → α}, infer (id)
 x = &quot;id&quot;
 σ = lookup &quot;id&quot; in Γ  → ∀α.α → α
 τ = instantiate(σ)    → t0 → t0    (fresh t0)
 return (∅, t0 → t0)
 </code></pre>
-         <h3 id="application-rule" data-block-id="block-181">
-            application rule
-         </h3>
-         <pre
-            class="verbatim"
-            data-block-id="block-182"
-         ><code>Γ ⊢ e1 : τ1, S1   S1Γ ⊢ e2 : τ2, S2
+      <h3 id="application-rule" data-block-id="block-181">application rule</h3>
+      <pre class="verbatim" data-block-id="block-182"><code>Γ ⊢ e1 : τ1, S1   S1Γ ⊢ e2 : τ2, S2
 τ&#39; = fresh        S3 = mgu(S2τ1, τ2 → τ&#39;)
 --------------------------------------------   [APP]
 Γ ⊢ e1e2 : S3τ&#39;, S3S2S1
 </code></pre>
-         <p data-block-id="block-183">the algo:</p>
-         <p class="l1-list" data-block-id="block-184">
-            infer e1 under Γ, get S1 and τ1
-         </p>
-         <p class="l1-list" data-block-id="block-185">
-            apply S1 to context before inferring e2
-         </p>
-         <p class="l1-list" data-block-id="block-186">
-            infer e2 under S1Γ, get S2 and τ2
-         </p>
-         <p class="l1-list" data-block-id="block-187">
-            create fresh result type τ'
-         </p>
-         <p class="l1-list" data-block-id="block-188">
-            apply S2 to τ1 before unifying (propagate e2's constraints to e1's
-            type)
-         </p>
-         <p class="l1-list" data-block-id="block-189">
-            unify S2τ1 with τ2 → τ', get S3
-         </p>
-         <p class="l1-list" data-block-id="block-190">
-            return S3S2S1 (right-to-left composition) and S3τ'
-         </p>
-         <pre
-            class="verbatim"
-            data-block-id="block-191"
-         ><code>example: infer ((λx.x) 5)
+      <p data-block-id="block-183">the algo:</p>
+      <p class="l1-list" data-block-id="block-184">infer e1 under Γ, get S1 and τ1</p>
+      <p class="l1-list" data-block-id="block-185">apply S1 to context before inferring e2</p>
+      <p class="l1-list" data-block-id="block-186">infer e2 under S1Γ, get S2 and τ2</p>
+      <p class="l1-list" data-block-id="block-187">create fresh result type τ'</p>
+      <p class="l1-list" data-block-id="block-188">apply S2 to τ1 before unifying (propagate e2's constraints to e1's type)</p>
+      <p class="l1-list" data-block-id="block-189">unify S2τ1 with τ2 → τ', get S3</p>
+      <p class="l1-list" data-block-id="block-190">return S3S2S1 (right-to-left composition) and S3τ'</p>
+      <pre class="verbatim" data-block-id="block-191"><code>example: infer ((λx.x) 5)
 step 1: infer (λx.x) → S1 = ∅, τ1 = t0 → t0
 step 2: infer 5 in S1Γ = Γ → S2 = ∅, τ2 = Int
 step 3: fresh → τ&#39; = t1
@@ -1043,34 +517,18 @@ step 5: mgu(t0 → t0, Int → t1) → S3 = [t0 ↦ Int, t1 ↦ Int]
 step 6: S3τ&#39; = S3(t1) = Int
 step 7: return (S3S2S1 = S3, Int)
 </code></pre>
-         <h3 id="abstraction-rule" data-block-id="block-192">
-            abstraction rule
-         </h3>
-         <pre
-            class="verbatim"
-            data-block-id="block-193"
-         ><code>τ = fresh   Γ, x : τ ⊢ e : τ&#39;, S
+      <h3 id="abstraction-rule" data-block-id="block-192">abstraction rule</h3>
+      <pre class="verbatim" data-block-id="block-193"><code>τ = fresh   Γ, x : τ ⊢ e : τ&#39;, S
 -----------------------------------   [ABS]
 Γ ⊢ λx.e : Sτ → τ&#39;, S
 </code></pre>
-         <p data-block-id="block-194">the algo:</p>
-         <p class="l1-list" data-block-id="block-195">
-            create fresh type variable τ for parameter x
-         </p>
-         <p class="l1-list" data-block-id="block-196">
-            extend context: Γ' = Γ, x : τ
-         </p>
-         <p class="l1-list" data-block-id="block-197">
-            infer e in Γ', get S and τ'
-         </p>
-         <p class="l1-list" data-block-id="block-198">
-            apply S to parameter type: Sτ
-         </p>
-         <p class="l1-list" data-block-id="block-199">return (S, Sτ → τ')</p>
-         <pre
-            class="verbatim"
-            data-block-id="block-200"
-         ><code>example: infer (λx.x)
+      <p data-block-id="block-194">the algo:</p>
+      <p class="l1-list" data-block-id="block-195">create fresh type variable τ for parameter x</p>
+      <p class="l1-list" data-block-id="block-196">extend context: Γ' = Γ, x : τ</p>
+      <p class="l1-list" data-block-id="block-197">infer e in Γ', get S and τ'</p>
+      <p class="l1-list" data-block-id="block-198">apply S to parameter type: Sτ</p>
+      <p class="l1-list" data-block-id="block-199">return (S, Sτ → τ')</p>
+      <pre class="verbatim" data-block-id="block-200"><code>example: infer (λx.x)
 step 1: fresh → τ = t0
 step 2: Γ&#39; = {x : t0}
 step 3: infer x in Γ&#39; → S = ∅, τ&#39; = t0
@@ -1084,37 +542,19 @@ step 3: infer (λy.x) in Γ&#39; → S = ∅, τ&#39; = t1 → t0
 step 4: Sτ = t0 (no substitution affects t0 here)
 step 5: return (∅, t0 → (t1 → t0))
 </code></pre>
-         <h3 id="let-polymorphism-rule" data-block-id="block-201">
-            let-polymorphism rule
-         </h3>
-         <pre
-            class="verbatim"
-            data-block-id="block-202"
-         ><code>Γ ⊢ e1 : τ, S1   S1Γ, x : generalize(S1Γ, τ) ⊢ e2 : τ&#39;, S2
+      <h3 id="let-polymorphism-rule" data-block-id="block-201">let-polymorphism rule</h3>
+      <pre class="verbatim" data-block-id="block-202"><code>Γ ⊢ e1 : τ, S1   S1Γ, x : generalize(S1Γ, τ) ⊢ e2 : τ&#39;, S2
 -----------------------------------------------------------   [LET]
 Γ ⊢ let x = e1 in e2 : τ&#39;, S2S1
 </code></pre>
-         <p data-block-id="block-203">the algo:</p>
-         <p class="l1-list" data-block-id="block-204">
-            infer e1 under Γ, get S1 and τ
-         </p>
-         <p class="l1-list" data-block-id="block-205">
-            apply S1 to context: S1Γ
-         </p>
-         <p class="l1-list" data-block-id="block-206">
-            generalize τ under S1Γ to get σ = generalize(S1Γ, τ)
-         </p>
-         <p class="l1-list" data-block-id="block-207">
-            extend context: Γ' = S1Γ, x : σ
-         </p>
-         <p class="l1-list" data-block-id="block-208">
-            infer e2 under Γ', get S2 and τ'
-         </p>
-         <p class="l1-list" data-block-id="block-209">return (S2S1, τ')</p>
-         <pre
-            class="verbatim"
-            data-block-id="block-210"
-         ><code>example: infer (let id = λx.x in (id 5, id &quot;hi&quot;))
+      <p data-block-id="block-203">the algo:</p>
+      <p class="l1-list" data-block-id="block-204">infer e1 under Γ, get S1 and τ</p>
+      <p class="l1-list" data-block-id="block-205">apply S1 to context: S1Γ</p>
+      <p class="l1-list" data-block-id="block-206">generalize τ under S1Γ to get σ = generalize(S1Γ, τ)</p>
+      <p class="l1-list" data-block-id="block-207">extend context: Γ' = S1Γ, x : σ</p>
+      <p class="l1-list" data-block-id="block-208">infer e2 under Γ', get S2 and τ'</p>
+      <p class="l1-list" data-block-id="block-209">return (S2S1, τ')</p>
+      <pre class="verbatim" data-block-id="block-210"><code>example: infer (let id = λx.x in (id 5, id &quot;hi&quot;))
 step 1: infer (λx.x) → S1 = ∅, τ = t0 → t0
 step 2: S1Γ = Γ (identity, since S1 is empty)
 step 3: generalize(Γ, t0 → t0) → σ = ∀t0.t0 → t0
@@ -1125,7 +565,7 @@ second use of id: instantiate → t2 → t2, unify with String → ...
 → S2 = [...], τ&#39; = (Int, String)
 step 6: return (S2S1 = S2, (Int, String))
 </code></pre>
-         <pre data-block-id="block-211"><code>
+      <pre data-block-id="block-211"><code>
 <span class='function'><span class='function'><span class='type'>inferW</span> <span class='operator'>::</span> <span class='type'>Context</span> <span class='operator'>-&gt;</span> <span class='type'>Expr</span> <span class='operator'>-&gt;</span> <span class='type'>InferM</span> <span class='punctuation bracket'>(</span><span class='type'>Subst</span><span class='punctuation delimiter'>,</span> <span class='type'>Mono</span><span class='punctuation bracket'>)</span></span></span>
 <span class='type'>inferW</span> <span class='type'>ctx</span> <span class='type'>expr</span> <span class='operator'>=</span> <span class='keyword'>case</span> <span class='type'>expr</span> <span class='keyword'>of</span>
   <span class='constructor'>Var</span> <span class='type'>x</span> <span class='operator'>-&gt;</span> <span class='keyword'>case</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>lookup</span> <span class='type'>x</span> <span class='type'>ctx</span> <span class='keyword'>of</span>
@@ -1156,14 +596,9 @@ step 6: return (S2S1 = S2, (Int, String))
     <span class='type'>return</span> <span class='punctuation bracket'>(</span><span class='type'>compose</span> <span class='type'>s2</span> <span class='type'>s1</span><span class='punctuation delimiter'>,</span> <span class='type'>t2</span><span class='punctuation bracket'>)</span>
 
 </code></pre>
-         <h1 id="tests--examples" data-block-id="block-212">
-            tests & examples
-         </h1>
-         <p data-block-id="block-213">
-            claude-4.5-sonnet-thinking provides several test cases to
-            demonstrate algorithm w in action.
-         </p>
-         <pre data-block-id="block-214"><code>
+      <h1 id="tests--examples" data-block-id="block-212">tests & examples</h1>
+      <p data-block-id="block-213">claude-4.5-sonnet-thinking provides several test cases to demonstrate algorithm w in action.</p>
+      <pre data-block-id="block-214"><code>
 -- helper to run inference from empty context
 <span class='function'><span class='function'><span class='type'>runInfer</span> <span class='operator'>::</span> <span class='type'>Expr</span> <span class='operator'>-&gt;</span> <span class='type'>Either</span> <span class='type'>String</span> <span class='type'>Mono</span></span></span>
 <span class='type'>runInfer</span> <span class='type'>e</span> <span class='operator'>=</span> <span class='keyword'>case</span> <span class='type'>runState</span> <span class='punctuation bracket'>(</span><span class='type'>runExceptT</span> <span class='punctuation bracket'>(</span><span class='type'>inferW</span> <span class='module'>Map</span><span class='operator'>.</span><span class='type'>empty</span> <span class='type'>e</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>0</span> <span class='keyword'>of</span>
@@ -1246,14 +681,9 @@ step 6: return (S2S1 = S2, (Int, String))
    <span class='type'>putStrLn</span> <span class='string'>&quot;\n=== all tests completed ===&quot;</span>
 
 </code></pre>
-         <h1 id="appendices" data-block-id="block-215">appendices</h1>
-         <h2 id="notation--symbols" data-block-id="block-216">
-            notation & symbols
-         </h2>
-         <pre
-            class="verbatim"
-            data-block-id="block-217"
-         ><code>||| type-level symbols
+      <h1 id="appendices" data-block-id="block-215">appendices</h1>
+      <h2 id="notation--symbols" data-block-id="block-216">notation & symbols</h2>
+      <pre class="verbatim" data-block-id="block-217"><code>||| type-level symbols
 
 τ, τ&#39;, τ1, τ2          monotypes (concrete type expressions)
 σ, σ&#39;                  polytypes (type schemes with ∀ quantifiers)
@@ -1295,93 +725,62 @@ fresh                  generate a new unique type variable
 ⊢                     entailment / typing judgment
 ---                   inference rule separator (premises above, conclusion below)
 </code></pre>
-      </main>
-      <aside class="sidenotes">
-         <div class="sidenote" data-for-block="block-5">
-            full source code available at
-            <a
-               href="https://github.com/luthenwald/luthenwald.github.io/blob/main/blogs/type-theory/hindley-milner.hs"
-               >github</a
-            >.
-         </div>
-         <div class="sidenote" data-for-block="block-14">
-            the application is left-binding and binds stronger than abstraction
-            or the let-in construct.
-         </div>
-         <div class="sidenote" data-for-block="block-25">
-            there should only exist the
-            <code class="inlinecode">Forall</code> constructor. we explicitly
-            add a <code class="inlinecode">Mono</code> branch here to simplify
-            pattern matching.
-         </div>
-         <div class="sidenote" data-for-block="block-29">
-            and thus the trinity for type system is born.
-         </div>
-         <div class="sidenote" data-for-block="block-63">
-            substitution should be applied simultaneously
-         </div>
-         <div class="sidenote" data-for-block="block-100">
-            without occurs check, we could create:
-            <code class="inlinecode">α = α → β = (α → β) → β = ...</code>
-         </div>
-         <div class="sidenote" data-for-block="block-121">
-            mgu is analogous to the initial object in the context of category
-            theory.
-         </div>
-      </aside>
-      <script>
-         document.addEventListener("DOMContentLoaded", function () {
-            function positionSidenotes() {
-               const mainContent = document.querySelector(".main-content");
-               const sidenotesContainer = document.querySelector(".sidenotes");
-               const sidenotes = sidenotesContainer.querySelectorAll(
-                  ".sidenote[data-for-block]",
-               );
-
-               const firstBlock = mainContent.querySelector("[data-block-id]");
-               if (!firstBlock) return;
-
-               const referenceTop = firstBlock.getBoundingClientRect().top;
-               const sidenotesTop =
-                  sidenotesContainer.getBoundingClientRect().top;
-
-               sidenotes.forEach((sidenote) => {
-                  const blockId = sidenote.getAttribute("data-for-block");
-                  const targetBlock = mainContent.querySelector(
-                     `[data-block-id="${blockId}"]`,
-                  );
-
-                  if (targetBlock) {
-                     const blockTop = targetBlock.getBoundingClientRect().top;
-                     const offset = blockTop - referenceTop;
-                     sidenote.style.top = offset + "px";
-                  }
-               });
-            }
-
-            positionSidenotes();
-            window.addEventListener("resize", positionSidenotes);
-
-            // Theme switching
-            const themeToggle = document.getElementById("theme-toggle");
-            const html = document.documentElement;
-
-            // Load saved theme or default to light
-            const savedTheme = localStorage.getItem("theme") || "light";
-            html.setAttribute("data-theme", savedTheme);
-            themeToggle.textContent =
-               savedTheme === "light" ? "dark" : "light";
-
-            themeToggle.addEventListener("click", function (e) {
-               e.preventDefault();
-               const currentTheme = html.getAttribute("data-theme");
-               const newTheme = currentTheme === "light" ? "dark" : "light";
-               html.setAttribute("data-theme", newTheme);
-               themeToggle.textContent =
-                  newTheme === "light" ? "dark" : "light";
-               localStorage.setItem("theme", newTheme);
+   </main>
+   <aside class="sidenotes">
+      <div class="sidenote" data-for-block="block-5">full source code available at <a href="https://github.com/luthenwald/luthenwald.github.io/blob/main/blogs/type-theory/hindley-milner.hs">github</a>.</div>
+      <div class="sidenote" data-for-block="block-14">the application is left-binding and binds stronger than abstraction or the let-in construct.</div>
+      <div class="sidenote" data-for-block="block-25">there should only exist the <code class="inlinecode">Forall</code> constructor. we explicitly add a <code class="inlinecode">Mono</code> branch here to simplify pattern matching.</div>
+      <div class="sidenote" data-for-block="block-29">and thus the trinity for type system is born.</div>
+      <div class="sidenote" data-for-block="block-63">substitution should be applied simultaneously</div>
+      <div class="sidenote" data-for-block="block-100">without occurs check, we could create: <code class="inlinecode">α = α → β = (α → β) → β = ...</code></div>
+      <div class="sidenote" data-for-block="block-121">mgu is analogous to the initial object in the context of category theory.</div>
+   </aside>
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         function positionSidenotes() {
+            const mainContent = document.querySelector('.main-content');
+            const sidenotesContainer = document.querySelector('.sidenotes');
+            const sidenotes = sidenotesContainer.querySelectorAll('.sidenote[data-for-block]');
+            
+            const firstBlock = mainContent.querySelector('[data-block-id]');
+            if (!firstBlock) return;
+            
+            const referenceTop = firstBlock.getBoundingClientRect().top;
+            const sidenotesTop = sidenotesContainer.getBoundingClientRect().top;
+            
+            sidenotes.forEach(sidenote => {
+               const blockId = sidenote.getAttribute('data-for-block');
+               const targetBlock = mainContent.querySelector(`[data-block-id="${blockId}"]`);
+               
+               if (targetBlock) {
+                  const blockTop = targetBlock.getBoundingClientRect().top;
+                  const offset = blockTop - referenceTop;
+                  sidenote.style.top = offset + 'px';
+               }
             });
+         }
+         
+         positionSidenotes();
+         window.addEventListener('resize', positionSidenotes);
+         
+         // Theme switching
+         const themeToggle = document.getElementById('theme-toggle');
+         const html = document.documentElement;
+         
+         // Load saved theme or default to light
+         const savedTheme = localStorage.getItem('theme') || 'light';
+         html.setAttribute('data-theme', savedTheme);
+         themeToggle.textContent = savedTheme === 'light' ? 'dark' : 'light';
+         
+         themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
          });
-      </script>
-   </body>
+      });
+   </script>
+</body>
 </html>

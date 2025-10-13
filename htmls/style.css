@@ -3,8 +3,8 @@
    --fg: #1a1a1a;
    --gray: #666;
    --light-gray: #e0e0e0;
-   --font-serif: Georgia, "Times New Roman", serif;
-   --font-mono: "Iosevka Nerd Font Mono", "Iosevka", "Courier New", monospace;
+   --font-serif: Georgia, 'Times New Roman', serif;
+   --font-mono: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
    --spacing: 1.5rem;
 }
 
@@ -40,35 +40,18 @@ a:hover {
    text-decoration-thickness: 2px;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
    font-weight: normal;
    margin-top: 2rem;
    margin-bottom: 1rem;
 }
 
-h1 {
-   font-size: 2rem;
-}
-h2 {
-   font-size: 1.5rem;
-}
-h3 {
-   font-size: 1.25rem;
-}
-h4 {
-   font-size: 1.1rem;
-}
-h5 {
-   font-size: 1rem;
-}
-h6 {
-   font-size: 0.9rem;
-}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.9rem; }
 
 p {
    margin-bottom: 1rem;
@@ -84,9 +67,7 @@ p {
    max-width: 100%;
 }
 
-.home-page,
-.tagcloud-page,
-.tag-page {
+.home-page, .tagcloud-page, .tag-page {
    display: grid;
    grid-template-columns: minmax(170px, 17%) minmax(0, 1fr);
    gap: 2rem;
@@ -116,29 +97,12 @@ p {
    font-size: 0.9rem;
 }
 
-.outline .h1 {
-   padding-left: 0;
-}
-.outline .h2 {
-   padding-left: 0.5rem;
-   font-size: 0.85rem;
-}
-.outline .h3 {
-   padding-left: 1rem;
-   font-size: 0.8rem;
-}
-.outline .h4 {
-   padding-left: 1.5rem;
-   font-size: 0.75rem;
-}
-.outline .h5 {
-   padding-left: 2rem;
-   font-size: 0.7rem;
-}
-.outline .h6 {
-   padding-left: 2.5rem;
-   font-size: 0.7rem;
-}
+.outline .h1 { padding-left: 0; }
+.outline .h2 { padding-left: 0.5rem; font-size: 0.85rem; }
+.outline .h3 { padding-left: 1rem; font-size: 0.8rem; }
+.outline .h4 { padding-left: 1.5rem; font-size: 0.75rem; }
+.outline .h5 { padding-left: 2rem; font-size: 0.7rem; }
+.outline .h6 { padding-left: 2.5rem; font-size: 0.7rem; }
 
 .outline-sidebar .bottom-nav {
    display: flex;
@@ -252,36 +216,34 @@ p {
    margin-right: 0.25rem;
 }
 
-.l1-list,
-.l2-list,
-.l3-list {
+.l1-list, .l2-list, .l3-list {
    margin-left: 0;
    margin-bottom: 0.3rem;
    padding-left: 0;
    position: relative;
 }
 
-.l1-list::before {
-   content: "•";
+.l1-list::before { 
+   content: "•"; 
    color: var(--gray);
    font-weight: bold;
-   margin-right: 0.25rem;
+   margin-right: 0.25rem; 
    font-size: 1.2em;
 }
 
-.l2-list::before {
-   content: "◦";
+.l2-list::before { 
+   content: "◦"; 
    color: var(--gray);
-   margin-right: 0.25rem;
-   margin-left: 1.5rem;
+   margin-right: 0.25rem; 
+   margin-left: 1.5rem; 
    font-size: 1.1em;
 }
 
-.l3-list::before {
-   content: "▪";
+.l3-list::before { 
+   content: "▪"; 
    color: var(--gray);
-   margin-right: 0.25rem;
-   margin-left: 3rem;
+   margin-right: 0.25rem; 
+   margin-left: 3rem; 
    font-size: 1em;
 }
 
@@ -333,221 +295,221 @@ pre.verbatim code {
    color: var(--fg);
 }
 
-pre code .keyword {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .keyword { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .type {
-   color: #333333;
+pre code .type { 
+   color: #333333; 
 }
 
-pre code .function {
-   color: #1a1a1a;
-   font-style: italic;
+pre code .function { 
+   color: #1a1a1a; 
+   font-style: italic; 
 }
 
-pre code .string {
-   color: #555555;
+pre code .string { 
+   color: #555555; 
 }
 
-pre code .comment {
-   color: #999999;
-   font-style: italic;
+pre code .comment { 
+   color: #999999; 
+   font-style: italic; 
 }
 
-pre code .variable {
-   color: #333333;
+pre code .variable { 
+   color: #333333; 
 }
 
-pre code .property {
-   color: #333333;
+pre code .property { 
+   color: #333333; 
 }
 
-pre code .constant {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .constant { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .operator {
-   color: #666666;
+pre code .operator { 
+   color: #666666; 
 }
 
-pre code .punctuation {
-   color: #666666;
+pre code .punctuation { 
+   color: #666666; 
 }
 
-pre code .number {
-   color: #333333;
+pre code .number { 
+   color: #333333; 
 }
 
-pre code .module {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .module { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .constructor {
-   color: #333333;
-   font-weight: bold;
+pre code .constructor { 
+   color: #333333; 
+   font-weight: bold; 
 }
 
-pre code .punctuation.bracket {
-   color: #333333;
+pre code .punctuation.bracket { 
+   color: #333333; 
 }
 
-pre code .punctuation.delimiter {
-   color: #666666;
+pre code .punctuation.delimiter { 
+   color: #666666; 
 }
 
-pre code .punctuation.special {
-   color: #333333;
+pre code .punctuation.special { 
+   color: #333333; 
 }
 
-pre code .string.special {
-   color: #555555;
+pre code .string.special { 
+   color: #555555; 
 }
 
-pre code .tag {
-   color: #1a1a1a;
+pre code .tag { 
+   color: #1a1a1a; 
 }
 
-pre code .type.builtin {
-   color: #333333;
-   font-weight: bold;
+pre code .type.builtin { 
+   color: #333333; 
+   font-weight: bold; 
 }
 
-pre code .function.builtin {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .function.builtin { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .constant.builtin {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .constant.builtin { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .variable.builtin {
-   color: #1a1a1a;
-   font-weight: bold;
+pre code .variable.builtin { 
+   color: #1a1a1a; 
+   font-weight: bold; 
 }
 
-pre code .variable.parameter {
-   color: #666666;
-   font-style: italic;
+pre code .variable.parameter { 
+   color: #666666; 
+   font-style: italic; 
 }
 
-pre code .attribute {
-   color: #666666;
-   font-style: italic;
+pre code .attribute { 
+   color: #666666; 
+   font-style: italic; 
 }
 
 /* Dark theme syntax highlighting */
-[data-theme="dark"] pre code .keyword {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .keyword { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .type {
-   color: #cccccc;
+[data-theme="dark"] pre code .type { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .function {
-   color: #fafafa;
-   font-style: italic;
+[data-theme="dark"] pre code .function { 
+   color: #fafafa; 
+   font-style: italic; 
 }
 
-[data-theme="dark"] pre code .string {
-   color: #aaaaaa;
+[data-theme="dark"] pre code .string { 
+   color: #aaaaaa; 
 }
 
-[data-theme="dark"] pre code .comment {
-   color: #777777;
-   font-style: italic;
+[data-theme="dark"] pre code .comment { 
+   color: #777777; 
+   font-style: italic; 
 }
 
-[data-theme="dark"] pre code .variable {
-   color: #cccccc;
+[data-theme="dark"] pre code .variable { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .property {
-   color: #cccccc;
+[data-theme="dark"] pre code .property { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .constant {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .constant { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .operator {
-   color: #999999;
+[data-theme="dark"] pre code .operator { 
+   color: #999999; 
 }
 
-[data-theme="dark"] pre code .punctuation {
-   color: #999999;
+[data-theme="dark"] pre code .punctuation { 
+   color: #999999; 
 }
 
-[data-theme="dark"] pre code .number {
-   color: #cccccc;
+[data-theme="dark"] pre code .number { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .module {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .module { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .constructor {
-   color: #cccccc;
-   font-weight: bold;
+[data-theme="dark"] pre code .constructor { 
+   color: #cccccc; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .punctuation.bracket {
-   color: #cccccc;
+[data-theme="dark"] pre code .punctuation.bracket { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .punctuation.delimiter {
-   color: #999999;
+[data-theme="dark"] pre code .punctuation.delimiter { 
+   color: #999999; 
 }
 
-[data-theme="dark"] pre code .punctuation.special {
-   color: #cccccc;
+[data-theme="dark"] pre code .punctuation.special { 
+   color: #cccccc; 
 }
 
-[data-theme="dark"] pre code .string.special {
-   color: #aaaaaa;
+[data-theme="dark"] pre code .string.special { 
+   color: #aaaaaa; 
 }
 
-[data-theme="dark"] pre code .tag {
-   color: #fafafa;
+[data-theme="dark"] pre code .tag { 
+   color: #fafafa; 
 }
 
-[data-theme="dark"] pre code .type.builtin {
-   color: #cccccc;
-   font-weight: bold;
+[data-theme="dark"] pre code .type.builtin { 
+   color: #cccccc; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .function.builtin {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .function.builtin { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .constant.builtin {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .constant.builtin { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .variable.builtin {
-   color: #fafafa;
-   font-weight: bold;
+[data-theme="dark"] pre code .variable.builtin { 
+   color: #fafafa; 
+   font-weight: bold; 
 }
 
-[data-theme="dark"] pre code .variable.parameter {
-   color: #999999;
-   font-style: italic;
+[data-theme="dark"] pre code .variable.parameter { 
+   color: #999999; 
+   font-style: italic; 
 }
 
-[data-theme="dark"] pre code .attribute {
-   color: #999999;
-   font-style: italic;
+[data-theme="dark"] pre code .attribute { 
+   color: #999999; 
+   font-style: italic; 
 }
 
 .backlinks {
@@ -580,21 +542,11 @@ pre code .attribute {
    text-decoration: none;
 }
 
-.tag-size-1 {
-   font-size: 1rem;
-}
-.tag-size-2 {
-   font-size: 1.3rem;
-}
-.tag-size-3 {
-   font-size: 1.6rem;
-}
-.tag-size-4 {
-   font-size: 1.9rem;
-}
-.tag-size-5 {
-   font-size: 2.2rem;
-}
+.tag-size-1 { font-size: 1rem; }
+.tag-size-2 { font-size: 1.3rem; }
+.tag-size-3 { font-size: 1.6rem; }
+.tag-size-4 { font-size: 1.9rem; }
+.tag-size-5 { font-size: 2.2rem; }
 
 table {
    border-collapse: collapse;
@@ -618,22 +570,10 @@ table {
    white-space: pre;
 }
 
-.keyword {
-   font-weight: bold;
-}
-.type {
-   color: var(--gray);
-}
-.function {
-   font-style: italic;
-}
-.string {
-   color: var(--gray);
-}
-.comment {
-   color: var(--gray);
-   font-style: italic;
-}
-.constant {
-   font-weight: bold;
-}
+.keyword { font-weight: bold; }
+.type { color: var(--gray); }
+.function { font-style: italic; }
+.string { color: var(--gray); }
+.comment { color: var(--gray); font-style: italic; }
+.constant { font-weight: bold; }
+

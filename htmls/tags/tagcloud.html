@@ -1,54 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-   <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>tags</title>
-      <link rel="stylesheet" href="../style.css" />
-   </head>
-   <body class="tagcloud-page">
-      <aside class="outline-sidebar">
-         <div class="spacer"></div>
-         <nav class="bottom-nav">
-            <a href="../index.html">home</a>
-            <a href="tagcloud.html">tags</a>
-            <a href="../feed.xml">feed</a>
-            <a href="#" id="theme-toggle">dark</a>
-         </nav>
-      </aside>
-      <main class="main-content">
-         <h1>tag cloud</h1>
-         <div class="tag-cloud">
-            <a href="type-system.html" class="tag-size-1">type-system(1)</a>
-            <a href="type-theory.html" class="tag-size-1">type-theory(1)</a>
-            <a href="type-inference.html" class="tag-size-1"
-               >type-inference(1)</a
-            >
-            <a href="haskell.html" class="tag-size-1">haskell(1)</a>
-         </div>
-      </main>
-      <script>
-         document.addEventListener("DOMContentLoaded", function () {
-            // Theme switching
-            const themeToggle = document.getElementById("theme-toggle");
-            const html = document.documentElement;
-
-            // Load saved theme or default to light
-            const savedTheme = localStorage.getItem("theme") || "light";
-            html.setAttribute("data-theme", savedTheme);
-            themeToggle.textContent =
-               savedTheme === "light" ? "dark" : "light";
-
-            themeToggle.addEventListener("click", function (e) {
-               e.preventDefault();
-               const currentTheme = html.getAttribute("data-theme");
-               const newTheme = currentTheme === "light" ? "dark" : "light";
-               html.setAttribute("data-theme", newTheme);
-               themeToggle.textContent =
-                  newTheme === "light" ? "dark" : "light";
-               localStorage.setItem("theme", newTheme);
-            });
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>tags</title>
+   <link rel="stylesheet" href="../style.css">
+</head>
+<body class="tagcloud-page">
+   <aside class="outline-sidebar">
+      <div class="spacer"></div>
+      <nav class="bottom-nav">
+         <a href="../../index.html">home</a>
+         <a href="tagcloud.html">tags</a>
+         <a href="../feed.xml">feed</a>
+         <a href="#" id="theme-toggle">dark</a>
+      </nav>
+   </aside>
+   <main class="main-content">
+      <h1>tag cloud</h1>
+      <div class="tag-cloud">
+         <a href="type-system.html" class="tag-size-1">type-system(1)</a>
+         <a href="type-theory.html" class="tag-size-1">type-theory(1)</a>
+         <a href="type-inference.html" class="tag-size-1">type-inference(1)</a>
+         <a href="haskell.html" class="tag-size-1">haskell(1)</a>
+      </div>
+   </main>
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         // Theme switching
+         const themeToggle = document.getElementById('theme-toggle');
+         const html = document.documentElement;
+         
+         // Load saved theme or default to light
+         const savedTheme = localStorage.getItem('theme') || 'light';
+         html.setAttribute('data-theme', savedTheme);
+         themeToggle.textContent = savedTheme === 'light' ? 'dark' : 'light';
+         
+         themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
          });
-      </script>
-   </body>
+      });
+   </script>
+</body>
 </html>
