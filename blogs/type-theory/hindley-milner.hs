@@ -19,7 +19,7 @@ description = a guide to hindley-milner type system: types, unification & algori
 --
 -- the prose is divided into 3 acts: type system, substitution/unification & algow.
 
--- NOTE: full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/main/blogs/type-theory/hindley-milner.hs).
+-- NOTE: full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
 
 import           Control.Monad        ( replicateM )
 import           Control.Monad.Except
