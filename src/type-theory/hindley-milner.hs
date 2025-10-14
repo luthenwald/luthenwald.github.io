@@ -5,7 +5,6 @@ tags        = type-system, type-inference, type-theory, haskell
 description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
 -}
 
-
 -- | setup
 --
 -- a [hindley-milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) is a
@@ -17,9 +16,7 @@ description = a guide to hindley-milner type system: types, unification & algori
 -- the [most general type](https://en.wikipedia.org/wiki/Principal_type) of a given program without programmer-supplied
 -- [type annotations](https://en.wikipedia.org/wiki/Type_signature) or other hints.
 --
--- the prose is divided into 3 acts: type system, substitution/unification & algow.
-
--- NOTE: full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
+-- the prose is divided into 3 acts: type system, substitution/unification & algow. [^1]
 
 import           Control.Monad        ( replicateM )
 import           Control.Monad.Except
@@ -44,7 +41,9 @@ type TyVar = String
 
 -- ||| expressions
 --
--- the expressions to be typed are exactly those of the λcalculus extended with a let-expression.
+-- the expressions (term-level language) to be typed are exactly those of the λcalculus extended with a let-expression.
+
+-- TODO: we need to add int & string into the expr so we can get some primitive types during the inference
 
 data Expr
    = Var TyVar             -- variable         (x)
@@ -53,7 +52,7 @@ data Expr
    | Let TyVar Expr Expr   -- let-polymorphism (let x = e1 in e2)
    deriving Show
 
--- NOTE: the application is left-binding and binds stronger than abstraction or the let-in construct.
+-- the application is left-binding and binds stronger than abstraction or the let-in construct.
 
 -- ||| monotypes
 --
@@ -93,19 +92,15 @@ instance Show Mono where
 --
 -- quantifiers can only appear top level. for instance, a type `∀α.α → ∀α.α` is
 -- excluded by the syntax of types. also monotypes are included in the polytypes,
--- thus a type has the general form `∀α₁… ∀αₙ.τ`, where n ≥ 0 and τ is a monotype.
+-- thus a type has the general form `∀α₁… ∀αₙ.τ`, where n ≥ 0 and τ is a monotype. [^2]
 
 data Poly
    = Mono Mono
    | Forall [TyVar] Mono deriving Show
 
--- NOTE: there should only exist the `Forall` constructor. we explicitly add a `Mono` branch here to simplify pattern matching.
-
 -- ||| context & typing
 --
 -- to meaningfully bring together the expressions & types, a third part |context| is needed.
-
--- NOTE: and thus the trinity for type system is born.
 
 -- syntactically, a context is a map from type variables to polytypes.
 -- each item states that typevar xᵢ has the type σᵢ.
@@ -190,8 +185,6 @@ type Subst = Map.Map TyVar Mono
 
 class Substitutable a where
    apply :: Subst -> a -> a
-
--- NOTE: substitution should be applied simultaneously
 
 -- ||| apply for monotypes
 --
@@ -278,8 +271,6 @@ occursCheck v (TyFun l r) = occursCheck v l || occursCheck v r
 occursCheck _ (TyInt _)   = False
 occursCheck _ (TyStr _)   = False
 
--- NOTE: without occurs check, we could create: `α = α → β = (α → β) → β = ...`
-
 -- ||| the unification monad
 --
 -- unification can fail, so we need a monad that supports error handling:
@@ -320,9 +311,7 @@ bind v t
 
 -- ||| most general unifier (mgu)
 --
--- the mgu has the property that for any other unifier σ', there exists another unifier θ such that: `σ' = θ ∘ mgu(t1, t2)`
-
--- NOTE: mgu is analogous to the initial object in the context of category theory.
+-- the mgu has the property that for any other unifier σ', there exists another unifier θ such that: `σ' = θ ∘ mgu(t1, t2)`. [^3]
 
 -- unification proceeds by structural recursion on type shapes, with four cases:
 --
@@ -807,3 +796,10 @@ main = do
 --   ⊢                     entailment / typing judgment
 --   ---                   inference rule separator (premises above, conclusion below)
 -- ``````````````````````````````````````````````````````````````````````````````````
+
+
+{-
+^1. full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
+^2. there should only exist the `Forall` constructor. we explicitly add a `Mono` branch here to simplify pattern matching.
+^3. mgu is analogous to the initial object in the context of category theory.
+-}

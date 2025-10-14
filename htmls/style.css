@@ -60,11 +60,12 @@ p {
 
 .blog-page {
    display: grid;
-   grid-template-columns: minmax(170px, 17%) minmax(0, 1fr) minmax(250px, 25%);
+   grid-template-columns: minmax(170px, 17%) minmax(0, 1100px);
    gap: 2rem;
    padding: 2rem;
    min-height: 100vh;
    max-width: 100%;
+   justify-content: start;
 }
 
 .home-page, .tagcloud-page, .tag-page {
@@ -186,25 +187,6 @@ p {
 .blog-entry .tags {
    font-size: 0.85rem;
    color: var(--gray);
-}
-
-.sidenote {
-   font-size: 0.85rem;
-   color: var(--gray);
-   border-left: 2px solid var(--light-gray);
-   padding-left: 1rem;
-   margin-bottom: 1.5rem;
-}
-
-.sidenotes {
-   position: relative;
-   min-height: 100vh;
-}
-
-.sidenotes .sidenote {
-   position: absolute;
-   left: 0;
-   right: 0;
 }
 
 .footnote {
