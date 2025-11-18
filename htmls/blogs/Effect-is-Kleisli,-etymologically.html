@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Effect is Kleisli, etymologically</title>
+   <link rel="stylesheet" href="../style.css">
+</head>
+<body class="blog-page">
+   <aside class="outline-sidebar">
+      <nav class="outline">
+         <a href="#the-effect-type" class="h1">The Effect Type</a>
+         <a href="#the-oxford-definition-of-effect" class="h2">The Oxford Definition of Effect</a>
+         <a href="#the-effect-category" class="h1">The Effect Category</a>
+         <a href="#category-fundamentals" class="h2">Category Fundamentals</a>
+         <a href="#the-monad-constraint" class="h2">The Monad Constraint</a>
+         <a href="#proofs-of-category-laws" class="h2">Proofs of Category Laws</a>
+         <a href="#impractical-examples" class="h2">Impractical examples</a>
+         <a href="#the-effect-arrowfredy-category" class="h1">The Effect Arrow/Fredy Category</a>
+      </nav>
+      <nav class="bottom-nav">
+         <a href="../../index.html">home</a>
+         <a href="../tags/tagcloud.html">tags</a>
+         <a href="../feed.xml">feed</a>
+         <a href="#" id="theme-toggle">dark</a>
+      </nav>
+   </aside>
+   <main class="main-content">
+      <h1>Effect is Kleisli, etymologically</h1>
+      <div class="metadata">
+         <span class="date">2025-11-26</span>
+         <span class="tags"><a href="../tags/effect-system.html">effect-system</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/monad.html">monad</a>, <a href="../tags/category-theory.html">category-theory</a></span>
+      </div>
+      <div class="description">It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell. We'll further show that Monad is the constraint we need to form the valid Effect category. If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.</div>
+      <pre data-block-id="block-0"><code>
+<span class='keyword'>import</span>           <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Kind</span> <span class='punctuation bracket'>(</span> <span class='type'>Type</span> <span class='punctuation bracket'>)</span>
+
+<span class='keyword'>import</span>           <span class='module'>Prelude</span>   <span class='keyword'>hiding</span> <span class='punctuation bracket'>(</span> <span class='type'>Just</span><span class='punctuation delimiter'>,</span> <span class='type'>Maybe</span><span class='punctuation delimiter'>,</span> <span class='type'>Monad</span><span class='punctuation delimiter'>,</span> <span class='type'>Nothing</span><span class='punctuation delimiter'>,</span> <span class='type'>id</span><span class='punctuation delimiter'>,</span> <span class='type'>return</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>)</span>
+
+</code></pre>
+      <h1 id="the-effect-type" data-block-id="block-1">The Effect Type</h1>
+      <p data-block-id="block-2">When I was <a href="https://www.perplexity.ai/search/explain-what-is-effect-in-hask-TS.zYSCtRdqyUfWYX1UhWw#0">perplexitying</a> about effects in haskell, the result was disappointingly vague. A second attempt to <a href="https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0">define the effect type</a> revealed that <em>effect is defined differently with respect to every different effect system.</em></p>
+      <p data-block-id="block-3">Thus speaking, the definition of effect in the monad system is different from that in the algebriac effects system, and again different from those in other systems.</p>
+      <p data-block-id="block-4">In this post, i shall define the <code class="inlinecode">Effect</code> type in a trivial effect system: an etymological one based on the Oxford English Dictionary.</p>
+      <h2 id="the-oxford-definition-of-effect" data-block-id="block-5">The Oxford Definition of Effect</h2>
+      <p data-block-id="block-6">The Oxford Learners Dictionary <a href="https://www.oxfordlearnersdictionaries.com/definition/english/effect_1?q=effect">defines</a> <em>effect</em> as:</p>
+      <blockquote class="callout" data-block-id="block-7">a change that somebody/something causes in somebody/something else</blockquote>
+      <p data-block-id="block-8">Parsing this structurally, we have:</p>
+      <p class="l1-list" data-block-id="block-9"><em>a change</em>, or some transformation we'll call <code class="inlinecode">f</code></p>
+      <p class="l1-list" data-block-id="block-10"><em>that something</em>, or an input value of type <code class="inlinecode">a</code></p>
+      <p class="l1-list" data-block-id="block-11"><em>causes</em>, or function application <code class="inlinecode">(->)</code></p>
+      <p class="l1-list" data-block-id="block-12"><em>in something else</em>, or an output value of type <code class="inlinecode">b</code></p>
+      <p data-block-id="block-13">And the original definition can be rephrased to <code class="inlinecode">a</code> causes <code class="inlinecode">f</code> in <code class="inlinecode">b</code>, or isomorphically in haskell: <code class="inlinecode">a -> f b</code>.</p>
+      <p data-block-id="block-14">This suggests our <code class="inlinecode">Effect</code> type should be parametrised by three things: the transformation <code class="inlinecode">f</code>, the input type <code class="inlinecode">a</code>, the output type <code class="inlinecode">b</code> & is essentially a morphism <code class="inlinecode">a -> f b</code>.</p>
+      <p data-block-id="block-15">Using the <code class="inlinecode">runEffect</code> unwrapper/accessor, we can further make the semantics explict:</p>
+      <pre data-block-id="block-16"><code>
+<span class='keyword'>newtype</span> <span class='type'>Effect</span> <span class='type'>f</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>{</span> <span class='variable'>runEffect</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>f</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span>
+
+</code></pre>
+      <p data-block-id="block-17">If you are familiar with haskell, you might have noticed that the <code class="inlinecode">Effect</code> type here is exactly the traditional <code class="inlinecode">Kleisli</code> type <sup><a href="#fn-1">1</a></sup> in haskell.</p>
+      <pre data-block-id="block-18"><code>
+<span class='keyword'>newtype</span> <span class='type'>Kleisli</span> <span class='type'>m</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Kleisli</span> <span class='punctuation bracket'>{</span> <span class='variable'>runKleisli</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span>
+
+</code></pre>
+      <h1 id="the-effect-category" data-block-id="block-19">The Effect Category</h1>
+      <p data-block-id="block-20">Having defined the Effect type, i (as an amateur of category theory) naturally want to define the <code class="inlinecode">Effect</code> category.</p>
+      <h2 id="category-fundamentals" data-block-id="block-21">Category Fundamentals</h2>
+      <p data-block-id="block-22">A category consists of objects & morphisms between objects.</p>
+      <p data-block-id="block-23">To form a valid category, we need an identity morphism <code class="inlinecode">id</code> for each object & a (binary) composition operator <code class="inlinecode">.</code> for morphisms. They must satisfy three laws: <code class="inlinecode">f . id = f, id . f = f, f . (g . h) = (f . g) . h</code>.</p>
+      <p data-block-id="block-24">For convenience, we define both the <code class="inlinecode">(<=<)</code> & <code class="inlinecode">(>=>)</code> operators here, where <code class="inlinecode">(<=<)</code> is the traditional composition operator <code class="inlinecode">(.)</code> in category theory, and <code class="inlinecode">(>=>)</code> is the reverse composition operator.</p>
+      <pre data-block-id="block-25"><code>
+<span class='keyword'>class</span> <span class='type'>Category</span> <span class='punctuation bracket'>(</span><span class='type'>cat</span> <span class='operator'>::</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
+   <span class='type'>id</span>    <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>a</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span> <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>c</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span> <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>c</span>
+
+   <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span>
+
+</code></pre>
+      <h2 id="the-monad-constraint" data-block-id="block-26">The Monad Constraint</h2>
+      <p data-block-id="block-27">Note that it's the partially parametrised <code class="inlinecode">Effect f</code> that matches the kind of <code class="inlinecode">cat</code> instead of the barebones <code class="inlinecode">Effect</code> itself. Meaning we are modeling the effect of <code class="inlinecode">f</code> as a category.</p>
+      <p data-block-id="block-28">Substitute <code class="inlinecode">cat</code> with <code class="inlinecode">Effect f</code> & perform some further evaluations, we get derive the actual type of <code class="inlinecode">id</code> & <code class="inlinecode">.</code>:</p>
+      <pre class="verbatim" data-block-id="block-29"><code>id :: Effect f a a
+    = a -&gt; f a
+
+(.) :: Effect f b c -&gt; Effect f a b -&gt; Effect f a c
+     = (b -&gt; f c) -&gt; (a -&gt; f b) -&gt; (a -&gt; f c)
+</code></pre>
+      <p data-block-id="block-30">I'll use a figure to illustrate what's going on here:</p>
+<div class="insert-container" data-block-id="block-31"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Top row: a, b, c -->
+  <text x="100" y="80" class="label-text">a</text>
+  <text x="350" y="80" class="label-text">b</text>
+  <text x="600" y="80" class="label-text">c</text>
+  <!-- Bottom row: f a, f b, f c -->
+  <text x="100" y="260" class="label-text">f a</text>
+  <text x="350" y="260" class="label-text">f b</text>
+  <text x="600" y="260" class="label-text">f c</text>
+  <!-- Arrow arr1: a -> f a -->
+  <line x1="100" y1="100" x2="100" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="108" y="170" class="arrow-label" text-anchor="left">arr1</text>
+  <!-- Arrow arr2: b -> f c -->
+  <line x1="350" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="485" y="150" class="arrow-label">arr2</text>
+  <!-- Arrow arr3: a -> f b -->
+  <line x1="100" y1="100" x2="350" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="240" y="220" class="arrow-label">arr3</text>
+  <!-- Arrow arr4: a -> f c -->
+  <line x1="100" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="230" y="120" class="arrow-label">arr4</text>
+</svg>
+</div>
+      <p data-block-id="block-32">We have 6 objects <code class="inlinecode">a</code>, <code class="inlinecode">b</code>, <code class="inlinecode">c</code>, <code class="inlinecode">f a</code>, <code class="inlinecode">f b</code> & <code class="inlinecode">f c</code>. The morphisms mentioned in <code class="inlinecode">id</code> & <code class="inlinecode">(.)</code> are added to the figure. For convenience, we use <code class="inlinecode">arr1</code>, <code class="inlinecode">arr2</code>, etc. to indicate the morphisms.</p>
+      <p data-block-id="block-33">It's clear that we need to somehow combine <code class="inlinecode">arr2</code> & <code class="inlinecode">arr3</code> to form a new morphism, then make this morphism match <code class="inlinecode">arr4</code>. However, the target of arr2 doesn't match the source of arr3 or vice versa. We need to map <code class="inlinecode">arr2</code>/<code class="inlinecode">arr3</code> into a continuous morphism, connecting their target & source.</p>
+      <p data-block-id="block-34">We generally have these 2 options:</p>
+      <p class="l1-list" data-block-id="block-35">map <code class="inlinecode">arr3</code> to <code class="inlinecode">(a -> b)</code>, then compose it with <code class="inlinecode">arr2</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p>
+      <p class="l1-list" data-block-id="block-36">map <code class="inlinecode">arr2</code> to <code class="inlinecode">(f b -> f c)</code>, then compose it with <code class="inlinecode">arr3</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p>
+      <p data-block-id="block-37">According to the second law of thermodynamics, we prefer the second option. <sup><a href="#fn-2">2</a></sup></p>
+      <p data-block-id="block-38">The augmented figure below illustrates this mechanism. We use spefic names instead of abstract <code class="inlinecode">arrx</code> here to imply they are highly related to monads.</p>
+      <p class="l1-list" data-block-id="block-39">The <code class="inlinecode">return</code> arrow lifts <code class="inlinecode">a</code> to <code class="inlinecode">f a</code>, serving as the identity morphism.</p>
+      <p class="l1-list" data-block-id="block-40">The <code class="inlinecode">(=<<)</code> arrow transforms our Effect arrow <code class="inlinecode">arr2</code> (<code class="inlinecode">b -> f c</code>) into the morphism <code class="inlinecode">arr5</code> (<code class="inlinecode">f b -> f c</code>).</p>
+      <p class="l1-list" data-block-id="block-41"><code class="inlinecode">arr4</code> is then formed by composing <code class="inlinecode">arr3</code> and <code class="inlinecode">arr5</code>.</p>
+<div class="insert-container" data-block-id="block-42"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="430" viewBox="0 0 700 430">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <marker id="dashedarrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-line-dashed {
+         stroke: #666;
+         stroke-width: 1.5;
+         stroke-dasharray: 6,4;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-line-dashed {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Top row: a, b, c -->
+  <text x="100" y="80" class="label-text">a</text>
+  <text x="350" y="80" class="label-text">b</text>
+  <text x="600" y="80" class="label-text">c</text>
+  <!-- Second row: f a, f b, f c -->
+  <text x="100" y="260" class="label-text">f a</text>
+  <text x="350" y="260" class="label-text">f b</text>
+  <text x="600" y="260" class="label-text">f c</text>
+  <!-- Arrow arr1: a -> f a -->
+  <line x1="100" y1="100" x2="100" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="118" y="170" class="arrow-label" text-anchor="left">return</text>
+  <!-- Arrow arr2: b -> f c -->
+  <line x1="350" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="485" y="150" class="arrow-label">arr2</text>
+  <!-- Arrow arr3: a -> f b -->
+  <line x1="100" y1="100" x2="350" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="240" y="220" class="arrow-label">arr3</text>
+  <!-- Arrow arr4: a -> f c -->
+  <line x1="100" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="230" y="120" class="arrow-label">arr4</text>
+  <!-- Arrow arr5: f b -> f c -->
+  <line x1="370" y1="255" x2="580" y2="255" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="475" y="280" class="arrow-label">arr5</text>
+  <!-- Dashed arrow bind: from arr2 to arr5 -->
+  <line x1="475" y1="168" x2="475" y2="255" class="arrow-line-dashed" marker-end="url(#dashedarrowhead)" />
+  <text x="445" y="230" class="arrow-label">=<<</text>
+</svg>
+</div>
+      <p data-block-id="block-43">And more importantly, this is precisely the Kleisli category for monad in category theory. Every monad gives rise to a Kleisli category where:</p>
+      <p class="l1-list" data-block-id="block-44">Objects are the same as the base category (Haskell types).</p>
+      <p class="l1-list" data-block-id="block-45">Morphisms from <code class="inlinecode">a</code> to <code class="inlinecode">b</code> are functions of type <code class="inlinecode">a -> m b</code>.</p>
+      <p data-block-id="block-46">We then implement a typeclass as contraints for these two functions <code class="inlinecode">return</code> & <code class="inlinecode">=<<</code>, we call the typeclass <code class="inlinecode">Monad</code>.</p>
+      <pre data-block-id="block-47"><code>
+<span class='keyword'>class</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='keyword'>where</span>
+   <span class='type'>return</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>a</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span>  <span class='operator'>::</span> <span class='punctuation bracket'>(</span><span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='type'>m</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span>  <span class='operator'>::</span> <span class='type'>m</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span>
+
+   <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span>
+   <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span>
+
+<span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='operator'>=&gt;</span> <span class='type'>Category</span> <span class='punctuation bracket'>(</span><span class='type'>Effect</span> <span class='type'>m</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
+   <span class='type'>id</span>                        <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='type'>return</span>
+   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;=&gt;</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>g</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>g</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='variable'>x</span><span class='punctuation bracket'>)</span>
+
+</code></pre>
+      <h2 id="proofs-of-category-laws" data-block-id="block-48">Proofs of Category Laws</h2>
+      <p data-block-id="block-49">Since we've already made <code class="inlinecode">Monad</code> as constraint for <code class="inlinecode">Effect</code>, we can assume the following Monad Laws as lemmas:</p>
+      <pre class="verbatim" data-block-id="block-50"><code>1. Right Identity: m &gt;&gt;= return = m
+2. Left Identity: return x &gt;&gt;= f = f x
+3. Associativity: (m &gt;&gt;= f) &gt;&gt;= g = m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)
+</code></pre>
+      <p data-block-id="block-51">Here's the prove that the effect does form a valid category:</p>
+      <pre class="verbatim" data-block-id="block-52"><code>Right Identity: f . id = f
+Effect f . Effect return
+   = Effect (\x -&gt; return =&lt;&lt; f x)
+   = Effect (\x -&gt; f x &gt;&gt;= return)           -- definition of (=&lt;&lt;)
+   = Effect (\x -&gt; f x)                      -- Monad Right Identity
+   = Effect f
+
+Left Identity: id . f = f
+Effect return . Effect f
+   = Effect (\x -&gt; f =&lt;&lt; return x)
+   = Effect (\x -&gt; return x &gt;&gt;= f)            -- definition of (=&lt;&lt;)
+   = Effect (\x -&gt; f x)                       -- Monad Left Identity
+   = Effect f
+
+Associativity: f . (g . h) = (f . g) . h
+Effect f . (Effect g . Effect h)
+   = Effect f . Effect (\y -&gt; h =&lt;&lt; g y)
+   = Effect (\x -&gt; (\y -&gt; h =&lt;&lt; g y) =&lt;&lt; f x)
+   = Effect (\x -&gt; f x &gt;&gt;= (\y -&gt; g y &gt;&gt;= h))
+
+(Effect f . Effect g) . Effect h
+   = Effect (\x -&gt; g =&lt;&lt; f x) . Effect h
+   = Effect (\x -&gt; h =&lt;&lt; (g =&lt;&lt; f x))
+   = Effect (\x -&gt; (f x &gt;&gt;= g) &gt;&gt;= h)
+
+These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;= (\x -&gt; g x &gt;&gt;= h)
+</code></pre>
+      <p data-block-id="block-53">In other words, Monad is the constraint for the Effect type to be a category</p>
+      <p data-block-id="block-54">And i finally understand <a href="https://www.haskellforall.com/2012/12/the-continuation-monad.html">Gabriella's idea</a>.</p>
+      <blockquote class="callout" data-block-id="block-55">I firmly believe that the way to a Monads heart is through its Kleisli arrows, and if you want to study a Monads "purpose" or "motivation" you study what its Kleisli arrows do.</blockquote>
+      <h2 id="impractical-examples" data-block-id="block-56">Impractical examples</h2>
+      <p data-block-id="block-57">Let's define <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html">Maybe</a> to see how we can use the <code class="inlinecode">Effect</code> category.</p>
+      <pre data-block-id="block-58"><code>
+<span class='keyword'>data</span> <span class='type'>Maybe</span> <span class='type'>a</span> <span class='operator'>=</span> <span class='constructor'>Nothing</span> <span class='operator'>|</span> <span class='constructor'>Just</span> <span class='type'>a</span> <span class='keyword'>deriving</span> <span class='punctuation bracket'>(</span><span class='type'>Show</span><span class='punctuation bracket'>)</span>
+
+<span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>Maybe</span> <span class='keyword'>where</span>
+   <span class='type'>return</span> <span class='operator'>=</span> <span class='constructor'>Just</span>
+
+   <span class='constructor'>Nothing</span>  <span class='operator'>&gt;&gt;=</span> <span class='operator'>_</span> <span class='operator'>=</span> <span class='constructor'>Nothing</span>
+   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Just</span> <span class='type'>x</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;&gt;=</span> <span class='type'>f</span> <span class='operator'>=</span> <span class='type'>f</span> <span class='type'>x</span>
+
+</code></pre>
+      <p data-block-id="block-59">Now we can define some effects.</p>
+      <pre data-block-id="block-60"><code>
+<span class='function'><span class='function'><span class='type'>safeDiv</span> <span class='operator'>::</span> <span class='type'>Int</span> <span class='operator'>-&gt;</span> <span class='type'>Effect</span> <span class='type'>Maybe</span> <span class='type'>Int</span> <span class='type'>Int</span></span></span>
+<span class='type'>safeDiv</span> <span class='variable parameter'><span class='number'>0</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='operator'>_</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Nothing</span><span class='punctuation bracket'>)</span>
+<span class='type'>safeDiv</span> <span class='type'>y</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>`</span><span class='type'>div</span><span class='operator'>`</span> <span class='type'>y</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span>
+
+</code></pre>
+      <p data-block-id="block-61">And we can compose them using the <code class="inlinecode">Effect</code> category:</p>
+      <pre data-block-id="block-62"><code>
+<span class='type'>testSafeDiv</span> <span class='operator'>=</span> <span class='keyword'>do</span>
+   <span class='type'>print</span> <span class='operator'>$</span> <span class='type'>runEffect</span> <span class='punctuation bracket'>(</span><span class='type'>safeDiv</span> <span class='number'>2</span> <span class='operator'>&gt;=&gt;</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>+</span> <span class='number'>1</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>10</span>
+   <span class='type'>print</span> <span class='operator'>$</span> <span class='type'>runEffect</span> <span class='punctuation bracket'>(</span><span class='type'>safeDiv</span> <span class='number'>0</span> <span class='operator'>&gt;=&gt;</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>+</span> <span class='number'>1</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>10</span>
+
+</code></pre>
+      <h1 id="the-effect-arrowfredy-category" data-block-id="block-63">The Effect Arrow/Fredy Category</h1>
+      <p data-block-id="block-64">Having established that <code class="inlinecode">Effect</code> forms a valid Category (given a Monad), the next <em>natural</em> step is to see if it forms an <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Control-Arrow.html">Arrow</a>.</p>
+      <p data-block-id="block-65">It turns out we get this <em>for free</em>. Just as <code class="inlinecode">Monad</code> was the key to the Category instance, the combination of <code class="inlinecode">Category</code> and <code class="inlinecode">Monad</code> gives us everything we need to implement <code class="inlinecode">Arrow</code>.</p>
+      <pre data-block-id="block-66"><code>
+<span class='keyword'>class</span> <span class='type'>Category</span> <span class='type'>a</span> <span class='operator'>=&gt;</span> <span class='type'>Arrow</span> <span class='type'>a</span> <span class='keyword'>where</span>
+  <span class='type'>arr</span>   <span class='operator'>::</span> <span class='punctuation bracket'>(</span><span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>c</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='type'>a</span> <span class='type'>b</span> <span class='type'>c</span>
+  <span class='type'>first</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>a</span> <span class='punctuation bracket'>(</span><span class='type'>b</span><span class='punctuation delimiter'>,</span><span class='type'>d</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>(</span><span class='type'>c</span><span class='punctuation delimiter'>,</span><span class='type'>d</span><span class='punctuation bracket'>)</span>
+
+<span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='operator'>=&gt;</span> <span class='type'>Arrow</span> <span class='punctuation bracket'>(</span><span class='type'>Effect</span> <span class='type'>m</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
+   <span class='type'>arr</span> <span class='type'>f</span>            <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='type'>return</span> . <span class='type'>f</span><span class='punctuation bracket'>)</span>
+   <span class='type'>first</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='operator'>$</span> <span class='operator'>\</span><span class='variable parameter'><span class='punctuation bracket'>(</span><span class='type'>a</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span></span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>return</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='type'>a</span>
+
+</code></pre>
+      <p data-block-id="block-67">The <code class="inlinecode">arr</code> function allows us to lift any pure function into our Effect world. It essentially composes the pure function with <code class="inlinecode">return</code>.</p>
+<div class="insert-container" data-block-id="block-68"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Nodes -->
+  <text x="150" y="80" class="label-text">b</text>
+  <text x="550" y="80" class="label-text">c</text>
+  <text x="550" y="260" class="label-text">m c</text>
+
+  <!-- Arrows -->
+  <!-- f: b -> c -->
+  <line x1="170" y1="75" x2="520" y2="75" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="345" y="65" class="arrow-label">f</text>
+
+  <!-- return: c -> m c -->
+  <line x1="550" y1="95" x2="550" y2="230" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="560" y="170" class="arrow-label" text-anchor="start">return</text>
+
+  <!-- arr f: b -> m c -->
+  <line x1="160" y1="95" x2="520" y2="250" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="300" y="190" class="arrow-label">arr f</text>
+</svg>
+</div>
+      <p data-block-id="block-69">The <code class="inlinecode">first</code> function handles side effects on the first component of a tuple while passing the second through unchanged. This is where the monadic binding shines, allowing us to thread the context through the computation.</p>
+<div class="insert-container" data-block-id="block-70"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Nodes -->
+  <text x="100" y="170" class="label-text">(b, d)</text>
+  
+  <text x="250" y="100" class="label-text">b</text>
+  <text x="250" y="240" class="label-text">d</text>
+  
+  <text x="450" y="100" class="label-text">m c</text>
+  <text x="450" y="240" class="label-text">d</text>
+  
+  <text x="620" y="170" class="label-text">m (c, d)</text>
+
+  <!-- Arrows -->
+  <!-- Split -->
+  <line x1="130" y1="160" x2="230" y2="110" class="arrow-line" marker-end="url(#arrowhead)" />
+  <line x1="130" y1="180" x2="230" y2="230" class="arrow-line" marker-end="url(#arrowhead)" />
+  
+  <!-- f: b -> m c -->
+  <line x1="270" y1="100" x2="420" y2="100" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="345" y="90" class="arrow-label">f</text>
+  
+  <!-- id: d -> d -->
+  <line x1="270" y1="240" x2="420" y2="240" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="345" y="260" class="arrow-label">id</text>
+  
+  <!-- Merge -->
+  <line x1="480" y1="110" x2="580" y2="160" class="arrow-line" marker-end="url(#arrowhead)" />
+  <line x1="470" y1="230" x2="580" y2="180" class="arrow-line" marker-end="url(#arrowhead)" />
+  
+  <text x="530" y="125" class="arrow-label">bind</text>
+</svg>
+</div>
+      <div class="footnote" id="fn-1"><sup>1</sup> <a href="https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli">Kleisli definition in Control.Arrow</a></div>
+      <div class="footnote" id="fn-2"><sup>2</sup> If you <a href="https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage">search</a> <code class="inlinecode">(a -> m b) -> (a -> b)</code> on hoggle, you won't get any result.</div>
+   </main>
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         // Theme switching
+         const themeToggle = document.getElementById('theme-toggle');
+         const html = document.documentElement;
+         
+         // Load saved theme or default to light
+         const savedTheme = localStorage.getItem('theme') || 'light';
+         html.setAttribute('data-theme', savedTheme);
+         themeToggle.textContent = savedTheme === 'light' ? 'dark' : 'light';
+         
+         themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+         });
+      });
+   </script>
+</body>
+</html>

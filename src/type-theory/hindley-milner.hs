@@ -1,7 +1,7 @@
 {-
 title       = Hindley-milner type system demystified
-pubDate     = 2025-10-14
-tags        = type-system, type-inference, type-theory, haskell
+pubDate     = 2025-10-13
+tags        = hindley-milner, type-system, haskell 
 description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
 -}
 
@@ -42,8 +42,6 @@ type TyVar = String
 -- ||| expressions
 --
 -- the expressions (term-level language) to be typed are exactly those of the λcalculus extended with a let-expression.
-
--- TODO: we need to add int & string into the expr so we can get some primitive types during the inference
 
 data Expr
    = Var TyVar             -- variable         (x)
@@ -128,9 +126,9 @@ class Free a where
 --
 -- the implementation collects |all type variables| appearing in a monotype:
 --
--- = `TyVar v`: the variable itself is free → `{v}`
--- = `TyFun a b`: union of free variables from both sides → `ftv(a) ∪ ftv(b)`
--- = primitives (`TyInt`, `TyStr`): no type variables → `{}`
+-- - `TyVar v`: the variable itself is free → `{v}`
+-- - `TyFun a b`: union of free variables from both sides → `ftv(a) ∪ ftv(b)`
+-- - primitives (`TyInt`, `TyStr`): no type variables → `{}`
 --
 -- example: `ftv(α → (β → Int)) = {α, β}`
 
@@ -143,8 +141,8 @@ instance Free Mono where
 --
 -- the implementation extracts free variables by excluding those bound by ∀ quantifiers:
 --
--- = `Mono m`: no quantifiers, just delegate to monotype `ftv`
--- = `Forall vars ty`: compute `ftv(ty)` then remove quantified vars → `ftv(ty) \ vars`
+-- - `Mono m`: no quantifiers, just delegate to monotype `ftv`
+-- - `Forall vars ty`: compute `ftv(ty)` then remove quantified vars → `ftv(ty) \ vars`
 --
 -- example: `ftv(∀α.α → β) = ftv(α → β) \ {α} = {α, β} \ {α} = {β}`
 --
@@ -189,11 +187,11 @@ class Substitutable a where
 -- ||| apply for monotypes
 --
 -- the implementation recursively replaces type variables according to the substitution:
--- = `TyVar v`: look up v in substitution s
--- == if found → return mapped type
--- == if not found → return original variable (identity)
--- = `TyFun l r`: apply substitution recursively to both sides
--- = primitives: unchanged (no variables to substitute)
+-- - `TyVar v`: look up v in substitution s
+-- -- if found → return mapped type
+-- -- if not found → return original variable (identity)
+-- - `TyFun l r`: apply substitution recursively to both sides
+-- - primitives: unchanged (no variables to substitute)
 --
 -- example:
 --    `apply [α ↦ Int, β ↦ String] (α → β) = Int → String`
@@ -206,10 +204,10 @@ instance Substitutable Mono where
 -- ||| apply for polytypes
 --
 -- the implementation applies substitution while respecting quantifier scope:
--- = `Mono m`: no quantifiers, just delegates to monotype `apply`
--- = `Forall vs m`: bound variables (vs) must not be substituted
--- == remove bound variables from substitution before applying (`foldr Map.delete s vs`)
--- == this prevents capture (shadowing bound vars)
+-- - `Mono m`: no quantifiers, just delegates to monotype `apply`
+-- - `Forall vs m`: bound variables (vs) must not be substituted
+-- -- remove bound variables from substitution before applying (`foldr Map.delete s vs`)
+-- -- this prevents capture (shadowing bound vars)
 --
 -- example:
 --    `apply [α ↦ Int, β ↦ String] (∀α.α → β) = ∀α.α → String`    (α not substituted, β substituted)
@@ -239,8 +237,8 @@ instance Substitutable Context where
 --
 -- with `compose :: Subst -> Subst -> Subst`,
 -- we formulate a monoid for `Subst` where:
--- = identity element is the empty substitution []
--- = associative binary operation is compose (∘)
+-- - identity element is the empty substitution []
+-- - associative binary operation is compose (∘)
 --
 -- specifically, `compose s1 s2` applies s1 "after" s2, i.e. `(s1 ∘ s2)(α) = s1(s2(α))`.
 -- right substitution (s2) is applied first, then left (s1) refines the result.
@@ -281,8 +279,8 @@ occursCheck _ (TyStr _)   = False
 -- = occurs check failure: would create infinite types (α vs α → β)
 --
 -- the Except monad gives us:
--- = automatic error propagation (if any step fails, whole computation fails)
--- = explicit error messages via `throwError`
+-- - automatic error propagation (if any step fails, whole computation fails)
+-- - explicit error messages via `throwError`
 
 type UnifyM = Except String
 
@@ -291,9 +289,9 @@ type UnifyM = Except String
 -- the `bind` function creates a minimal substitution (`[v ↦ t]`) from a typevar v to a monotype t, but only if it's safe.
 --
 -- three cases could happen:
--- = reflexive: `t == TyVar v` → return `[]` (identity, maximally general)
--- = occurs: v occurs in t → error (would create infinite type)
--- = valid: v doesn't occur in t → return `[v ↦ t]` (minimal binding)
+-- - reflexive: `t == TyVar v` → return `[]` (identity, maximally general)
+-- - occurs: v occurs in t → error (would create infinite type)
+-- - valid: v doesn't occur in t → return `[v ↦ t]` (minimal binding)
 --
 -- the occurs check is essential: without it, unifying α with `(α → β)`
 -- would create an infinite type: `α = α → β = (α → β) → β = ...`
@@ -343,8 +341,8 @@ bind v t
 --
 -- concrete types must match exactly. no variables to solve, so:
 --
--- = identical types return empty substitution `[]` (types already equal)
--- = different types return error (incompatible)
+-- - identical types return empty substitution `[]` (types already equal)
+-- - different types return error (incompatible)
 --
 -- ``````````````````````````````````````````````````````````````````````````````````
 -- example 1: unify Int Int
@@ -360,10 +358,10 @@ bind v t
 -- |||| case 3: function types
 --
 -- the unification structurally decomposes and recursively unifys components:
--- = unify left sides: `s1 = unify l1 l2`
--- = apply s1 to right sides before unifying them (propagate constraints)
--- = unify rights: `s2 = unify (s1 r1) (s1 r2)`
--- = compose: return `s2 ∘ s1`
+-- - unify left sides: `s1 = unify l1 l2`
+-- - apply s1 to right sides before unifying them (propagate constraints)
+-- - unify rights: `s2 = unify (s1 r1) (s1 r2)`
+-- - compose: return `s2 ∘ s1`
 --
 -- ``````````````````````````````````````````````````````````````````````````````````
 -- example 1: unify (α → β) (Int → String)
@@ -428,22 +426,22 @@ unify t1 t2 =
 -- is a sound & complete type inference algorithm for the hm type system.
 --
 -- given a context and an expression, it either:
--- = succeeds: returns a substitution and the inferred type
--- = fails: returns an error message
+-- - succeeds: returns a substitution and the inferred type
+-- - fails: returns an error message
 
 -- || inference monad
 --
 -- type inference needs two computational effects:
--- = fresh variable generation: to create new type variables during inference
--- = error handling: to report type errors
+-- - fresh variable generation: to create new type variables during inference
+-- - error handling: to report type errors
 --
 -- the `InferM = ExceptT String (State Int)` monad combines both:
--- = `State Int`: maintains a counter for generating unique type variables (t0, t1, t2, ...)
--- = `ExceptT String`: wraps State to add error handling
+-- - `State Int`: maintains a counter for generating unique type variables (t0, t1, t2, ...)
+-- - `ExceptT String`: wraps State to add error handling
 --
 -- this gives us access to:
--- = `fresh`: generates new type variables
--- = `throwError`: reports type errors
+-- - `fresh`: generates new type variables
+-- - `throwError`: reports type errors
 
 type InferM = ExceptT String (State Int)
 --            ^^^^^^^^^^^^^^ ^^^^^^^^^^^
@@ -462,8 +460,8 @@ liftUnify a b = liftEither (runExcept (unify a b))
 -- we need to generate unique type variables: `t0, t1, t2, ...` during a type inference process.
 --
 -- this is used when:
--- = inferring function application: need a fresh result type
--- = inferring abstraction: parameter type is initially unknown
+-- - inferring function application: need a fresh result type
+-- - inferring abstraction: parameter type is initially unknown
 
 fresh :: InferM TyVar
 fresh = do
@@ -501,9 +499,9 @@ generalize ctx t =
 -- by the means of fresh variables, each use of a polymorphic value gets independent types.
 --
 -- example: `let id = λx.x in (id 5, id "hi")`
--- = first use: `instantiate (∀α.α → α) → t0 → t0`, then unify t0 with Int
--- = second use: `instantiate (∀α.α → α) → t1 → t1`, then unify t1 with String
--- = if we reused the same α, the two uses would conflict.
+-- - first use: `instantiate (∀α.α → α) → t0 → t0`, then unify t0 with Int
+-- - second use: `instantiate (∀α.α → α) → t1 → t1`, then unify t1 with String
+-- - if we reused the same α, the two uses would conflict.
 
 -- examples:
 -- instantiate (∀α.α → α)      → t0 → t0   (fresh t0)
@@ -522,8 +520,8 @@ instantiate (Forall vars m) = do
 -- `inferW :: Context -> Expr -> InferM (Subst, Mono)`
 --
 -- given a context Γ and an expression e, the inference algo returns (both):
--- = substitution s: constraints discovered during inference
--- = monotype t: the inferred type
+-- - substitution s: constraints discovered during inference
+-- - monotype t: the inferred type
 --
 -- essentially, the algorithm implements these four typing rules:
 --

@@ -23,7 +23,7 @@
 
 body {
    font-family: var(--font-serif);
-   font-size: 16px;
+   font-size: 14px;
    line-height: 1.6;
    color: var(--fg);
    background: var(--bg);
@@ -58,9 +58,9 @@ p {
    white-space: pre-wrap;
 }
 
-.blog-page {
+.blog-page, .home-page, .tagcloud-page, .tag-page {
    display: grid;
-   grid-template-columns: minmax(170px, 17%) minmax(0, 1100px);
+   grid-template-columns: minmax(170px, 17%) minmax(0, 70%);
    gap: 2rem;
    padding: 2rem;
    min-height: 100vh;
@@ -68,13 +68,10 @@ p {
    justify-content: start;
 }
 
-.home-page, .tagcloud-page, .tag-page {
-   display: grid;
-   grid-template-columns: minmax(170px, 17%) minmax(0, 1fr);
-   gap: 2rem;
-   padding: 2rem;
-   min-height: 100vh;
-   max-width: 100%;
+@media (max-width: 800px) {
+   .blog-page, .home-page, .tagcloud-page, .tag-page {
+      grid-template-columns: 17% 83%;
+   }
 }
 
 .outline-sidebar {
@@ -229,6 +226,15 @@ p {
    font-size: 1em;
 }
 
+blockquote.callout {
+   margin: 1.5rem 0;
+   padding: 1rem 1.5rem;
+   border-left: 2px solid var(--light-gray);
+   color: var(--gray);
+   font-style: italic;
+   background: var(--bg);
+}
+
 .highlight {
    background: var(--light-gray);
    padding: 0.1rem 0.3rem;
@@ -242,7 +248,7 @@ code.inlinecode {
 }
 
 pre {
-   background: var(--light-gray);
+   background: var(--bg);
    border: 1px solid var(--light-gray);
    border-radius: 4px;
    padding: 1rem;
@@ -254,7 +260,6 @@ pre {
 }
 
 pre code {
-   background: none;
    padding: 0;
    border: none;
    font-family: inherit;
@@ -263,7 +268,6 @@ pre code {
 }
 
 pre.verbatim {
-   background: var(--bg);
    border: 2px solid var(--light-gray);
    border-radius: 0;
    padding: 1.5rem;
@@ -559,3 +563,13 @@ table {
 .comment { color: var(--gray); font-style: italic; }
 .constant { font-weight: bold; }
 
+img, svg {
+   max-width: 100%;
+   height: auto;
+}
+
+.insert-container {
+   width: 100%;
+   margin: 1rem 0;
+   overflow-x: auto;
+}

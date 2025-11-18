@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Nodes -->
+  <text x="150" y="80" class="label-text">b</text>
+  <text x="550" y="80" class="label-text">c</text>
+  <text x="550" y="260" class="label-text">m c</text>
+
+  <!-- Arrows -->
+  <!-- f: b -> c -->
+  <line x1="170" y1="75" x2="520" y2="75" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="345" y="65" class="arrow-label">f</text>
+
+  <!-- return: c -> m c -->
+  <line x1="550" y1="95" x2="550" y2="230" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="560" y="170" class="arrow-label" text-anchor="start">return</text>
+
+  <!-- arr f: b -> m c -->
+  <line x1="160" y1="95" x2="520" y2="250" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="300" y="190" class="arrow-label">arr f</text>
+</svg>

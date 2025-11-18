@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+  <defs>
+   <marker id="arrowhead" markerWidth="10" markerHeight="6"
+     refX="10" refY="3" orient="auto">
+     <polygon points="0 0, 10 3, 0 6" class="arrow-fill"/>
+   </marker>
+   <style type="text/css">
+     <![CDATA[
+       .label-text {
+         font-family: Georgia, 'Times New Roman', serif;
+         font-size: 24px;
+         fill: #1a1a1a;
+         text-anchor: middle;
+         font-style: italic;
+       }
+       .arrow-label {
+         font-family: 'Iosevka Nerd Font Mono', 'Iosevka', 'Courier New', monospace;
+         font-size: 18px;
+         fill: #666;
+         text-anchor: middle;
+       }
+       .arrow-line {
+         stroke: #666;
+         stroke-width: 1.5;
+         fill: none;
+       }
+       .arrow-fill {
+         fill: #666;
+       }
+       @media (prefers-color-scheme: dark) {
+         .label-text {
+           fill: #fafafa;
+         }
+         .arrow-label {
+           fill: #aaa;
+         }
+         .arrow-line {
+           stroke: #aaa;
+         }
+         .arrow-fill {
+           fill: #aaa;
+         }
+       }
+     ]]>
+   </style>
+  </defs>
+  <!-- Top row: a, b, c -->
+  <text x="100" y="80" class="label-text">a</text>
+  <text x="350" y="80" class="label-text">b</text>
+  <text x="600" y="80" class="label-text">c</text>
+  <!-- Bottom row: f a, f b, f c -->
+  <text x="100" y="260" class="label-text">f a</text>
+  <text x="350" y="260" class="label-text">f b</text>
+  <text x="600" y="260" class="label-text">f c</text>
+  <!-- Arrow arr1: a -> f a -->
+  <line x1="100" y1="100" x2="100" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="108" y="170" class="arrow-label" text-anchor="left">arr1</text>
+  <!-- Arrow arr2: b -> f c -->
+  <line x1="350" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="485" y="150" class="arrow-label">arr2</text>
+  <!-- Arrow arr3: a -> f b -->
+  <line x1="100" y1="100" x2="350" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="240" y="220" class="arrow-label">arr3</text>
+  <!-- Arrow arr4: a -> f c -->
+  <line x1="100" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
+  <text x="230" y="120" class="arrow-label">arr4</text>
+</svg>
