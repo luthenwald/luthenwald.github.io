@@ -18,7 +18,7 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 -- [define the effect type](https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0)
 -- revealed that *effect is defined differently with respect to every different effect system.*
 --
--- Thus speaking, the definition of effect in the monad system is different from that in the algebriac effects system,
+-- Thus speaking, the definition of effect in the monad system is different from that in the algebraic effects system,
 -- and again different from those in other systems.
 --
 -- In this post, i shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary.
@@ -30,19 +30,19 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 -- > a change that somebody/something causes in somebody/something else
 --
 -- Parsing this structurally, we have:
--- - *a change*, or some transformation we'll call `f`
+-- - *a change*, or some transformation we'll call `m`
 -- - *that something*, or an input value of type `a`
 -- - *causes*, or function application `(->)`
 -- - *in something else*, or an output value of type `b`
 --
--- And the original definition can be rephrased to `a` causes `f` in `b`, or isomorphically in haskell: `a -> f b`.
+-- And the original definition can be rephrased to `a` causes `m` in `b`, or isomorphically in haskell: `a -> m b`.
 --
 -- This suggests our `Effect` type should be parametrised by three things:
--- the transformation `f`, the input type `a`, the output type `b` & is essentially a morphism `a -> f b`.
+-- the transformation `m`, the input type `a`, the output type `b` & is essentially a morphism `a -> m b`.
 --
--- Using the `runEffect` unwrapper/accessor, we can further make the semantics explict:
+-- Using the `runEffect` unwrapper/accessor, we can further make the semantics explicit:
 
-newtype Effect f a b = Effect { runEffect :: a -> f b }
+newtype Effect m a b = Effect { runEffect :: a -> m b }
 
 -- If you are familiar with haskell, you might have noticed that the `Effect` type here is exactly the traditional `Kleisli` type [^1] in haskell.
 
@@ -72,24 +72,24 @@ class Category (cat :: Type -> Type -> Type) where
 
 -- || The Monad Constraint
 --
--- Note that it's the partially parametrised `Effect f` that matches the kind of `cat` instead of the barebones `Effect` itself.
--- Meaning we are modeling the effect of `f` as a category.
+-- Note that it's the partially parametrised `Effect m` that matches the kind of `cat` instead of the barebones `Effect` itself.
+-- Meaning we are modeling the effect of `m` as a category.
 --
--- Substitute `cat` with `Effect f` & perform some further evaluations, we get derive the actual type of `id` & `.`:
+-- Substitute `cat` with `Effect m` & perform some further evaluations, we derive the actual type of `id` & `.`:
 --
 -- ``````````````````````````````````````````````````````````````````````````````````
--- id :: Effect f a a
---     = a -> f a
+-- id :: Effect m a a
+--     = a -> m a
 --
--- (.) :: Effect f b c -> Effect f a b -> Effect f a c
---      = (b -> f c) -> (a -> f b) -> (a -> f c)
+-- (.) :: Effect m b c -> Effect m a b -> Effect m a c
+--      = (b -> m c) -> (a -> m b) -> (a -> m c)
 -- ``````````````````````````````````````````````````````````````````````````````````
 --
 -- I'll use a figure to illustrate what's going on here:
 --
 -- @insert fig01.svg
 --
--- We have 6 objects `a`, `b`, `c`, `f a`, `f b` & `f c`. The morphisms mentioned in `id` & `(.)` are added to the figure.
+-- We have 6 objects `a`, `b`, `c`, `m a`, `m b` & `m c`. The morphisms mentioned in `id` & `(.)` are added to the figure.
 -- For convenience, we use `arr1`, `arr2`, etc. to indicate the morphisms.
 --
 -- It's clear that we need to somehow combine `arr2` & `arr3` to form a new morphism, then make this morphism match `arr4`.
@@ -98,15 +98,15 @@ class Category (cat :: Type -> Type -> Type) where
 --
 -- We generally have these 2 options:
 -- - map `arr3` to `(a -> b)`, then compose it with `arr2` to form a new morphism, which is `arr4`.
--- - map `arr2` to `(f b -> f c)`, then compose it with `arr3` to form a new morphism, which is `arr4`.
+-- - map `arr2` to `(m b -> m c)`, then compose it with `arr3` to form a new morphism, which is `arr4`.
 --
--- According to the second law of thermodynamics, we prefer the second option. [^2]
+-- According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). [^2]
 --
--- The augmented figure below illustrates this mechanism. We use spefic names instead of abstract `arrx` here to imply
+-- The augmented figure below illustrates this mechanism. We use specific names instead of abstract `arrx` here to imply
 -- they are highly related to monads.
 --
--- - The `return` arrow lifts `a` to `f a`, serving as the identity morphism.
--- - The `(=<<)` arrow transforms our Effect arrow `arr2` (`b -> f c`) into the morphism `arr5` (`f b -> f c`).
+-- - The `return` arrow lifts `a` to `m a`, serving as the identity morphism.
+-- - The `(=<<)` arrow transforms our Effect arrow `arr2` (`b -> m c`) into the morphism `arr5` (`m b -> m c`).
 -- - `arr4` is then formed by composing `arr3` and `arr5`.
 --
 -- @insert fig02.svg
@@ -116,7 +116,7 @@ class Category (cat :: Type -> Type -> Type) where
 -- - Objects are the same as the base category (Haskell types).
 -- - Morphisms from `a` to `b` are functions of type `a -> m b`.
 --
--- We then implement a typeclass as contraints for these two functions `return` & `=<<`, we call the typeclass `Monad`.
+-- We then implement a typeclass as constraint for these two functions `return` & `=<<`, we call the typeclass `Monad`.
 
 class Monad m where
    return :: a -> m a
@@ -140,7 +140,7 @@ instance Monad m => Category (Effect m) where
 -- 3. Associativity: (m >>= f) >>= g = m >>= (\x -> f x >>= g)
 -- ``````````````````````````````````````````````````````````````````````````````````
 --
--- Here's the prove that the effect does form a valid category:
+-- Here's the proof that the effect does form a valid category:
 --
 -- ``````````````````````````````````````````````````````````````````````````````````
 -- Right Identity: f . id = f
@@ -177,7 +177,7 @@ instance Monad m => Category (Effect m) where
 --
 -- > I firmly believe that the way to a Monads heart is through its Kleisli arrows, and if you want to study a Monads "purpose" or "motivation"
 --   you study what its Kleisli arrows do.
- 
+
 -- || Impractical examples
 --
 -- Let's define [Maybe](https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html)
@@ -199,11 +199,12 @@ safeDiv y = Effect (\x -> Just (x `div` y))
 
 -- And we can compose them using the `Effect` category:
 
+testSafeDiv :: IO ()
 testSafeDiv = do
    print $ runEffect (safeDiv 2 >=> Effect (\x -> Just (x + 1))) 10
    print $ runEffect (safeDiv 0 >=> Effect (\x -> Just (x + 1))) 10
 
--- | The Effect Arrow/Fredy Category
+-- | The Effect Arrow/Freyd Category
 --
 -- Having established that `Effect` forms a valid Category (given a Monad), the next *natural* step is to see if
 -- it forms an [Arrow](https://hackage.haskell.org/package/base-4.21.0.0/docs/Control-Arrow.html).
@@ -231,5 +232,5 @@ instance Monad m => Arrow (Effect m) where
 {-
 ^1. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
 ^2. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
-    `(a -> m b) -> (a -> b)` on hoggle, you won't get any result.
+    `(a -> m b) -> (a -> b)` on Hoogle, you won't get any result.
 -}
