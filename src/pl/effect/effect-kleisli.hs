@@ -1,7 +1,7 @@
 {-
 title       = Effect is Kleisli, etymologically
 pubDate     = 2025-11-26
-tags        = effect-system, haskell, monad, category-theory
+tags        = effect-system, haskell, monad
 description = It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell.
               We'll further show that Monad is the constraint we need to form the valid Effect category.
               If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.
@@ -18,10 +18,11 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 -- [define the effect type](https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0)
 -- revealed that *effect is defined differently with respect to every different effect system.*
 --
--- Thus speaking, the definition of effect in the monad system is different from that in the algebraic effects system,
--- and again different from those in other systems.
+-- Thus speaking, the (precise) definition of effect in [freer-simple](https://hackage.haskell.org/package/freer-simple-1.2.1.2/docs/Control-Monad-Freer.html#g:1)
+-- is different from that in [heftia](https://hackage-content.haskell.org/package/data-effects-core-0.4.2.0/docs/Data-Effect.html#t:Effect),
+-- and again different from those in other effect systems.
 --
--- In this post, i shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary.
+-- In this post, i shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary. [^1]
 --
 -- || The Oxford Definition of Effect
 --
@@ -44,7 +45,7 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 
 newtype Effect m a b = Effect { runEffect :: a -> m b }
 
--- If you are familiar with haskell, you might have noticed that the `Effect` type here is exactly the traditional `Kleisli` type [^1] in haskell.
+-- If you are familiar with haskell, you might have noticed that the `Effect` type here is exactly the traditional `Kleisli` type [^2] in haskell.
 
 newtype Kleisli m a b = Kleisli { runKleisli :: a -> m b }
 
@@ -100,7 +101,7 @@ class Category (cat :: Type -> Type -> Type) where
 -- - map `arr3` to `(a -> b)`, then compose it with `arr2` to form a new morphism, which is `arr4`.
 -- - map `arr2` to `(m b -> m c)`, then compose it with `arr3` to form a new morphism, which is `arr4`.
 --
--- According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). [^2]
+-- According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). [^3]
 --
 -- The augmented figure below illustrates this mechanism. We use specific names instead of abstract `arrx` here to imply
 -- they are highly related to monads.
@@ -171,17 +172,16 @@ instance Monad m => Category (Effect m) where
 -- These are equal by Monad Associativity: (m >>= g) >>= h = m >>= (\x -> g x >>= h)
 -- ``````````````````````````````````````````````````````````````````````````````````
 --
--- In other words, Monad is the constraint for the Effect type to be a category
+-- In other words, Monad is the constraint for the Effect type to be a category.
 --
 -- And i finally understand [Gabriella's idea](https://www.haskellforall.com/2012/12/the-continuation-monad.html).
 --
 -- > I firmly believe that the way to a Monads heart is through its Kleisli arrows, and if you want to study a Monads "purpose" or "motivation"
 --   you study what its Kleisli arrows do.
 
--- || Impractical examples
+-- || Maybe, an Impractical Example
 --
--- Let's define [Maybe](https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html)
--- to see how we can use the `Effect` category.
+-- Let's define the [Maybe](https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html) datatype to see how we can use the `Effect` category.
 
 data Maybe a = Nothing | Just a deriving (Show)
 
@@ -204,7 +204,7 @@ testSafeDiv = do
    print $ runEffect (safeDiv 2 >=> Effect (\x -> Just (x + 1))) 10
    print $ runEffect (safeDiv 0 >=> Effect (\x -> Just (x + 1))) 10
 
--- | The Effect Arrow/Freyd Category
+-- | The Effect Arrow
 --
 -- Having established that `Effect` forms a valid Category (given a Monad), the next *natural* step is to see if
 -- it forms an [Arrow](https://hackage.haskell.org/package/base-4.21.0.0/docs/Control-Arrow.html).
@@ -230,7 +230,8 @@ instance Monad m => Arrow (Effect m) where
 -- @insert fig04.svg
 
 {-
-^1. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
-^2. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
+^1. View the src of this post [here](https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs)
+^2. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
+^3. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
     `(a -> m b) -> (a -> b)` on Hoogle, you won't get any result.
 -}

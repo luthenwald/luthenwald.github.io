@@ -49,9 +49,9 @@
   <text x="350" y="80" class="label-text">b</text>
   <text x="600" y="80" class="label-text">c</text>
   <!-- Bottom row: f a, f b, f c -->
-  <text x="100" y="260" class="label-text">f a</text>
-  <text x="350" y="260" class="label-text">f b</text>
-  <text x="600" y="260" class="label-text">f c</text>
+  <text x="100" y="260" class="label-text">m a</text>
+  <text x="350" y="260" class="label-text">m b</text>
+  <text x="600" y="260" class="label-text">m c</text>
   <!-- Arrow arr1: a -> f a -->
   <line x1="100" y1="100" x2="100" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="108" y="170" class="arrow-label" text-anchor="left">arr1</text>
