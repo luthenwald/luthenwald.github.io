@@ -1,7 +1,7 @@
 {-
 title       = Effect is Kleisli, etymologically
 pubDate     = 2025-11-26
-tags        = effect-system, haskell, monad
+tags        = effect-system, haskell, monad, 2025
 description = It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell.
               We'll further show that Monad is the constraint we need to form the valid Effect category.
               If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.

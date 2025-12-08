@@ -1,7 +1,7 @@
 {-
 title       = Hindley-milner type system demystified
 pubDate     = 2025-10-13
-tags        = hindley-milner, type-system, haskell
+tags        = haskell, hindley-milner, type-system, 2025
 description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
 -}
 

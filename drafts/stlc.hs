@@ -1,7 +1,7 @@
 {-
 title       = Simply-typed λcalculus, the allmother of type system.
 pubDate     = 2025-11-30
-tags        = λcalculus, haskell
+tags        = λcalculus, racket, 2025
 description = stlc is the canonical & simplest example of a typed lambda calculus.
 -}
 
