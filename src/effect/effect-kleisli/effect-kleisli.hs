@@ -18,7 +18,8 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 -- [define the effect type](https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0)
 -- revealed that *effect is defined differently with respect to every different effect system.*
 --
--- Thus speaking, the (precise) definition of effect in [freer-simple](https://hackage.haskell.org/package/freer-simple-1.2.1.2/docs/Control-Monad-Freer.html#g:1)
+-- Thus speaking, the (precise) definition of effect in
+-- [freer-simple](https://hackage.haskell.org/package/freer-simple-1.2.1.2/docs/Control-Monad-Freer.html#g:1)
 -- is different from that in [heftia](https://hackage-content.haskell.org/package/data-effects-core-0.4.2.0/docs/Data-Effect.html#t:Effect),
 -- and again different from those in other effect systems.
 --
