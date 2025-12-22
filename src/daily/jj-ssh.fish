@@ -1,15 +1,17 @@
 # title       = Setting up jjvcs collaboration between local machines via ssh
-# pubDate     = 2025-12-21
-# tags        = jjvcs, ssh, workflow
-# description = About how i collaborate between 2 <laptops|identities|personae> using jjvcs & ssh without hosting services.
+# pubDate     = 2025-12-22
+# tags        = fish, jjvcs, ssh, workflow, 2025
+# description = About how i collaborate between 2 ⟅laptops|identities|personae⟆ using jjvcs & ssh without hosting services.
 
 # | Introduxion
 # 
-# This blog provides instruxions for using [jjvcs] to collaborate between two laptops (|host| and |guest|) over [ssh], without
-# relying on github or similar hosting services. Essentially this approach should apply to any number of local machines.
+# This blog provides instruxions for using [jjvcs](https://www.jj-vcs.dev/latest/) to collaborate between two laptops (|host| and |guest|)
+# over [ssh](https://en.wikipedia.org/wiki/Secure_Shell), without relying on github or similar hosting services. Essentially this approach
+# should apply to any number of local machines.
 # 
-# Note that this blog is targeted at macos. It relies on [mDNS] to announces a machine's hostname and ip via multicast dns on every
-# network it joins, so other machines can automatically resolve `.local` hostnames without manual dns configuration. 
+# Note that this blog is targeted at macos. It relies on [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) to announces a machine's
+# hostname and ip via multicast dns on every network it joins, so other machines can automatically resolve `.local` hostnames without
+# manual dns configuration. 
 # 
 # We use |(host/guest)| to indicate the commands in this section shall be run on the host/guest laptop.
 # 
@@ -52,6 +54,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 ssh-copy-id username@host.local
 
 # || Test the connection (guest)
+
 ssh username@host.local
 
 # Note that you don't need to ssh into the host in the following steps.
@@ -85,11 +88,11 @@ mkdir -p ~/remotes && cd ~/remotes && git init --bare jjssh.git
 # We can now add the bare repo as origin push the bookmark to it:
 
 cd ~/dev/jjssh && jj git remote add origin ~/remotes/jjssh.git
-jj bookmark t main@origin && jj git push -b main
+jj bookmark t main@origin && jj git push -b main --remote origin
+
+# The workflow should henceforth be analogous to that in normal jj.
 
 # || Clone the bare repo (guest)
-#
-# Then the workflow should be analogous to that in normal jj.
 
 cd ~/dev && jj git clone --colocate ssh://username@host.local/~/remotes/jjssh.git jjssh
 
@@ -97,13 +100,13 @@ cd ~/dev && jj git clone --colocate ssh://username@host.local/~/remotes/jjssh.gi
 
 cd ~/dev/jjssh && jj new main@origin
 echo "changes from guest" >>readme && jj ci -m "changes from guest"
-jj bookmark s guest -r @- && jj bookmark t guest@origin && jj git push -b guest
+jj bookmark s guest -r @- && jj bookmark t guest@origin && jj git push -b guest --remote origin
 
 # || Fetch commits (host)
 
-cd ~/dev/jjssh && jj git fetch
+cd ~/dev/jjssh && jj git fetch --remote origin
 
-# | My shortcut, a jj-init function to automate the project setup
+# | My shortcut, a jjinit function to automate the project setup
 
 function jjinit
     set project_name $argv[1]
@@ -120,7 +123,3 @@ function jjinit
 
     jj git remote add origin $remote_dir
 end
-
-# @jjvcs https://www.jj-vcs.dev/latest/
-# @ssh   https://en.wikipedia.org/wiki/Secure_Shell
-# @mDNS  https://en.wikipedia.org/wiki/Multicast_DNS
