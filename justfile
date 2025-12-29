@@ -2,7 +2,7 @@
    just -l
 
 b:
-   ~/dev/lumen/zig-out/bin/lumen build src/ ./ luthenwald.github.io
+   ~/dev/lacuna/zig-out/bin/lacuna build src/ ./ luthenwald.github.io
 
 preview:
    open ./index.html

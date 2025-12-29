@@ -529,13 +529,8 @@ pre code .attribute {
 
 .tag-cloud a {
    text-decoration: none;
+   font-size: 1rem;
 }
-
-.tag-size-1 { font-size: 1rem; }
-.tag-size-2 { font-size: 1.3rem; }
-.tag-size-3 { font-size: 1.6rem; }
-.tag-size-4 { font-size: 1.9rem; }
-.tag-size-5 { font-size: 2.2rem; }
 
 table {
    border-collapse: collapse;
