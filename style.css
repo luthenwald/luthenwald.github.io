@@ -3,8 +3,8 @@
    --fg: #1a1a1a;
    --gray: #6a6a6a;
    --light-gray: #d5d5d5;
-   --font-serif: 'Athelas', serif;
-   --font-mono: 'Iosevka Nerd Font Mono', monospace;
+   --font-serif: serif;
+   --font-mono: monospace;
    --spacing: 1.5rem;
 }
 
@@ -24,7 +24,7 @@
 body {
    font-family: var(--font-serif);
    font-size: 16px;
-   line-height: 1.4;
+   line-height: 1.5;
    color: var(--fg);
    background: var(--bg);
 }
@@ -45,12 +45,9 @@ h1, h2, h3, h4, h5, h6 {
    margin-bottom: 0.75rem;
 }
 
-h1 { font-size: 2rem; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.1rem; }
-h5 { font-size: 1rem; }
-h6 { font-size: 0.9rem; }
+h1 { font-size: 2rem; font-weight: bold; }
+h2 { font-size: 1.67rem; }
+h3 { font-size: 1.33em; }
 
 p {
    margin-bottom: 1.2rem;
@@ -59,12 +56,13 @@ p {
 
 .blog-page, .home-page, .tagcloud-page, .tag-page {
    display: grid;
-   grid-template-columns: minmax(170px, 17%) minmax(0, 75%);
+   grid-template-columns: 20% 80%;
    gap: 2rem;
    padding: 2rem;
    min-height: 100vh;
-   max-width: 100%;
+   width: min(100%, 1000px);
    justify-content: start;
+   margin-inline: auto;
 }
 
 .outline-sidebar {
@@ -88,12 +86,9 @@ p {
    font-size: 0.9rem;
 }
 
-.outline .h1 { padding-left: 0; font-size: 0.85rem; }
+.outline .h1 { padding-left: 0; font-size: 0.85rem; font-weight: bold; }
 .outline .h2 { padding-left: 1rem; font-size: 0.8rem; }
 .outline .h3 { padding-left: 1.5rem; font-size: 0.75rem; }
-.outline .h4 { padding-left: 2rem; font-size: 0.7rem; }
-.outline .h5 { padding-left: 2.5rem; font-size: 0.65rem; }
-.outline .h6 { padding-left: 3rem; font-size: 0.6rem; }
 
 .outline-sidebar .bottom-nav {
    display: flex;
@@ -145,7 +140,8 @@ p {
 }
 
 .main-content {
-   width: 100%;
+  margin-inline: auto;
+  width: 720px;
 }
 
 .metadata {
@@ -208,29 +204,29 @@ p {
    position: relative;
 }
 
-.l1-list::before { 
-   content: "•"; 
+.l1-list::before {
+   content: "•";
    color: var(--gray);
    font-weight: normal;
-   margin-right: 0.5rem; 
+   margin-right: 0.5rem;
    font-size: 0.9em;
    opacity: 0.6;
 }
 
-.l2-list::before { 
-   content: "◦"; 
+.l2-list::before {
+   content: "◦";
    color: var(--gray);
-   margin-right: 0.5rem; 
-   margin-left: 1.5rem; 
+   margin-right: 0.5rem;
+   margin-left: 1.5rem;
    font-size: 0.85em;
    opacity: 0.5;
 }
 
-.l3-list::before { 
-   content: "▪"; 
+.l3-list::before {
+   content: "▪";
    color: var(--gray);
-   margin-right: 0.5rem; 
-   margin-left: 3rem; 
+   margin-right: 0.5rem;
+   margin-left: 3rem;
    font-size: 0.8em;
    opacity: 0.4;
 }
@@ -286,219 +282,219 @@ pre.verbatim code {
    color: var(--fg);
 }
 
-pre code .keyword { 
-   color: #000000; 
-   font-weight: bold; 
+pre code .keyword {
+   color: #000000;
+   font-weight: bold;
 }
 
-pre code .type { 
+pre code .type {
    color: #303030;
    font-style: italic;
 }
 
-pre code .function { 
-   color: #101010; 
+pre code .function {
+   color: #101010;
 }
 
-pre code .string { 
-   color: #606060; 
+pre code .string {
+   color: #606060;
 }
 
-pre code .comment { 
-   color: #a0a0a0; 
-   font-style: italic; 
-}
-
-pre code .variable { 
-   color: #404040; 
-}
-
-pre code .property { 
-   color: #505050; 
-}
-
-pre code .constant { 
-   color: #181818; 
-   font-weight: bold; 
-}
-
-pre code .operator { 
-   color: #707070; 
-}
-
-pre code .punctuation { 
-   color: #808080; 
-}
-
-pre code .number { 
-   color: #585858; 
-}
-
-pre code .module { 
-   color: #1a1a1a; 
-   font-weight: normal; 
-}
-
-pre code .constructor { 
-   color: #2a2a2a; 
-   font-weight: bold; 
-}
-
-pre code .punctuation.bracket { 
-   color: #707070; 
-}
-
-pre code .punctuation.delimiter { 
-   color: #909090; 
-}
-
-pre code .punctuation.special { 
-   color: #606060; 
-}
-
-pre code .string.special { 
-   color: #505050; 
-}
-
-pre code .tag { 
-   color: #0a0a0a; 
-}
-
-pre code .type.builtin { 
-   color: #383838; 
-   font-weight: normal; 
+pre code .comment {
+   color: #a0a0a0;
    font-style: italic;
 }
 
-pre code .function.builtin { 
-   color: #151515; 
-   font-weight: normal; 
+pre code .variable {
+   color: #404040;
 }
 
-pre code .constant.builtin { 
-   color: #0d0d0d; 
-   font-weight: bold; 
+pre code .property {
+   color: #505050;
 }
 
-pre code .variable.builtin { 
-   color: #353535; 
-   font-weight: normal; 
+pre code .constant {
+   color: #181818;
+   font-weight: bold;
 }
 
-pre code .variable.parameter { 
-   color: #484848; 
+pre code .operator {
+   color: #707070;
 }
 
-pre code .attribute { 
-   color: #656565; 
+pre code .punctuation {
+   color: #808080;
+}
+
+pre code .number {
+   color: #585858;
+}
+
+pre code .module {
+   color: #1a1a1a;
+   font-weight: normal;
+}
+
+pre code .constructor {
+   color: #2a2a2a;
+   font-weight: bold;
+}
+
+pre code .punctuation.bracket {
+   color: #707070;
+}
+
+pre code .punctuation.delimiter {
+   color: #909090;
+}
+
+pre code .punctuation.special {
+   color: #606060;
+}
+
+pre code .string.special {
+   color: #505050;
+}
+
+pre code .tag {
+   color: #0a0a0a;
+}
+
+pre code .type.builtin {
+   color: #383838;
+   font-weight: normal;
+   font-style: italic;
+}
+
+pre code .function.builtin {
+   color: #151515;
+   font-weight: normal;
+}
+
+pre code .constant.builtin {
+   color: #0d0d0d;
+   font-weight: bold;
+}
+
+pre code .variable.builtin {
+   color: #353535;
+   font-weight: normal;
+}
+
+pre code .variable.parameter {
+   color: #484848;
+}
+
+pre code .attribute {
+   color: #656565;
 }
 
 /* Dark theme syntax highlighting */
-[data-theme="dark"] pre code .keyword { 
-   color: #ffffff; 
-   font-weight: bold; 
+[data-theme="dark"] pre code .keyword {
+   color: #ffffff;
+   font-weight: bold;
 }
 
-[data-theme="dark"] pre code .type { 
-   color: #d5d5d5; 
+[data-theme="dark"] pre code .type {
+   color: #d5d5d5;
    font-style: italic;
 }
 
-[data-theme="dark"] pre code .function { 
-   color: #f5f5f5; 
+[data-theme="dark"] pre code .function {
+   color: #f5f5f5;
 }
 
-[data-theme="dark"] pre code .string { 
-   color: #a0a0a0; 
+[data-theme="dark"] pre code .string {
+   color: #a0a0a0;
 }
 
-[data-theme="dark"] pre code .comment { 
-   color: #606060; 
-   font-style: italic; 
-}
-
-[data-theme="dark"] pre code .variable { 
-   color: #c0c0c0; 
-}
-
-[data-theme="dark"] pre code .property { 
-   color: #b0b0b0; 
-}
-
-[data-theme="dark"] pre code .constant { 
-   color: #ebebeb; 
-   font-weight: bold; 
-}
-
-[data-theme="dark"] pre code .operator { 
-   color: #858585; 
-}
-
-[data-theme="dark"] pre code .punctuation { 
-   color: #757575; 
-}
-
-[data-theme="dark"] pre code .number { 
-   color: #a8a8a8; 
-}
-
-[data-theme="dark"] pre code .module { 
-   color: #e5e5e5; 
-   font-weight: normal; 
-}
-
-[data-theme="dark"] pre code .constructor { 
-   color: #d0d0d0; 
-   font-weight: bold; 
-}
-
-[data-theme="dark"] pre code .punctuation.bracket { 
-   color: #858585; 
-}
-
-[data-theme="dark"] pre code .punctuation.delimiter { 
-   color: #707070; 
-}
-
-[data-theme="dark"] pre code .punctuation.special { 
-   color: #9a9a9a; 
-}
-
-[data-theme="dark"] pre code .string.special { 
-   color: #b0b0b0; 
-}
-
-[data-theme="dark"] pre code .tag { 
-   color: #fafafa; 
-}
-
-[data-theme="dark"] pre code .type.builtin { 
-   color: #c8c8c8; 
-   font-weight: normal; 
+[data-theme="dark"] pre code .comment {
+   color: #606060;
    font-style: italic;
 }
 
-[data-theme="dark"] pre code .function.builtin { 
-   color: #efefef; 
-   font-weight: normal; 
+[data-theme="dark"] pre code .variable {
+   color: #c0c0c0;
 }
 
-[data-theme="dark"] pre code .constant.builtin { 
-   color: #f2f2f2; 
-   font-weight: bold; 
+[data-theme="dark"] pre code .property {
+   color: #b0b0b0;
 }
 
-[data-theme="dark"] pre code .variable.builtin { 
-   color: #cacaca; 
-   font-weight: normal; 
+[data-theme="dark"] pre code .constant {
+   color: #ebebeb;
+   font-weight: bold;
 }
 
-[data-theme="dark"] pre code .variable.parameter { 
-   color: #b8b8b8; 
+[data-theme="dark"] pre code .operator {
+   color: #858585;
 }
 
-[data-theme="dark"] pre code .attribute { 
-   color: #959595; 
+[data-theme="dark"] pre code .punctuation {
+   color: #757575;
+}
+
+[data-theme="dark"] pre code .number {
+   color: #a8a8a8;
+}
+
+[data-theme="dark"] pre code .module {
+   color: #e5e5e5;
+   font-weight: normal;
+}
+
+[data-theme="dark"] pre code .constructor {
+   color: #d0d0d0;
+   font-weight: bold;
+}
+
+[data-theme="dark"] pre code .punctuation.bracket {
+   color: #858585;
+}
+
+[data-theme="dark"] pre code .punctuation.delimiter {
+   color: #707070;
+}
+
+[data-theme="dark"] pre code .punctuation.special {
+   color: #9a9a9a;
+}
+
+[data-theme="dark"] pre code .string.special {
+   color: #b0b0b0;
+}
+
+[data-theme="dark"] pre code .tag {
+   color: #fafafa;
+}
+
+[data-theme="dark"] pre code .type.builtin {
+   color: #c8c8c8;
+   font-weight: normal;
+   font-style: italic;
+}
+
+[data-theme="dark"] pre code .function.builtin {
+   color: #efefef;
+   font-weight: normal;
+}
+
+[data-theme="dark"] pre code .constant.builtin {
+   color: #f2f2f2;
+   font-weight: bold;
+}
+
+[data-theme="dark"] pre code .variable.builtin {
+   color: #cacaca;
+   font-weight: normal;
+}
+
+[data-theme="dark"] pre code .variable.parameter {
+   color: #b8b8b8;
+}
+
+[data-theme="dark"] pre code .attribute {
+   color: #959595;
 }
 
 .backlinks {
