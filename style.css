@@ -59,9 +59,7 @@ p {
    grid-template-columns: 20% 80%;
    gap: 2rem;
    padding: 2rem;
-   min-height: 100vh;
-   width: min(100%, 1000px);
-   justify-content: start;
+   width: min(72%, 1100px);
    margin-inline: auto;
 }
 
@@ -137,11 +135,6 @@ p {
 .nav-sidebar a {
    text-decoration: none;
    font-size: 1rem;
-}
-
-.main-content {
-  margin-inline: auto;
-  width: 720px;
 }
 
 .metadata {
