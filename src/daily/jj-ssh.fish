@@ -1,22 +1,22 @@
-# title       = Setting up jjvcs collaboration between local machines via ssh
+# title       = setting up jjvcs collaboration between local machines via ssh
 # pubDate     = 2025-12-22
 # tags        = fish, jjvcs, ssh, workflow, 2025
-# description = About how i collaborate between 2 ⟅laptops|identities|personae⟆ using jjvcs & ssh without hosting services.
+# description = about how i collaborate between 2 ⟅laptops|identities|personae⟆ using jjvcs & ssh without hosting services.
 
-# | Introduxion
-# 
-# This blog provides instruxions for using [jjvcs](https://www.jj-vcs.dev/latest/) to collaborate between two laptops (|host| and |guest|)
+# | introduxion
+#
+# this blog provides instruxions for using [jjvcs](https://www.jj-vcs.dev/latest/) to collaborate between two laptops (|host| and |guest|)
 # over [ssh](https://en.wikipedia.org/wiki/Secure_Shell), without relying on github or similar hosting services. Essentially this approach
 # should apply to any number of local machines.
-# 
+#
 # Note that this blog is targeted at macos. It relies on [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) to announces a machine's
 # hostname and ip via multicast dns on every network it joins, so other machines can automatically resolve `.local` hostnames without
-# manual dns configuration. 
-# 
+# manual dns configuration.
+#
 # We use |(host/guest)| to indicate the commands in this section shall be run on the host/guest laptop.
-# 
+#
 # | The ssh part
-#  
+#
 # || Ensure the ssh server is running (host)
 
 # check if ssh is enabled
@@ -24,8 +24,8 @@ sudo systemsetup -getremotelogin
 # if not enabled, enable it
 # sudo systemsetup -setremotelogin on
 
-# || Sudo set hostname (host) 
-# 
+# || Sudo set hostname (host)
+#
 # The formation of this section shall allow us to use `hostname.local` addresses that automatically resolve on any local network without manual configuration,
 # so we needn't reconfigure ip addresses on new networks.
 
@@ -40,7 +40,7 @@ sudo scutil --set LocalHostName host
 
 # This machine will now be reachable at `host.local` on any local network.
 
-# || Verify mDNS is working (guest) 
+# || Verify mDNS is working (guest)
 
 ping host.local
 
@@ -62,7 +62,7 @@ ssh username@host.local
 # | The jj part
 #
 # || Initialize a jj repo (host)
-# 
+#
 # Let's assume that we put all of our projects under `~/dev`. We create a new project `jjssh` here:
 
 cd ~/dev && mkdir jjssh && jj git init --colocate
@@ -73,22 +73,22 @@ echo "initial content" >readme
 
 # And commit them:
 
-jj ci -m "first commit" && jj bookmark s main -r @-
+jj ci -m "first commit" && jj b s main -r @-
 
 # So far so good. But unfortunately, we can't directly use this repo for ssh-based collaboration. Instead, we need a bare git repo.
-# 
+#
 # || Create a bare repo (host)
-# 
+#
 # We need to create a bare repo that will serve as the remote. We will put all our bare repos under `~/remotes`.
 
 mkdir -p ~/remotes && cd ~/remotes && git init --bare jjssh.git
 
 # || Push jj repo to bare repo (host)
-# 
+#
 # We can now add the bare repo as origin push the bookmark to it:
 
 cd ~/dev/jjssh && jj git remote add origin ~/remotes/jjssh.git
-jj bookmark t main@origin && jj git push -b main --remote origin
+jj b t main --remote origin && jj git push -b main --remote origin
 
 # The workflow should henceforth be analogous to that in normal jj.
 
@@ -100,7 +100,7 @@ cd ~/dev && jj git clone --colocate ssh://username@host.local/~/remotes/jjssh.gi
 
 cd ~/dev/jjssh && jj new main@origin
 echo "changes from guest" >>readme && jj ci -m "changes from guest"
-jj bookmark s guest -r @- && jj bookmark t guest@origin && jj git push -b guest --remote origin
+jj b s guest -r @- && jj b t guest --remote origin && jj git push -b guest --remote origin
 
 # || Fetch commits (host)
 

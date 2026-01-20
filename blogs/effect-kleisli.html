@@ -27,10 +27,10 @@
    </aside>
    <main class="main-content">
       <h1>Effect is Kleisli, etymologically</h1>
-      <div class="metadata">
+      <metadata>
          <span class="date">2025-11-26</span>
          <span class="tags"><a href="../tags/effect-system.html">effect-system</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/monad.html">monad</a>, <a href="../tags/2025.html">2025</a></span>
-      </div>
+      </metadata>
       <div class="description">It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell. We'll further show that Monad is the constraint we need to form the valid Effect category. If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.</div>
       <pre data-block-id="block-0"><code>
 <span class='keyword'>import</span>           <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Kind</span> <span class='punctuation bracket'>(</span> <span class='type'>Type</span> <span class='punctuation bracket'>)</span>
@@ -463,32 +463,32 @@ These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;
   </defs>
   <!-- Nodes -->
   <text x="100" y="170" class="label-text">(b, d)</text>
-  
+
   <text x="250" y="100" class="label-text">b</text>
   <text x="250" y="240" class="label-text">d</text>
-  
+
   <text x="450" y="100" class="label-text">m c</text>
   <text x="450" y="240" class="label-text">d</text>
-  
+
   <text x="620" y="170" class="label-text">m (c, d)</text>
 
   <!-- Arrows -->
   <!-- Split -->
   <line x1="130" y1="160" x2="230" y2="110" class="arrow-line" marker-end="url(#arrowhead)" />
   <line x1="130" y1="180" x2="230" y2="230" class="arrow-line" marker-end="url(#arrowhead)" />
-  
+
   <!-- f: b -> m c -->
   <line x1="270" y1="100" x2="420" y2="100" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="345" y="90" class="arrow-label">f</text>
-  
+
   <!-- id: d -> d -->
   <line x1="270" y1="240" x2="420" y2="240" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="345" y="260" class="arrow-label">id</text>
-  
+
   <!-- Merge -->
   <line x1="480" y1="110" x2="580" y2="160" class="arrow-line" marker-end="url(#arrowhead)" />
   <line x1="470" y1="230" x2="580" y2="180" class="arrow-line" marker-end="url(#arrowhead)" />
-  
+
   <text x="530" y="125" class="arrow-label">bind</text>
 </svg>
 </div>
@@ -502,7 +502,7 @@ These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;
          const themeToggle = document.getElementById('theme-toggle');
          const themeIcon = document.getElementById('theme-icon');
          const html = document.documentElement;
-         
+
          function setThemeIcon(theme) {
             if (theme === 'light') {
                themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
@@ -510,12 +510,12 @@ These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;
                themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
             }
          }
-         
+
          // Load saved theme or default to light
          const savedTheme = localStorage.getItem('theme') || 'light';
          html.setAttribute('data-theme', savedTheme);
          setThemeIcon(savedTheme);
-         
+
          themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
             const currentTheme = html.getAttribute('data-theme');

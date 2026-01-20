@@ -59,8 +59,6 @@ h3 { font-size: 1.33em; }
 .outline .h2 { padding-left: 1rem; font-size: 0.8rem; }
 .outline .h3 { padding-left: 1.5rem; font-size: 0.75rem; }
 
-/* TODO: use verticle text (home, tags, rss, etc.) instead of svg icons
-   H{sub ome} T{sub tags} R{sub ss} etc.  */
 .outline-sidebar .bottom-nav {
    display: flex;
    flex-direction: row;
