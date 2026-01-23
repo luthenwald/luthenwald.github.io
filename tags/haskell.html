@@ -4,7 +4,8 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>tag: haskell</title>
-   <link rel="stylesheet" href="../style.css">
+   <link rel="stylesheet" href="../styles/reset.css">
+   <link rel="stylesheet" href="../styles/prima.css">
 </head>
 <body class="tag-page">
    <aside class="outline-sidebar">
@@ -35,7 +36,7 @@
          const themeToggle = document.getElementById('theme-toggle');
          const themeIcon = document.getElementById('theme-icon');
          const html = document.documentElement;
-         
+
          function setThemeIcon(theme) {
             if (theme === 'light') {
                themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
@@ -43,12 +44,12 @@
                themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
             }
          }
-         
+
          // Load saved theme or default to light
          const savedTheme = localStorage.getItem('theme') || 'light';
          html.setAttribute('data-theme', savedTheme);
          setThemeIcon(savedTheme);
-         
+
          themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
             const currentTheme = html.getAttribute('data-theme');

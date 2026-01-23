@@ -11,7 +11,7 @@ import           Data.Kind ( Type )
 
 import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=<), (=<<), (>=>), (>>=) )
 
--- | The Effect Type
+-- | The Effect type
 --
 -- When I was [perplexitying](https://www.perplexity.ai/search/explain-what-is-effect-in-hask-TS.zYSCtRdqyUfWYX1UhWw#0)
 -- about effects in haskell, the result was disappointingly vague. A second attempt to
@@ -25,7 +25,7 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=
 --
 -- In this post, i shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary. [^1]
 --
--- || The Oxford Definition of Effect
+-- || The Oxford definition of Effect
 --
 -- The Oxford Learners Dictionary [defines](https://www.oxfordlearnersdictionaries.com/definition/english/effect_1?q=effect) *effect* as:
 --

@@ -1,11 +1,11 @@
-# title       = setting up jjvcs collaboration between local machines via ssh
+# title       = Setting up jjvcs collaboration between local machines via ssh
 # pubDate     = 2025-12-22
 # tags        = fish, jjvcs, ssh, workflow, 2025
 # description = about how i collaborate between 2 ⟅laptops|identities|personae⟆ using jjvcs & ssh without hosting services.
 
-# | introduxion
+# | Introduxion
 #
-# this blog provides instruxions for using [jjvcs](https://www.jj-vcs.dev/latest/) to collaborate between two laptops (|host| and |guest|)
+# This blog provides instruxions for using [jjvcs](https://www.jj-vcs.dev/latest/) to collaborate between two laptops (|host| and |guest|)
 # over [ssh](https://en.wikipedia.org/wiki/Secure_Shell), without relying on github or similar hosting services. Essentially this approach
 # should apply to any number of local machines.
 #

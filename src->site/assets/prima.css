@@ -1,4 +1,35 @@
 @charset "UTF-8";
+
+/* Import ET Book styles
+   adapted from https://github.com/edwardtufte/et-book/blob/gh-pages/et-book.css */
+
+@font-face {
+    font-family: "et-book";
+    src: url("et-book/et-book-roman-line-figures/et-book-roman-line-figures.eot");
+    src: url("et-book/et-book-roman-line-figures/et-book-roman-line-figures.eot?#iefix") format("embedded-opentype"), url("et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff") format("woff"), url("et-book/et-book-roman-line-figures/et-book-roman-line-figures.ttf") format("truetype"), url("et-book/et-book-roman-line-figures/et-book-roman-line-figures.svg#etbookromanosf") format("svg");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "et-book";
+    src: url("et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.eot");
+    src: url("et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.eot?#iefix") format("embedded-opentype"), url("et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff") format("woff"), url("et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.ttf") format("truetype"), url("et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.svg#etbookromanosf") format("svg");
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "et-book";
+    src: url("et-book/et-book-bold-line-figures/et-book-bold-line-figures.eot");
+    src: url("et-book/et-book-bold-line-figures/et-book-bold-line-figures.eot?#iefix") format("embedded-opentype"), url("et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff") format("woff"), url("et-book/et-book-bold-line-figures/et-book-bold-line-figures.ttf") format("truetype"), url("et-book/et-book-bold-line-figures/et-book-bold-line-figures.svg#etbookromanosf") format("svg");
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
    --bg: #fafafa;
    --fg: #1a1a1a;
@@ -11,16 +42,21 @@
    --gray: #959595;
    --light-gray: #3a3a3a; }
 
+html { font-size: 16px; }
+
 body {
-   font-family: serif;
-   font-size: 15px;
+   font-family: et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, serif;
+   margin-left: auto;
+   margin-right: auto;
    color: var(--fg);
    background: var(--bg);
-   line-height: 1.5;
+   line-height: 2rem;
    display: grid;
    grid-template-columns: 20% 80%;
-   width: min(72%, 1118px);
+   width: min(87.5%, 1440px);
    gap: 2rem;
+   vertical-align: baseline;
+   counter-reset: sidenote-counter;
    margin-inline: auto; }
 
 a {
@@ -31,12 +67,25 @@ a {
    text-underline-offset: 3px; }
 
 h1, h2, h3, h4, h5, h6 {
-   font-family: sans-serif;
-   font-weight: normal; }
+   font-weight: normal;
+   line-height: 1; }
 
-h1 { font-size: 2rem; }
-h2 { font-size: 1.67rem; }
-h3 { font-size: 1.33em; }
+h1 {
+   margin-top: 2rem;
+   margin-bottom: 1.5rem;
+   font-size: 3.2rem; }
+
+h2 {
+   font-style: italic;
+   margin-top: 2.1rem;
+   margin-bottom: 1.4rem;
+   font-size: 2.2rem; }
+
+h3 {
+   font-style: italic;
+   font-size: 1.7rem;
+   margin-top: 2rem;
+   margin-bottom: 1.4rem; }
 
 .outline-sidebar {
    display: flex;
@@ -45,6 +94,7 @@ h3 { font-size: 1.33em; }
    position: sticky;
    top: 2.5rem;
    height: calc(100vh - 4rem);
+   line-height: 1.3rem;
    overflow-y: auto; }
 
 .outline {
@@ -52,13 +102,14 @@ h3 { font-size: 1.33em; }
    flex-direction: column;
    gap: 0.3rem; }
 
-.outline a {
-   text-decoration: none; }
+.outline a { text-decoration: none; }
 
-.outline .h1 { padding-left: 0; font-size: 0.85rem; }
-.outline .h2 { padding-left: 1rem; font-size: 0.8rem; }
-.outline .h3 { padding-left: 1.5rem; font-size: 0.75rem; }
+.outline .h1 { padding-left: 0; font-size: 1.05rem; }
+.outline .h2 { padding-left: 1rem; font-size: 0.95rem; }
+.outline .h3 { padding-left: 1.5rem; font-size: 0.85rem; }
 
+/* TODO: use verticle text (home, tags, rss, etc.) instead of svg icons
+   H{sub ome} T{sub tags} R{sub ss} etc.  */
 .outline-sidebar .bottom-nav {
    display: flex;
    flex-direction: row;
@@ -123,10 +174,10 @@ h3 { font-size: 1.33em; }
 
 blockquote.callout {
    padding: 0;
+   margin-left: 1.4rem;
    padding-left: 0.7rem;
    border-left: 0.5px solid var(--light-gray);
    color: var(--gray);
-   font-size: 0.9rem;
    background: transparent; }
 
 .highlight {
@@ -140,8 +191,7 @@ blockquote.callout {
    margin-top: 2rem; }
 
 .tag-cloud a {
-   text-decoration: none;
-   font-size: 1rem; }
+   text-decoration: none; }
 
 table {
    border-collapse: collapse;
@@ -161,11 +211,12 @@ img, svg {
 
 code.inlinecode {
    font-family: monospace;
+   font-size: 0.95rem;
    color: var(--gray); }
 
 pre {
    font-family: monospace;
-   font-size: 0.85rem; }
+   font-size: 0.95rem; }
 
 pre code {
    color: inherit; }

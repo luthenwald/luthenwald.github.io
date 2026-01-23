@@ -6,10 +6,11 @@ alias c := compile
 alias p := preview
 
 compile:
+   rm -rf ./.zig-cache
    zig build
 
 build:
-   ~/dev/lacuna/zig-out/bin/lacuna build src/ ./ luthenwald.github.io
+   './zig-out/bin/src->site' ./src ./ luthenwald.github.io
 
 preview:
    open ./index.html
