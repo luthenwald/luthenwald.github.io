@@ -69,13 +69,13 @@
       <p data-block-id="block-2">hm type system is <a href="https://en.wikipedia.org/wiki/Completeness_(logic)">complete</a> & has the ability to infer the <a href="https://en.wikipedia.org/wiki/Principal_type">most general type</a> of a given program without programmer-supplied <a href="https://en.wikipedia.org/wiki/Type_signature">type annotations</a> or other hints.</p>
       <p data-block-id="block-3">the prose is divided into 3 acts: type system, substitution/unification & algow. <sup><a href="#fn-1">1</a></sup></p>
       <pre data-block-id="block-4"><code>
-<span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span>        <span class='punctuation bracket'>(</span> <span class='type'>replicateM</span> <span class='punctuation bracket'>)</span>
-<span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>Except</span>
-<span class='keyword'>import</span>           <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>State</span>
+<span class='keyword'>import</span> <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span>        <span class='punctuation bracket'>(</span> <span class='type'>replicateM</span> <span class='punctuation bracket'>)</span>
+<span class='keyword'>import</span> <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>Except</span>
+<span class='keyword'>import</span> <span class='module'>Control</span><span class='operator'>.</span><span class='module'>Monad</span><span class='operator'>.</span><span class='module'>State</span>
 
-<span class='keyword'>import</span> <span class='keyword'>qualified</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Map</span>             <span class='keyword'>as</span> <span class='module'>Map</span>
-<span class='keyword'>import</span>           <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Maybe</span>           <span class='punctuation bracket'>(</span> <span class='type'>isJust</span> <span class='punctuation bracket'>)</span>
-<span class='keyword'>import</span> <span class='keyword'>qualified</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Set</span>             <span class='keyword'>as</span> <span class='module'>Set</span>
+<span class='keyword'>import</span> <span class='keyword'>qualified</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Map</span>   <span class='keyword'>as</span> <span class='module'>Map</span>
+<span class='keyword'>import</span>           <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Maybe</span> <span class='punctuation bracket'>(</span> <span class='type'>isJust</span> <span class='punctuation bracket'>)</span>
+<span class='keyword'>import</span> <span class='keyword'>qualified</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Set</span>   <span class='keyword'>as</span> <span class='module'>Set</span>
 
 </code></pre>
       <h1 id="hindley-milner-type-system" data-block-id="block-5">hindley-milner type system</h1>

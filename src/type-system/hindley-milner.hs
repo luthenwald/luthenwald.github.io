@@ -18,13 +18,13 @@ description = a guide to hindley-milner type system: types, unification & algori
 --
 -- the prose is divided into 3 acts: type system, substitution/unification & algow. [^1]
 
-import           Control.Monad        ( replicateM )
-import           Control.Monad.Except
-import           Control.Monad.State
+import Control.Monad        ( replicateM )
+import Control.Monad.Except
+import Control.Monad.State
 
-import qualified Data.Map             as Map
-import           Data.Maybe           ( isJust )
-import qualified Data.Set             as Set
+import qualified Data.Map   as Map
+import           Data.Maybe ( isJust )
+import qualified Data.Set   as Set
 
 -- | hindley-milner type system
 --
