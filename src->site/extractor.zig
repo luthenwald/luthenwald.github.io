@@ -6,9 +6,9 @@ const utils  = @import("utils.zig");
 const Allocator = std.mem.Allocator;
 
 pub const ExtractedContent = struct {
+    alloc:       Allocator,
     comments:    []types.CommentBlock,
     code_blocks: []types.CodeBlock,
-    alloc: Allocator,
 
     pub fn deinit(self: *ExtractedContent) void { for (self.comments) |*comment| { comment.deinit(self.alloc); } self.alloc.free(self.comments); self.alloc.free(self.code_blocks); } };
 

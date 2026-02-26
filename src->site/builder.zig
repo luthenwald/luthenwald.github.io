@@ -14,10 +14,10 @@ const reset_css = @embedFile("assets/reset.css");
 const prima_css = @embedFile("assets/prima.css");
 
 pub fn srcToSite(
-    alloc: Allocator,
-    src_dir: []const u8,
+    alloc:      Allocator,
+    src_dir:    []const u8,
     output_dir: []const u8,
-    base_url: []const u8, ) !void {
+    base_url:   []const u8, ) !void {
     std.debug.print("scanning src\n",  .{});
 
     const source_files = try scanner.scanSourceFiles(alloc, src_dir); defer { for (source_files) |*f| { f.deinit(alloc); } alloc.free(source_files); }
