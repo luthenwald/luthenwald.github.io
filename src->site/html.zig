@@ -22,12 +22,7 @@ pub fn generateBlogPage(
     try html.appendSlice(alloc, "      <nav class=\"outline\">\n");
     for (blog.outline) |item| { try std.fmt.format(html.writer(alloc), "         <a href=\"#{s}\" class=\"h{d}\">{s}</a>\n", .{ item.id, item.level, item.text }); }
     try html.appendSlice(alloc, "      </nav>\n");
-    try html.appendSlice(alloc, "      <nav class=\"bottom-nav\">\n");
-    try html.appendSlice(alloc, "         <a href=\"../index.html\" title=\"home\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M2 8l6-6 6 6M4 14h8M4 14v-6h8v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"../tags/tagcloud.html\" title=\"tags\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M3 3h6l4 4-6 6H3V3z\"/><path d=\"M6 3v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"../feed.xml\" title=\"feed\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><circle cx=\"3\" cy=\"13\" r=\"2\"/><path d=\"M1 13c0-6 5-6 5-6s5 0 5 6M1 9c0-4 3-4 3-4s3 0 3 4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"#\" id=\"theme-toggle\" title=\"toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" id=\"theme-icon\"><circle cx=\"8\" cy=\"8\" r=\"3\"/><path d=\"M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "      </nav>\n");
+    try renderBottomNav(html.writer(alloc), .in_blogs);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
@@ -50,27 +45,14 @@ pub fn generateBlogPage(
         \\   <script>
         \\      document.addEventListener('DOMContentLoaded', function() {
         \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const themeIcon = document.getElementById('theme-icon');
         \\         const html = document.documentElement;
-        \\
-        \\         function setThemeIcon(theme) {
-        \\            if (theme === 'light') {
-        \\               themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
-        \\            } else {
-        \\               themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
-        \\            }
-        \\         }
-        \\
         \\         const savedTheme = localStorage.getItem('theme') || 'light';
         \\         html.setAttribute('data-theme', savedTheme);
-        \\         setThemeIcon(savedTheme);
-        \\
         \\         themeToggle.addEventListener('click', function(e) {
         \\            e.preventDefault();
         \\            const currentTheme = html.getAttribute('data-theme');
         \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         \\            html.setAttribute('data-theme', newTheme);
-        \\            setThemeIcon(newTheme);
         \\            localStorage.setItem('theme', newTheme);
         \\         });
         \\      });
@@ -99,12 +81,7 @@ pub fn generateHomepage(
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try html.appendSlice(alloc, "      <nav class=\"bottom-nav\">\n");
-    try html.appendSlice(alloc, "         <a href=\"index.html\" title=\"home\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M2 8l6-6 6 6M4 14h8M4 14v-6h8v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"tags/tagcloud.html\" title=\"tags\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M3 3h6l4 4-6 6H3V3z\"/><path d=\"M6 3v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"feed.xml\" title=\"feed\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><circle cx=\"3\" cy=\"13\" r=\"2\"/><path d=\"M1 13c0-6 5-6 5-6s5 0 5 6M1 9c0-4 3-4 3-4s3 0 3 4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"#\" id=\"theme-toggle\" title=\"toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" id=\"theme-icon\"><circle cx=\"8\" cy=\"8\" r=\"3\"/><path d=\"M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "      </nav>\n");
+    try renderBottomNav(html.writer(alloc), .root);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
@@ -125,30 +102,15 @@ pub fn generateHomepage(
     try html.appendSlice(alloc,
         \\   <script>
         \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         // Theme switching
         \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const themeIcon = document.getElementById('theme-icon');
         \\         const html = document.documentElement;
-        \\
-        \\         function setThemeIcon(theme) {
-        \\            if (theme === 'light') {
-        \\               themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
-        \\            } else {
-        \\               themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
-        \\            }
-        \\         }
-        \\
-        \\         // Load saved theme or default to light
         \\         const savedTheme = localStorage.getItem('theme') || 'light';
         \\         html.setAttribute('data-theme', savedTheme);
-        \\         setThemeIcon(savedTheme);
-        \\
         \\         themeToggle.addEventListener('click', function(e) {
         \\            e.preventDefault();
         \\            const currentTheme = html.getAttribute('data-theme');
         \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         \\            html.setAttribute('data-theme', newTheme);
-        \\            setThemeIcon(newTheme);
         \\            localStorage.setItem('theme', newTheme);
         \\         });
         \\      });
@@ -176,12 +138,7 @@ pub fn generateTagCloud(
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try html.appendSlice(alloc, "      <nav class=\"bottom-nav\">\n");
-    try html.appendSlice(alloc, "         <a href=\"../index.html\" title=\"home\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M2 8l6-6 6 6M4 14h8M4 14v-6h8v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"tagcloud.html\" title=\"tags\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M3 3h6l4 4-6 6H3V3z\"/><path d=\"M6 3v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"../feed.xml\" title=\"feed\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><circle cx=\"3\" cy=\"13\" r=\"2\"/><path d=\"M1 13c0-6 5-6 5-6s5 0 5 6M1 9c0-4 3-4 3-4s3 0 3 4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"#\" id=\"theme-toggle\" title=\"toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" id=\"theme-icon\"><circle cx=\"8\" cy=\"8\" r=\"3\"/><path d=\"M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "      </nav>\n");
+    try renderBottomNav(html.writer(alloc), .in_tags);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
@@ -196,30 +153,15 @@ pub fn generateTagCloud(
     try html.appendSlice(alloc,
         \\   <script>
         \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         // Theme switching
         \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const themeIcon = document.getElementById('theme-icon');
         \\         const html = document.documentElement;
-        \\
-        \\         function setThemeIcon(theme) {
-        \\            if (theme === 'light') {
-        \\               themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
-        \\            } else {
-        \\               themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
-        \\            }
-        \\         }
-        \\
-        \\         // Load saved theme or default to light
         \\         const savedTheme = localStorage.getItem('theme') || 'light';
         \\         html.setAttribute('data-theme', savedTheme);
-        \\         setThemeIcon(savedTheme);
-        \\
         \\         themeToggle.addEventListener('click', function(e) {
         \\            e.preventDefault();
         \\            const currentTheme = html.getAttribute('data-theme');
         \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         \\            html.setAttribute('data-theme', newTheme);
-        \\            setThemeIcon(newTheme);
         \\            localStorage.setItem('theme', newTheme);
         \\         });
         \\      });
@@ -247,12 +189,7 @@ pub fn generateTagPage(
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try html.appendSlice(alloc, "      <nav class=\"bottom-nav\">\n");
-    try html.appendSlice(alloc, "         <a href=\"../index.html\" title=\"home\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M2 8l6-6 6 6M4 14h8M4 14v-6h8v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"tagcloud.html\" title=\"tags\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M3 3h6l4 4-6 6H3V3z\"/><path d=\"M6 3v6\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"../feed.xml\" title=\"feed\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><circle cx=\"3\" cy=\"13\" r=\"2\"/><path d=\"M1 13c0-6 5-6 5-6s5 0 5 6M1 9c0-4 3-4 3-4s3 0 3 4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "         <a href=\"#\" id=\"theme-toggle\" title=\"toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" id=\"theme-icon\"><circle cx=\"8\" cy=\"8\" r=\"3\"/><path d=\"M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4\"/></svg></a>\n");
-    try html.appendSlice(alloc, "      </nav>\n");
+    try renderBottomNav(html.writer(alloc), .in_tags);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
@@ -270,30 +207,15 @@ pub fn generateTagPage(
     try html.appendSlice(alloc,
         \\   <script>
         \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         // Theme switching
         \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const themeIcon = document.getElementById('theme-icon');
         \\         const html = document.documentElement;
-        \\
-        \\         function setThemeIcon(theme) {
-        \\            if (theme === 'light') {
-        \\               themeIcon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M15 8h-2M3 8H1M13.5 2.5l-1.4 1.4M3.9 12.1l-1.4 1.4M13.5 13.5l-1.4-1.4M3.9 3.9l-1.4-1.4"/>';
-        \\            } else {
-        \\               themeIcon.innerHTML = '<path d="M13 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 0-10z"/>';
-        \\            }
-        \\         }
-        \\
-        \\         // Load saved theme or default to light
         \\         const savedTheme = localStorage.getItem('theme') || 'light';
         \\         html.setAttribute('data-theme', savedTheme);
-        \\         setThemeIcon(savedTheme);
-        \\
         \\         themeToggle.addEventListener('click', function(e) {
         \\            e.preventDefault();
         \\            const currentTheme = html.getAttribute('data-theme');
         \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         \\            html.setAttribute('data-theme', newTheme);
-        \\            setThemeIcon(newTheme);
         \\            localStorage.setItem('theme', newTheme);
         \\         });
         \\      });
@@ -305,19 +227,34 @@ pub fn generateTagPage(
 
     return html.toOwnedSlice(alloc); }
 
-fn renderNavSidebar(writer: anytype, is_in_subdir: bool) !void {
+const NavPath = enum { root, in_tags, in_blogs };
+
+fn renderNavLinks(writer: anytype, path: NavPath, with_theme: bool) !void {
+   const Hrefs = struct { home: []const u8, tags: []const u8, feed: []const u8 };
+   const hrefs: Hrefs = switch (path) {
+      .root => .{ .home = "index.html", .tags = "tags/tagcloud.html", .feed = "feed.xml" },
+      .in_tags => .{ .home = "../index.html", .tags = "tagcloud.html", .feed = "../feed.xml" },
+      .in_blogs => .{ .home = "../index.html", .tags = "../tags/tagcloud.html", .feed = "../feed.xml" },
+   };
+   try std.fmt.format(writer, "         <a href=\"{s}\">Home</a>\n", .{hrefs.home});
+   try std.fmt.format(writer, "         <a href=\"{s}\">Tags</a>\n", .{hrefs.tags});
+   try std.fmt.format(writer, "         <a href=\"{s}\">Feed</a>\n", .{hrefs.feed});
+   if (with_theme) try writer.writeAll("         <a href=\"#\" id=\"theme-toggle\" title=\"toggle theme\">Theme</a>\n");
+}
+
+fn renderBottomNav(writer: anytype, path: NavPath) !void {
+   try writer.writeAll("      <nav class=\"bottom-nav\">\n");
+   try renderNavLinks(writer, path, true);
+   try writer.writeAll("      </nav>\n");
+}
+
+fn renderNavSidebar(writer: anytype, path: NavPath) !void {
    try writer.writeAll("   <aside class=\"nav-sidebar\">\n");
    try writer.writeAll("      <nav>\n");
-   if (is_in_subdir) {
-      try writer.writeAll("         <a href=\"../index.html\">home</a>\n");
-      try writer.writeAll("         <a href=\"tagcloud.html\">tags</a>\n");
-      try writer.writeAll("         <a href=\"../feed.xml\">feed</a>\n"); }
-   else {
-      try writer.writeAll("         <a href=\"index.html\">home</a>\n");
-      try writer.writeAll("         <a href=\"tags/tagcloud.html\">tags</a>\n");
-      try writer.writeAll("         <a href=\"feed.xml\">feed</a>\n"); }
+   try renderNavLinks(writer, path, false);
    try writer.writeAll("      </nav>\n");
-   try writer.writeAll("   </aside>\n"); }
+   try writer.writeAll("   </aside>\n");
+}
 
 fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8, block_id: usize) !void {
    _ = base_url;

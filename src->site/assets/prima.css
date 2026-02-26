@@ -112,19 +112,19 @@ h3 {
 .outline .h2 { padding-left: 1rem; font-size: 0.95rem; }
 .outline .h3 { padding-left: 1.5rem; font-size: 0.85rem; }
 
-/* TODO: use verticle text (home, tags, rss, etc.) instead of svg icons
-   H{sub ome} T{sub tags} R{sub ss} etc.  */
 .outline-sidebar .bottom-nav {
    display: flex;
    flex-direction: row;
+   flex-wrap: wrap;
+   align-items: baseline;
+   gap: 0.6rem 1.2rem;
    margin-top: 2rem;
-   justify-content: space-around;
+   justify-content: flex-start;
    padding-top: 1rem; }
 
-.outline-sidebar .bottom-nav a svg {
-   width: 16px;
-   height: 16px;
-   stroke: currentColor; }
+.outline-sidebar .bottom-nav a {
+   text-decoration: none;
+   font-size: 0.9rem; }
 
 .metadata {
    color: var(--gray);
