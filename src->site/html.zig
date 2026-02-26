@@ -9,58 +9,36 @@ pub fn generateBlogPage(
     base_url: []const u8, ) ![]const u8 {
 
     var html: std.ArrayList(u8) = .{}; defer html.deinit(alloc);
+    const w = html.writer(alloc);
 
-    try html.appendSlice(alloc, "<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"light\">\n<head>\n");
-    try html.appendSlice(alloc, "   <meta charset=\"UTF-8\">\n");
-    try html.appendSlice(alloc, "   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-    try std.fmt.format(html.writer(alloc), "   <title>{s}</title>\n", .{blog.title});
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/reset.css\">\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/prima.css\">\n");
-    try html.appendSlice(alloc, "</head>\n<body class=\"blog-page\">\n");
+    try renderHtmlHead(w, blog.title, "../styles/", "blog-page");
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <nav class=\"outline\">\n");
-    for (blog.outline) |item| { try std.fmt.format(html.writer(alloc), "         <a href=\"#{s}\" class=\"h{d}\">{s}</a>\n", .{ item.id, item.level, item.text }); }
+    for (blog.outline) |item| { try std.fmt.format(w, "         <a href=\"#{s}\" class=\"h{d}\">{s}</a>\n", .{ item.id, item.level, item.text }); }
     try html.appendSlice(alloc, "      </nav>\n");
-    try renderBottomNav(html.writer(alloc), .in_blogs);
+    try renderBottomNav(w, .in_blogs);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
-    try std.fmt.format(html.writer(alloc), "      <h1>{s}</h1>\n", .{blog.title});
-    try std.fmt.format(html.writer(alloc), "      <div class=\"metadata\">\n", .{});
-    try std.fmt.format(html.writer(alloc), "         <span class=\"date\">{s}</span>\n", .{blog.pub_date});
+    try std.fmt.format(w, "      <h1>{s}</h1>\n", .{blog.title});
+    try std.fmt.format(w, "      <div class=\"metadata\">\n", .{});
+    try std.fmt.format(w, "         <span class=\"date\">{s}</span>\n", .{blog.pub_date});
     try html.appendSlice(alloc, "         <span class=\"tags\">");
-    for (blog.tags, 0..) |tag, i| { if (i > 0) try html.appendSlice(alloc, ", "); try std.fmt.format(html.writer(alloc), "<a href=\"../tags/{s}.html\">{s}</a>", .{ tag, tag }); }
+    try renderTagLinks(w, blog.tags, "../tags/");
     try html.appendSlice(alloc, "</span>\n");
     try html.appendSlice(alloc, "      </div>\n");
-
-    try std.fmt.format(html.writer(alloc), "      <div class=\"description\">{s}</div>\n", .{blog.description});
+    try std.fmt.format(w, "      <div class=\"description\">{s}</div>\n", .{blog.description});
 
     var block_counter: usize = 0;
-    for (blog.content) |block| { try renderBlock(html.writer(alloc), block, base_url, block_counter); block_counter += 1; }
+    for (blog.content) |block| {
+       try renderBlock(w, block, base_url, block_counter);
+       try w.writeAll("\n");
+       block_counter += 1; }
 
     try html.appendSlice(alloc, "   </main>\n");
-
-    try html.appendSlice(alloc,
-        \\   <script>
-        \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const html = document.documentElement;
-        \\         const savedTheme = localStorage.getItem('theme') || 'light';
-        \\         html.setAttribute('data-theme', savedTheme);
-        \\         themeToggle.addEventListener('click', function(e) {
-        \\            e.preventDefault();
-        \\            const currentTheme = html.getAttribute('data-theme');
-        \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        \\            html.setAttribute('data-theme', newTheme);
-        \\            localStorage.setItem('theme', newTheme);
-        \\         });
-        \\      });
-        \\   </script>
-        \\
-    );
-
-    try html.appendSlice(alloc, "</body>\n</html>\n");
+    try renderThemeScript(w);
+    try renderHtmlTail(w);
 
     return html.toOwnedSlice(alloc);
 }
@@ -70,55 +48,22 @@ pub fn generateHomepage(
     blogs: []types.Blog, ) ![]const u8 {
 
     var html: std.ArrayList(u8) = .{}; defer html.deinit(alloc);
+    const w = html.writer(alloc);
 
-    try html.appendSlice(alloc, "<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"light\">\n<head>\n");
-    try html.appendSlice(alloc, "   <meta charset=\"UTF-8\">\n");
-    try html.appendSlice(alloc, "   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-    try html.appendSlice(alloc, "   <title>home</title>\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"styles/reset.css\">\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"styles/prima.css\">\n");
-    try html.appendSlice(alloc, "</head>\n<body class=\"home-page\">\n");
+    try renderHtmlHead(w, "home", "styles/", "home-page");
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try renderBottomNav(html.writer(alloc), .root);
+    try renderBottomNav(w, .root);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
     try html.appendSlice(alloc, "      <h1>all posts</h1>\n");
-
-    for (blogs) |blog| {
-        try html.appendSlice(alloc, "      <article class=\"blog-entry\">\n");
-        try std.fmt.format(html.writer(alloc), "         <h2><a href=\"blogs/{s}.html\">{s}</a></h2>\n", .{ blog.pageid, blog.title });
-        try std.fmt.format(html.writer(alloc), "         <div class=\"date\">{s}</div>\n", .{blog.pub_date});
-        try std.fmt.format(html.writer(alloc), "         <div class=\"description\">{s}</div>\n", .{blog.description});
-        try html.appendSlice(alloc, "         <div class=\"tags\">");
-        for (blog.tags, 0..) |tag, i| { if (i > 0) try html.appendSlice(alloc, ", "); try std.fmt.format(html.writer(alloc), "<a href=\"tags/{s}.html\">{s}</a>", .{ tag, tag }); }
-        try html.appendSlice(alloc, "</div>\n");
-        try html.appendSlice(alloc, "      </article>\n"); }
+    for (blogs) |*blog| { try renderBlogEntry(w, blog, "blogs/", "tags/"); }
 
     try html.appendSlice(alloc, "   </main>\n");
-
-    try html.appendSlice(alloc,
-        \\   <script>
-        \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const html = document.documentElement;
-        \\         const savedTheme = localStorage.getItem('theme') || 'light';
-        \\         html.setAttribute('data-theme', savedTheme);
-        \\         themeToggle.addEventListener('click', function(e) {
-        \\            e.preventDefault();
-        \\            const currentTheme = html.getAttribute('data-theme');
-        \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        \\            html.setAttribute('data-theme', newTheme);
-        \\            localStorage.setItem('theme', newTheme);
-        \\         });
-        \\      });
-        \\   </script>
-        \\
-    );
-
-    try html.appendSlice(alloc, "</body>\n</html>\n");
+    try renderThemeScript(w);
+    try renderHtmlTail(w);
 
     return html.toOwnedSlice(alloc); }
 
@@ -127,49 +72,23 @@ pub fn generateTagCloud(
     tags:  []types.Tag, ) ![]const u8 {
 
     var html: std.ArrayList(u8) = .{}; defer html.deinit(alloc);
+    const w = html.writer(alloc);
 
-    try html.appendSlice(alloc, "<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"light\">\n<head>\n");
-    try html.appendSlice(alloc, "   <meta charset=\"UTF-8\">\n");
-    try html.appendSlice(alloc, "   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-    try html.appendSlice(alloc, "   <title>tags</title>\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/reset.css\">\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/prima.css\">\n");
-    try html.appendSlice(alloc, "</head>\n<body class=\"tagcloud-page\">\n");
+    try renderHtmlHead(w, "tags", "../styles/", "tagcloud-page");
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try renderBottomNav(html.writer(alloc), .in_tags);
+    try renderBottomNav(w, .in_tags);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
     try html.appendSlice(alloc, "      <h1>tag cloud</h1>\n");
     try html.appendSlice(alloc, "      <div class=\"tag-cloud\">\n");
-
-    for (tags) |tag| { const size = tag.blogs.items.len; try std.fmt.format(html.writer(alloc), "         <a href=\"{s}.html\">{s}({d})</a>\n", .{ tag.name, tag.name, size }); }
-
+    for (tags) |tag| { const size = tag.blogs.items.len; try std.fmt.format(w, "         <a href=\"{s}.html\">{s}({d})</a>\n", .{ tag.name, tag.name, size }); }
     try html.appendSlice(alloc, "      </div>\n");
     try html.appendSlice(alloc, "   </main>\n");
-
-    try html.appendSlice(alloc,
-        \\   <script>
-        \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const html = document.documentElement;
-        \\         const savedTheme = localStorage.getItem('theme') || 'light';
-        \\         html.setAttribute('data-theme', savedTheme);
-        \\         themeToggle.addEventListener('click', function(e) {
-        \\            e.preventDefault();
-        \\            const currentTheme = html.getAttribute('data-theme');
-        \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        \\            html.setAttribute('data-theme', newTheme);
-        \\            localStorage.setItem('theme', newTheme);
-        \\         });
-        \\      });
-        \\   </script>
-        \\
-    );
-
-    try html.appendSlice(alloc, "</body>\n</html>\n");
+    try renderThemeScript(w);
+    try renderHtmlTail(w);
 
     return html.toOwnedSlice(alloc); }
 
@@ -178,56 +97,75 @@ pub fn generateTagPage(
     tag:   *const types.Tag, ) ![]const u8 {
 
     var html: std.ArrayList(u8) = .{}; defer html.deinit(alloc);
+    const w = html.writer(alloc);
 
-    try html.appendSlice(alloc, "<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"light\">\n<head>\n");
-    try html.appendSlice(alloc, "   <meta charset=\"UTF-8\">\n");
-    try html.appendSlice(alloc, "   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-    try std.fmt.format(html.writer(alloc), "   <title>tag: {s}</title>\n", .{tag.name});
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/reset.css\">\n");
-    try html.appendSlice(alloc, "   <link rel=\"stylesheet\" href=\"../styles/prima.css\">\n");
-    try html.appendSlice(alloc, "</head>\n<body class=\"tag-page\">\n");
+    var title_buf: [256]u8 = undefined;
+    const title = std.fmt.bufPrint(&title_buf, "tag: {s}", .{tag.name}) catch tag.name;
+
+    try renderHtmlHead(w, title, "../styles/", "tag-page");
 
     try html.appendSlice(alloc, "   <aside class=\"outline-sidebar\">\n");
     try html.appendSlice(alloc, "      <div class=\"spacer\"></div>\n");
-    try renderBottomNav(html.writer(alloc), .in_tags);
+    try renderBottomNav(w, .in_tags);
     try html.appendSlice(alloc, "   </aside>\n");
 
     try html.appendSlice(alloc, "   <main class=\"main-content\">\n");
-    try std.fmt.format(html.writer(alloc), "      <h1>tag: {s}</h1>\n", .{tag.name});
-
-    for (tag.blogs.items) |blog| {
-        try html.appendSlice(alloc, "      <article class=\"blog-entry\">\n");
-        try std.fmt.format(html.writer(alloc), "         <h2><a href=\"../blogs/{s}.html\">{s}</a></h2>\n", .{ blog.pageid, blog.title });
-        try std.fmt.format(html.writer(alloc), "         <div class=\"date\">{s}</div>\n", .{blog.pub_date});
-        try std.fmt.format(html.writer(alloc), "         <div class=\"description\">{s}</div>\n", .{blog.description});
-        try html.appendSlice(alloc, "      </article>\n"); }
+    try std.fmt.format(w, "      <h1>tag: {s}</h1>\n", .{tag.name});
+    for (tag.blogs.items) |blog| { try renderBlogEntry(w, blog, "../blogs/", "../tags/"); }
 
     try html.appendSlice(alloc, "   </main>\n");
-
-    try html.appendSlice(alloc,
-        \\   <script>
-        \\      document.addEventListener('DOMContentLoaded', function() {
-        \\         const themeToggle = document.getElementById('theme-toggle');
-        \\         const html = document.documentElement;
-        \\         const savedTheme = localStorage.getItem('theme') || 'light';
-        \\         html.setAttribute('data-theme', savedTheme);
-        \\         themeToggle.addEventListener('click', function(e) {
-        \\            e.preventDefault();
-        \\            const currentTheme = html.getAttribute('data-theme');
-        \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        \\            html.setAttribute('data-theme', newTheme);
-        \\            localStorage.setItem('theme', newTheme);
-        \\         });
-        \\      });
-        \\   </script>
-        \\
-    );
-
-    try html.appendSlice(alloc, "</body>\n</html>\n");
+    try renderThemeScript(w);
+    try renderHtmlTail(w);
 
     return html.toOwnedSlice(alloc); }
 
 const NavPath = enum { root, in_tags, in_blogs };
+
+fn renderHtmlHead(writer: anytype, title: []const u8, css_prefix: []const u8, body_class: []const u8) !void {
+   try writer.writeAll("<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"light\">\n<head>\n");
+   try writer.writeAll("   <meta charset=\"UTF-8\">\n");
+   try writer.writeAll("   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
+   try std.fmt.format(writer, "   <title>{s}</title>\n", .{title});
+   try std.fmt.format(writer, "   <link rel=\"stylesheet\" href=\"{s}reset.css\">\n", .{css_prefix});
+   try std.fmt.format(writer, "   <link rel=\"stylesheet\" href=\"{s}prima.css\">\n", .{css_prefix});
+   try std.fmt.format(writer, "</head>\n<body class=\"{s}\">\n", .{body_class}); }
+
+fn renderThemeScript(writer: anytype) !void {
+   try writer.writeAll(
+      \\   <script>
+      \\      document.addEventListener('DOMContentLoaded', function() {
+      \\         const themeToggle = document.getElementById('theme-toggle');
+      \\         const html = document.documentElement;
+      \\         const savedTheme = localStorage.getItem('theme') || 'light';
+      \\         html.setAttribute('data-theme', savedTheme);
+      \\         themeToggle.addEventListener('click', function(e) {
+      \\            e.preventDefault();
+      \\            const currentTheme = html.getAttribute('data-theme');
+      \\            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      \\            html.setAttribute('data-theme', newTheme);
+      \\            localStorage.setItem('theme', newTheme);
+      \\         });
+      \\      });
+      \\   </script>
+      \\
+   ); }
+
+fn renderHtmlTail(writer: anytype) !void { try writer.writeAll("</body>\n</html>\n"); }
+
+fn renderTagLinks(writer: anytype, tags: [][]const u8, href_prefix: []const u8) !void {
+   for (tags, 0..) |tag, i| {
+      if (i > 0) try writer.writeAll(", ");
+      try std.fmt.format(writer, "<a href=\"{s}{s}.html\">{s}</a>", .{ href_prefix, tag, tag }); } }
+
+fn renderBlogEntry(writer: anytype, blog: *const types.Blog, blog_link_prefix: []const u8, tag_href_prefix: []const u8) !void {
+   try writer.writeAll("      <article class=\"blog-entry\">\n");
+   try std.fmt.format(writer, "         <h2><a href=\"{s}{s}.html\">{s}</a></h2>\n", .{ blog_link_prefix, blog.pageid, blog.title });
+   try std.fmt.format(writer, "         <div class=\"date\">{s}</div>\n", .{blog.pub_date});
+   try std.fmt.format(writer, "         <div class=\"description\">{s}</div>\n", .{blog.description});
+   try writer.writeAll("         <div class=\"tags\">");
+   try renderTagLinks(writer, blog.tags, tag_href_prefix);
+   try writer.writeAll("</div>\n");
+   try writer.writeAll("      </article>\n"); }
 
 fn renderNavLinks(writer: anytype, path: NavPath, with_theme: bool) !void {
    const Hrefs = struct { home: []const u8, tags: []const u8, feed: []const u8 };

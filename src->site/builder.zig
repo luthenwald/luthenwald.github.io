@@ -131,14 +131,18 @@ pub fn srcToSite(
 
 fn compareBlogsByDate(context: void, a: types.Blog, b: types.Blog) bool { _ = context; return std.mem.order(u8, b.pub_date, a.pub_date) == .lt; }
 
+fn ensureDir(path: []const u8) !void {
+   std.fs.cwd().makeDir(path) catch |err| {
+      if (err != error.PathAlreadyExists) return err; }; }
+
 fn createOutputStructure(output_dir: []const u8) !void {
-    std.fs.cwd().makeDir(output_dir) catch |err| { if (err != error.PathAlreadyExists) return err; };
+   try ensureDir(output_dir);
 
-    const blogs_dir = try std.fs.path.join(std.heap.page_allocator, &.{ output_dir, "blogs" }); defer std.heap.page_allocator.free(blogs_dir);
-    std.fs.cwd().makeDir(blogs_dir) catch |err| { if (err != error.PathAlreadyExists) return err; };
+   const blogs_dir = try std.fs.path.join(std.heap.page_allocator, &.{ output_dir, "blogs" }); defer std.heap.page_allocator.free(blogs_dir);
+   try ensureDir(blogs_dir);
 
-    const tags_dir = try std.fs.path.join(std.heap.page_allocator, &.{ output_dir, "tags" }); defer std.heap.page_allocator.free(tags_dir);
-    std.fs.cwd().makeDir(tags_dir) catch |err| { if (err != error.PathAlreadyExists) return err; }; }
+   const tags_dir = try std.fs.path.join(std.heap.page_allocator, &.{ output_dir, "tags" }); defer std.heap.page_allocator.free(tags_dir);
+   try ensureDir(tags_dir); }
 
 fn writeFile(path: []const u8, content: []const u8) !void { const file = try std.fs.cwd().createFile(path, .{}); defer file.close(); try file.writeAll(content); }
 

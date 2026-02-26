@@ -24,8 +24,9 @@ pub fn generateFeed(
     try std.fmt.format(xml.writer(alloc), "      <lastBuildDate>{s}</lastBuildDate>\n", .{rfc2822_date});
 
     for (blogs) |blog| {
+        const esc_title = try escapeXml(alloc, blog.title); defer alloc.free(esc_title);
         try xml.appendSlice(alloc, "      <item>\n");
-        try std.fmt.format(xml.writer(alloc), "         <title>{s}</title>\n", .{escapeXml(blog.title)});
+        try std.fmt.format(xml.writer(alloc), "         <title>{s}</title>\n", .{esc_title});
         try std.fmt.format(xml.writer(alloc), "         <link>{s}/blogs/{s}.html</link>\n", .{ base_url, blog.pageid });
 
         const pub_timestamp = try parseDate(blog.pub_date);
@@ -104,4 +105,14 @@ fn formatRFC2822(alloc: Allocator, timestamp: i64) ![]const u8 {
          day_seconds.getMinutesIntoHour(),
          day_seconds.getSecondsIntoMinute(), }, ); }
 
-fn escapeXml(text: []const u8) []const u8 { return text; }
+fn escapeXml(alloc: Allocator, text: []const u8) ![]const u8 {
+   var out: std.ArrayList(u8) = .{}; defer out.deinit(alloc);
+   for (text) |c| {
+      switch (c) {
+         '&'  => try out.appendSlice(alloc, "&amp;"),
+         '<'  => try out.appendSlice(alloc, "&lt;"),
+         '>'  => try out.appendSlice(alloc, "&gt;"),
+         '"'  => try out.appendSlice(alloc, "&quot;"),
+         '\'' => try out.appendSlice(alloc, "&#39;"),
+         else => try out.append(alloc, c), } }
+   return out.toOwnedSlice(alloc); }

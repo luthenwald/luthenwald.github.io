@@ -40,35 +40,30 @@ pub fn highlightCode(
                     try result.append(alloc, .{ .code = .{ .lines = html_content }, }); } },
 
             .heading => |h| {
-                var content_copy = try alloc.alloc(types.InlineElement, h.content.len);
-                for (h.content, 0..) |elem, i| { content_copy[i] = try copyInlineElement(alloc, elem); }
-                try result.append(alloc, .{ .heading = .{ .level = h.level, .content = content_copy, .id = try alloc.dupe(u8, h.id), }, }); },
+                try result.append(alloc, .{ .heading = .{ .level = h.level, .content = try copyInlineSlice(alloc, h.content), .id = try alloc.dupe(u8, h.id), }, }); },
 
             .paragraph => |p| {
-                var content_copy = try alloc.alloc(types.InlineElement, p.content.len);
-                for (p.content, 0..) |elem, i| { content_copy[i] = try copyInlineElement(alloc, elem); }
-                try result.append(alloc, .{ .paragraph = .{ .content = content_copy }, }); },
+                try result.append(alloc, .{ .paragraph = .{ .content = try copyInlineSlice(alloc, p.content), }, }); },
 
             .footnote => |f| {
-                var content_copy = try alloc.alloc(types.InlineElement, f.content.len);
-                for (f.content, 0..) |elem, i| { content_copy[i] = try copyInlineElement(alloc, elem); }
-                try result.append(alloc, .{ .footnote = .{ .number = f.number, .content = content_copy, }, }); },
+                try result.append(alloc, .{ .footnote = .{ .number = f.number, .content = try copyInlineSlice(alloc, f.content), }, }); },
 
             .list => |l| {
-                var content_copy = try alloc.alloc(types.InlineElement, l.content.len);
-                for (l.content, 0..) |elem, i| { content_copy[i] = try copyInlineElement(alloc, elem); }
-                try result.append(alloc, .{ .list = .{ .level = l.level, .content = content_copy, }, }); },
+                try result.append(alloc, .{ .list = .{ .level = l.level, .content = try copyInlineSlice(alloc, l.content), }, }); },
 
             .verbatim => |v| { try result.append(alloc, .{ .verbatim = .{ .content = try alloc.dupe(u8, v.content) }, }); },
 
             .callout => |c| {
-                var content_copy = try alloc.alloc(types.InlineElement, c.content.len);
-                for (c.content, 0..) |elem, i| { content_copy[i] = try copyInlineElement(alloc, elem); }
-                try result.append(alloc, .{ .callout = .{ .content = content_copy }, }); },
+                try result.append(alloc, .{ .callout = .{ .content = try copyInlineSlice(alloc, c.content), }, }); },
 
             .insert => |i| { try result.append(alloc, .{ .insert = .{ .path = try alloc.dupe(u8, i.path) }, }); }, } }
 
     return result.toOwnedSlice(alloc); }
+
+fn copyInlineSlice(alloc: Allocator, slice: []types.InlineElement) ![]types.InlineElement {
+   var out = try alloc.alloc(types.InlineElement, slice.len);
+   for (slice, 0..) |elem, i| { out[i] = try copyInlineElement(alloc, elem); }
+   return out; }
 
 fn copyInlineElement(alloc: Allocator, elem: types.InlineElement) !types.InlineElement {
    return switch (elem) {

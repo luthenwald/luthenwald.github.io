@@ -79,22 +79,28 @@ fn setMetadataField(
    else if (std.mem.eql(u8, key, "tags")) { metadata.tags = try alloc.dupe(u8, value); }
    else if (std.mem.eql(u8, key, "description")) { metadata.description = try alloc.dupe(u8, value); } }
 
+fn requireField(opt: ?[]const u8, field_name: []const u8, filepath: []const u8, line_num: usize) !void {
+   if (opt == null or opt.?.len == 0) {
+      std.debug.print("error: {s}:{d}: missing required field '{s}'\n", .{ filepath, line_num, field_name });
+      return error.MissingRequiredField; } }
+
 fn validateMetadata(metadata: *types.Metadata, filepath: []const u8, line_number: usize) !void {
-   if (metadata.title == null or metadata.title.?.len == 0) { std.debug.print("error: {s}:{d}: missing required field 'title'\n", .{ filepath, line_number }); return error.MissingRequiredField; }
-   if (metadata.pub_date == null or metadata.pub_date.?.len == 0) { std.debug.print("error: {s}:{d}: missing required field 'pubDate'\n", .{ filepath, line_number }); return error.MissingRequiredField; }
-   if (!isValidDate(metadata.pub_date.?)) { std.debug.print("error: {s}:{d}: invalid date format for 'pubDate', expected yyyy-mm-dd\n", .{ filepath, line_number }); return error.InvalidDateFormat; }
-   if (metadata.tags == null or metadata.tags.?.len == 0) { std.debug.print("error: {s}:{d}: missing required field 'tags'\n", .{ filepath, line_number }); return error.MissingRequiredField; }
-   if (metadata.description == null or metadata.description.?.len == 0) { std.debug.print("error: {s}:{d}: missing required field 'description'\n", .{ filepath, line_number }); return error.MissingRequiredField; } }
+   try requireField(metadata.title, "title", filepath, line_number);
+   try requireField(metadata.pub_date, "pubDate", filepath, line_number);
+   if (!isValidDate(metadata.pub_date.?)) {
+      std.debug.print("error: {s}:{d}: invalid date format for 'pubDate', expected yyyy-mm-dd\n", .{ filepath, line_number });
+      return error.InvalidDateFormat; }
+   try requireField(metadata.tags, "tags", filepath, line_number);
+   try requireField(metadata.description, "description", filepath, line_number); }
+
+fn allDigits(s: []const u8) bool {
+   for (s) |c| { if (c < '0' or c > '9') return false; }
+   return true; }
 
 fn isValidDate(date: []const u8) bool {
    if (date.len != 10) return false;
    if (date[4] != '-' or date[7] != '-') return false;
-
-   for (date[0..4])  |c| { if (c < '0' or c > '9') return false; }
-   for (date[5..7])  |c| { if (c < '0' or c > '9') return false; }
-   for (date[8..10]) |c| { if (c < '0' or c > '9') return false; }
-
-   return true; }
+   return allDigits(date[0..4]) and allDigits(date[5..7]) and allDigits(date[8..10]); }
 
 pub fn parseTags(alloc: Allocator, tags_str: []const u8) ![][]const u8 {
     var tags: std.ArrayList([]const u8) = .{};

@@ -13,7 +13,7 @@
 # hostname and ip via multicast dns on every network it joins, so other machines can automatically resolve `.local` hostnames without
 # manual dns configuration.
 #
-# We use |(host/guest)| to indicate the commands in this section shall be run on the host/guest laptop.
+# We use |host/guest| to indicate the commands in this section shall be run on the host/guest laptop.
 #
 # | The ssh part
 #

@@ -4,6 +4,9 @@ const types  = @import("types.zig");
 const utils  = @import("utils.zig");
 
 const Allocator = std.mem.Allocator;
+const line_trim_chars = " \t\r";
+
+fn trimLine(line: []const u8) []const u8 { return std.mem.trim(u8, line, line_trim_chars); }
 
 pub const ExtractedContent = struct {
     alloc:       Allocator,
@@ -38,7 +41,7 @@ pub fn extractBlocks(
 
     var i: usize = 0;
     while (i < lines.items.len) {
-        const line = std.mem.trim(u8, lines.items[i], " \t\r");
+        const line = trimLine(lines.items[i]);
 
         if (lang_config.multi_line_start) |ml_start| {
             if (std.mem.startsWith(u8, line, ml_start)) {
@@ -48,7 +51,7 @@ pub fn extractBlocks(
                 var end_line: ?usize = null;
                 var j = i;
 
-                while (j < lines.items.len) : (j += 1) { const current = std.mem.trim(u8, lines.items[j], " \t\r");
+                while (j < lines.items.len) : (j += 1) { const current = trimLine(lines.items[j]);
                                                          if (std.mem.endsWith(u8, current, lang_config.multi_line_end.?)) { end_line = j; break; } }
 
                 if (end_line) |end| {
@@ -70,10 +73,10 @@ pub fn extractBlocks(
                     var block_content: std.ArrayList(u8) = .{}; defer block_content.deinit(alloc);
 
                     while (end_line < lines.items.len) {
-                        const current = std.mem.trim(u8, lines.items[end_line], " \t\r");
+                        const current = trimLine(lines.items[end_line]);
                         if (!std.mem.startsWith(u8, current, sl_comment)) break;
 
-                        const raw_current = std.mem.trimRight(u8, lines.items[end_line], " \t\r");
+                        const raw_current = std.mem.trimRight(u8, lines.items[end_line], line_trim_chars);
                         const comment_pos = std.mem.indexOf(u8, raw_current, sl_comment).?;
 
                         var comment_text = raw_current[comment_pos + sl_comment.len ..];
@@ -81,7 +84,7 @@ pub fn extractBlocks(
 
                         try block_content.appendSlice(alloc, comment_text);
 
-                        if (end_line + 1 < lines.items.len) { const next = std.mem.trim(u8, lines.items[end_line + 1], " \t\r");
+                        if (end_line + 1 < lines.items.len) { const next = trimLine(lines.items[end_line + 1]);
                                                               if (std.mem.startsWith(u8, next, sl_comment)) { try block_content.append(alloc, '\n'); } }
 
                         end_line += 1; }
@@ -107,7 +110,7 @@ fn extractMultiLineContent(
    var content: std.ArrayList(u8) = .{}; defer content.deinit(alloc);
 
    for (lines, 0..) |line, idx| {
-       var processed_line = std.mem.trimRight(u8, line, " \t\r");
+       var processed_line = std.mem.trimRight(u8, line, line_trim_chars);
 
        if (idx == 0) { if (std.mem.indexOf(u8, processed_line, start_marker)) |pos| { processed_line = std.mem.trimLeft(u8, processed_line[pos + start_marker.len ..], " \t"); } }
 
@@ -117,10 +120,10 @@ fn extractMultiLineContent(
 
    return content.toOwnedSlice(alloc); }
 
-fn isEmptyLine(line: []const u8) bool { const trimmed = std.mem.trim(u8, line, " \t\r"); return trimmed.len == 0; }
+fn isEmptyLine(line: []const u8) bool { return trimLine(line).len == 0; }
 
 fn isCommentLine(line: []const u8, lang_config: config.LangConfig) bool {
-    const trimmed = std.mem.trim(u8, line, " \t\r");
+    const trimmed = trimLine(line);
 
     if (lang_config.single_line_comment) |sl| { if (std.mem.startsWith(u8, trimmed, sl)) return true; }
     if (lang_config.multi_line_start) |ml_start| { if (std.mem.startsWith(u8, trimmed, ml_start)) return true; }
@@ -129,7 +132,7 @@ fn isCommentLine(line: []const u8, lang_config: config.LangConfig) bool {
     return false; }
 
 fn isCommentLineStart(line: []const u8, lang_config: config.LangConfig) bool {
-   const trimmed = std.mem.trim(u8, line, " \t\r");
+   const trimmed = trimLine(line);
 
    if (lang_config.multi_line_start) |ml_start| { if (std.mem.startsWith(u8, trimmed, ml_start)) return true; }
    if (lang_config.multi_line_end) |ml_end| { if (std.mem.endsWith(u8, trimmed, ml_end)) return true; }

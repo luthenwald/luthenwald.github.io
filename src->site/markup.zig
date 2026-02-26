@@ -20,6 +20,17 @@ const Region = union(enum) {
 
 fn compareRegions(context: void, a: Region, b: Region) bool { _ = context; return a.startLine() < b.startLine(); }
 
+fn appendBlock(
+   alloc:         Allocator,
+   blocks:        *std.ArrayList(types.ParsedBlock),
+   last_block_id: *?[]const u8,
+   block_counter: *usize,
+   block:         types.ParsedBlock, ) !void {
+   try blocks.append(alloc, block);
+   if (last_block_id.*) |id| alloc.free(id);
+   last_block_id.* = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter.*});
+   block_counter.* += 1; }
+
 pub fn parseMarkup(
     alloc:       Allocator,
     comments:    []types.CommentBlock,
@@ -63,20 +74,11 @@ pub fn parseMarkup(
                             if (i + 1 < lines.len) { try verbatim_content.append(alloc, '\n'); }
                             i += 1; }
 
-                        try blocks.append(alloc, .{ .verbatim = .{ .content = try verbatim_content.toOwnedSlice(alloc) }, });
-
-                        if (last_block_id) |id| alloc.free(id);
-                        last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                        block_counter += 1; continue; }
+                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, .{ .verbatim = .{ .content = try verbatim_content.toOwnedSlice(alloc) }, });
+                        continue; }
 
                     if (std.mem.startsWith(u8, line, "@insert")) {
-                        const insert = try parseInsert(alloc, line, filepath);
-                        try blocks.append(alloc, insert);
-
-                        if (last_block_id) |id| alloc.free(id);
-                        last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                        block_counter += 1;
-
+                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseInsert(alloc, line, filepath));
                         i += 1; continue; }
 
                     if (std.mem.startsWith(u8, line, "^") and isValidFootnote(line)) {
@@ -91,36 +93,17 @@ pub fn parseMarkup(
                         const heading_text = try getPlainText(alloc, heading.heading.content); defer alloc.free(heading_text);
 
                         try outline.append(alloc, .{ .level = heading.heading.level, .text = try alloc.dupe(u8, heading_text), .id = try alloc.dupe(u8, heading.heading.id), });
-                        try blocks.append(alloc, heading);
-
-                        if (last_block_id) |id| alloc.free(id);
-                        last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                        block_counter += 1;
-
+                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, heading);
                         i += 1; continue; }
 
                     if (std.mem.startsWith(u8, line, "-")) {
                         const result = try consumeBlockLines(alloc, lines, i); defer alloc.free(result.content);
-
-                        const list = try parseList(alloc, result.content);
-                        try blocks.append(alloc, list);
-
-                        if (last_block_id) |id| alloc.free(id);
-                        last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                        block_counter += 1;
-
+                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseList(alloc, result.content));
                         i = result.next_index; continue; }
 
                     if (std.mem.startsWith(u8, line, ">")) {
                         const result = try consumeBlockLines(alloc, lines, i); defer alloc.free(result.content);
-
-                        const callout = try parseCallout(alloc, result.content);
-                        try blocks.append(alloc, callout);
-
-                        if (last_block_id) |id| alloc.free(id);
-                        last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                        block_counter += 1;
-
+                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseCallout(alloc, result.content));
                         i = result.next_index; continue; }
 
                     var para_lines: std.ArrayList([]const u8) = .{}; defer para_lines.deinit(alloc);
@@ -139,12 +122,7 @@ pub fn parseMarkup(
                         try para_lines.append(alloc, next_line); i += 1; }
 
                     const combined = try std.mem.join(alloc, " ", para_lines.items); defer alloc.free(combined);
-                    const paragraph = try parseParagraph(alloc, combined);
-                    try blocks.append(alloc, paragraph);
-
-                    if (last_block_id) |id| alloc.free(id);
-                    last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                    block_counter += 1; } },
+                    try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseParagraph(alloc, combined)); } },
 
             .code => |code_block| {
                 var code_lines: std.ArrayList(u8) = .{}; defer code_lines.deinit(alloc);
@@ -157,11 +135,7 @@ pub fn parseMarkup(
                     has_content = true; }
 
                 if (has_content) {
-                    try blocks.append(alloc, .{ .code = .{ .lines = try code_lines.toOwnedSlice(alloc) }, });
-
-                    if (last_block_id) |id| alloc.free(id);
-                    last_block_id = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter});
-                    block_counter += 1; } }, } }
+                    try appendBlock(alloc, &blocks, &last_block_id, &block_counter, .{ .code = .{ .lines = try code_lines.toOwnedSlice(alloc) }, }); } }, } }
 
     for (footnotes.items) |footnote| { try blocks.append(alloc, footnote); }
 
@@ -215,6 +189,12 @@ fn isBlockStart(line: []const u8) bool {
           std.mem.startsWith(u8, line, "^") or
           std.mem.startsWith(u8, line, "@insert"); }
 
+fn parsePrefixLevel(line: []const u8, ch: u8) struct { level: u8, rest: []const u8 } {
+   var level: u8 = 0;
+   var i: usize = 0;
+   while (i < line.len and line[i] == ch) : (i += 1) { level += 1; }
+   return .{ .level = level, .rest = std.mem.trim(u8, line[i..], " \t") }; }
+
 fn splitLines(alloc: Allocator, content: []const u8) ![][]const u8 {
    var lines: std.ArrayList([]const u8) = .{}; errdefer { for (lines.items) |line| alloc.free(line); lines.deinit(alloc); }
 
@@ -224,17 +204,11 @@ fn splitLines(alloc: Allocator, content: []const u8) ![][]const u8 {
    return lines.toOwnedSlice(alloc); }
 
 fn parseHeading(alloc: Allocator, line: []const u8) !types.ParsedBlock {
-   var level: u8 = 0;
-   var i: usize = 0;
-   while (i < line.len and line[i] == '|') : (i += 1) { level += 1; }
-
-   const text = std.mem.trim(u8, line[i..], " \t");
-   const content = try parseInlineElements(alloc, text);
-
+   const pre = parsePrefixLevel(line, '|');
+   const content = try parseInlineElements(alloc, pre.rest);
    const id_text = try getPlainText(alloc, content); defer alloc.free(id_text);
    const id = try generateId(alloc, id_text);
-
-   return .{ .heading = .{ .level = level, .content = content, .id = id, }, }; }
+   return .{ .heading = .{ .level = pre.level, .content = content, .id = id, }, }; }
 
 fn parseParagraph(alloc: Allocator, line: []const u8) !types.ParsedBlock {
    const content = try parseInlineElements(alloc, line);
@@ -269,14 +243,9 @@ fn parseFootnote(alloc: Allocator, line: []const u8, filepath: []const u8, line_
    return .{ .footnote = .{ .number = number, .content = content, }, }; }
 
 fn parseList(alloc: Allocator, line: []const u8) !types.ParsedBlock {
-   var level: u8 = 0;
-   var i: usize = 0;
-   while (i < line.len and line[i] == '-') : (i += 1) { level += 1; }
-
-   const text = std.mem.trim(u8, line[i..], " \t");
-   const content = try parseInlineElements(alloc, text);
-
-   return .{ .list = .{ .level = level, .content = content, }, }; }
+   const pre = parsePrefixLevel(line, '-');
+   const content = try parseInlineElements(alloc, pre.rest);
+   return .{ .list = .{ .level = pre.level, .content = content, }, }; }
 
 fn parseCallout(alloc: Allocator, line: []const u8) !types.ParsedBlock {
    const text = std.mem.trim(u8, line[1..], " \t");
@@ -293,9 +262,13 @@ fn parseInsert(alloc: Allocator, line: []const u8, filepath: []const u8) !types.
 
    return .{ .insert = .{ .path = full_path, }, }; }
 
+fn flushText(alloc: Allocator, elements: *std.ArrayList(types.InlineElement), current: *std.ArrayList(u8)) !void {
+   if (current.items.len > 0) {
+      try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) });
+      current.clearRetainingCapacity(); } }
+
 fn parseInlineElements(alloc: Allocator, text: []const u8) ![]types.InlineElement {
    var elements: std.ArrayList(types.InlineElement) = .{}; errdefer { for (elements.items) |*elem| { elem.deinit(alloc); } elements.deinit(alloc); }
-
    var i: usize = 0;
    var current: std.ArrayList(u8) = .{}; defer current.deinit(alloc);
 
@@ -309,69 +282,47 @@ fn parseInlineElements(alloc: Allocator, text: []const u8) ![]types.InlineElemen
             const url_start = i + close_pos + 2;
             var paren_depth: i32 = 1;
             var paren_close: ?usize = null;
-
             var j = url_start;
             while (j < text.len) : (j += 1) {
                if      (text[j] == '(') { paren_depth += 1; }
                else if (text[j] == ')') { paren_depth -= 1; if (paren_depth == 0) { paren_close = j - url_start; break; } } }
+            if (paren_close == null) { try current.append(alloc, text[i]); i += 1; continue; }
 
-               if (paren_close == null) { try current.append(alloc, text[i]); i += 1; continue; }
-
-               if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); current.clearRetainingCapacity(); }
-
-               const link_text = text[i + 1 .. i + close_pos];
-               const url = text[url_start .. url_start + paren_close.?];
-
-               try elements.append(alloc, .{ .link = .{ .text = try alloc.dupe(u8, link_text), .url = try alloc.dupe(u8, url), }, });
-
-               i = url_start + paren_close.? + 1; continue; } }
+            try flushText(alloc, &elements, &current);
+            const link_text = text[i + 1 .. i + close_pos];
+            const url = text[url_start .. url_start + paren_close.?];
+            try elements.append(alloc, .{ .link = .{ .text = try alloc.dupe(u8, link_text), .url = try alloc.dupe(u8, url), }, });
+            i = url_start + paren_close.? + 1; continue; } }
 
       if (text[i] == '|') {
          const close_pos = std.mem.indexOfPos(u8, text, i + 1, "|") orelse { try current.append(alloc, text[i]); i += 1; continue; };
-
-         if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); current.clearRetainingCapacity(); }
-
-         const highlight_text = text[i + 1 .. close_pos];
-         try elements.append(alloc, .{ .highlight = try alloc.dupe(u8, highlight_text) });
+         try flushText(alloc, &elements, &current);
+         try elements.append(alloc, .{ .highlight = try alloc.dupe(u8, text[i + 1 .. close_pos]) });
          i = close_pos + 1; continue; }
 
       if (text[i] == '`') {
-         const close_pos = std.mem.indexOfPos(u8, text, i + 1, "`") orelse {
-             try current.append(alloc, text[i]);
-             i += 1; continue; };
-
-         if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); current.clearRetainingCapacity(); }
-
-         const code_text = text[i + 1 .. close_pos];
-         try elements.append(alloc, .{ .inlinecode = try alloc.dupe(u8, code_text) });
+         const close_pos = std.mem.indexOfPos(u8, text, i + 1, "`") orelse { try current.append(alloc, text[i]); i += 1; continue; };
+         try flushText(alloc, &elements, &current);
+         try elements.append(alloc, .{ .inlinecode = try alloc.dupe(u8, text[i + 1 .. close_pos]) });
          i = close_pos + 1; continue; }
 
       if (text[i] == '*') {
-         const close_pos = std.mem.indexOfPos(u8, text, i + 1, "*") orelse {
-             try current.append(alloc, text[i]);
-             i += 1; continue; };
-
-         if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); current.clearRetainingCapacity(); }
-
-         const italic_text = text[i + 1 .. close_pos];
-         try elements.append(alloc, .{ .italic = try alloc.dupe(u8, italic_text) });
+         const close_pos = std.mem.indexOfPos(u8, text, i + 1, "*") orelse { try current.append(alloc, text[i]); i += 1; continue; };
+         try flushText(alloc, &elements, &current);
+         try elements.append(alloc, .{ .italic = try alloc.dupe(u8, text[i + 1 .. close_pos]) });
          i = close_pos + 1; continue; }
 
       if (i + 2 < text.len and text[i] == '[' and text[i + 1] == '^') {
          const close_pos = std.mem.indexOfPos(u8, text, i + 2, "]") orelse { try current.append(alloc, text[i]); i += 1; continue; };
-
          const num_str = text[i + 2 .. close_pos];
          const number = std.fmt.parseInt(usize, num_str, 10) catch { try current.append(alloc, text[i]); i += 1; continue; };
-
-         if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); current.clearRetainingCapacity(); }
-
+         try flushText(alloc, &elements, &current);
          try elements.append(alloc, .{ .footnote_ref = number });
          i = close_pos + 1; continue; }
 
       try current.append(alloc, text[i]); i += 1; }
 
-   if (current.items.len > 0) { try elements.append(alloc, .{ .text = try current.toOwnedSlice(alloc) }); }
-
+   try flushText(alloc, &elements, &current);
    return elements.toOwnedSlice(alloc); }
 
 fn getPlainText(alloc: Allocator, elements: []types.InlineElement) ![]const u8 {
