@@ -159,7 +159,7 @@ fn renderTagLinks(writer: anytype, tags: [][]const u8, href_prefix: []const u8) 
 
 fn renderBlogEntry(writer: anytype, blog: *const types.Blog, blog_link_prefix: []const u8, tag_href_prefix: []const u8) !void {
    try writer.writeAll("      <article class=\"blog-entry\">\n");
-   try std.fmt.format(writer, "         <h2><a href=\"{s}{s}.html\">{s}</a></h2>\n", .{ blog_link_prefix, blog.pageid, blog.title });
+   try std.fmt.format(writer, "         <h1><a href=\"{s}{s}.html\">{s}</a></h1>\n", .{ blog_link_prefix, blog.pageid, blog.title });
    try std.fmt.format(writer, "         <div class=\"date\">{s}</div>\n", .{blog.pub_date});
    try std.fmt.format(writer, "         <div class=\"description\">{s}</div>\n", .{blog.description});
    try writer.writeAll("         <div class=\"tags\">");

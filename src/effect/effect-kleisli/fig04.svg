@@ -9,7 +9,7 @@
        .label-text {
          font-family: Georgia, 'Times New Roman', serif;
          font-size: 24px;
-         fill: #1a1a1a;
+         fill: #666;
          text-anchor: middle;
          font-style: italic;
        }
@@ -27,50 +27,36 @@
        .arrow-fill {
          fill: #666;
        }
-       @media (prefers-color-scheme: dark) {
-         .label-text {
-           fill: #fafafa;
-         }
-         .arrow-label {
-           fill: #aaa;
-         }
-         .arrow-line {
-           stroke: #aaa;
-         }
-         .arrow-fill {
-           fill: #aaa;
-         }
-       }
      ]]>
    </style>
   </defs>
   <!-- Nodes -->
   <text x="100" y="170" class="label-text">(b, d)</text>
-  
+
   <text x="250" y="100" class="label-text">b</text>
   <text x="250" y="240" class="label-text">d</text>
-  
+
   <text x="450" y="100" class="label-text">m c</text>
   <text x="450" y="240" class="label-text">d</text>
-  
+
   <text x="620" y="170" class="label-text">m (c, d)</text>
 
   <!-- Arrows -->
   <!-- Split -->
   <line x1="130" y1="160" x2="230" y2="110" class="arrow-line" marker-end="url(#arrowhead)" />
   <line x1="130" y1="180" x2="230" y2="230" class="arrow-line" marker-end="url(#arrowhead)" />
-  
+
   <!-- f: b -> m c -->
   <line x1="270" y1="100" x2="420" y2="100" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="345" y="90" class="arrow-label">f</text>
-  
+
   <!-- id: d -> d -->
   <line x1="270" y1="240" x2="420" y2="240" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="345" y="260" class="arrow-label">id</text>
-  
+
   <!-- Merge -->
   <line x1="480" y1="110" x2="580" y2="160" class="arrow-line" marker-end="url(#arrowhead)" />
   <line x1="470" y1="230" x2="580" y2="180" class="arrow-line" marker-end="url(#arrowhead)" />
-  
+
   <text x="530" y="125" class="arrow-label">bind</text>
 </svg>

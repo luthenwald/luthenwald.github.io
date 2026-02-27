@@ -58,7 +58,7 @@ body {
    grid-template-columns: 18.5% 79.5%;
    width: min(87.5%, 1440px);
    gap: 1.44rem;
-   margin-inline: 1.44% auto; }
+   margin-inline: auto; }
 
 a {
    color: var(--fg);
@@ -190,7 +190,10 @@ code.inlinecode {
 
 pre {
    font-family: monospace;
-   font-size: 0.86rem; }
+   font-size: 0.86rem;
+   border: 0.58px solid var(--light-gray);
+   padding: 0rem 0.86rem;
+   overflow-x: auto; }
 
 pre code {
    color: inherit; }

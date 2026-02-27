@@ -13,7 +13,7 @@
        .label-text {
          font-family: Georgia, 'Times New Roman', serif;
          font-size: 24px;
-         fill: #1a1a1a;
+         fill: #666;
          text-anchor: middle;
          font-style: italic;
        }
@@ -36,23 +36,6 @@
        }
        .arrow-fill {
          fill: #666;
-       }
-       @media (prefers-color-scheme: dark) {
-         .label-text {
-           fill: #fafafa;
-         }
-         .arrow-label {
-           fill: #aaa;
-         }
-         .arrow-line {
-           stroke: #aaa;
-         }
-         .arrow-line-dashed {
-           stroke: #aaa;
-         }
-         .arrow-fill {
-           fill: #aaa;
-         }
        }
      ]]>
    </style>
