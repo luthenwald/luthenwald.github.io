@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>About</title>
+   <link rel="stylesheet" href="../styles/reset.css">
+   <link rel="stylesheet" href="../styles/prima.css">
+</head>
+<body class="blog-page">
+   <aside class="outline-sidebar">
+      <nav class="outline">
+         <a href="#lthenwadluth-hehim" class="h1">Lμthenwałd/Luth, He/Him</a>
+         <a href="#on-research" class="h1">On Research</a>
+         <a href="#programming-language-theory" class="h2">Programming Language Theory</a>
+         <a href="#category-theory" class="h2">Category Theory</a>
+         <a href="#gpu--parallel-computing" class="h2">GPU & Parallel Computing</a>
+         <a href="#current-projects" class="h1">(Current) Projects</a>
+         <a href="#slyz" class="h2">Slyz</a>
+         <a href="#splined" class="h2">Splined</a>
+         <a href="#education" class="h1">Education</a>
+         <a href="#technical-environment" class="h1">Technical Environment</a>
+         <a href="#contact" class="h1">Contact</a>
+      </nav>
+      <nav class="bottom-nav">
+         <a href="../index.html">Home</a>
+         <a href="../tags/tagcloud.html">Tags</a>
+         <a href="../feed.xml">Feed</a>
+         <a href="#" id="theme-toggle" title="toggle theme">Theme</a>
+      </nav>
+   </aside>
+   <main class="main-content">
+      <h1>About</h1>
+      <div class="metadata">
+         <span class="date">2036-11-18</span>
+         <span class="tags"><a href="../tags/about.html">about</a>, <a href="../tags/personal.html">personal</a></span>
+      </div>
+      <div class="description">The typical about me page.</div>
+      <h1 id="lthenwadluth-hehim">Lμthenwałd/Luth, He/Him</h1>
+
+      <p>Student working at the intersection of <span class="highlight">Programming Language Theory</span>, <span class="highlight">Category Theory</span>, and <span class="highlight">high-performance computing</span>. I am currently based in Wuhan/Shanghai, China.</p>
+
+      <pre><code>
+<span class='keyword'>module</span> <span class='module'>About</span> <span class='keyword'>where</span>
+
+</code></pre>
+
+      <h1 id="on-research">On Research</h1>
+
+      <p>My work sits at the junction of the theoretical and the applied. I am interested in how <span class="highlight">Categorical Abstractions</span> can be used not merely as design patterns but as structuring principles that carry semantic guarantees all the way through compilation.</p>
+
+      <h2 id="programming-language-theory">Programming Language Theory</h2>
+
+      <h2 id="category-theory">Category Theory</h2>
+
+      <h2 id="gpu--parallel-computing">GPU & Parallel Computing</h2>
+
+      <h1 id="current-projects">(Current) Projects</h1>
+
+      <h2 id="slyz">Slyz</h2>
+
+      <p>Slyz is a GPU-accelerated programming language I am developing in Racket. It targets Apple Silicon via Metal and is organized around a <span class="highlight">categorical intermediate representation</span> (CIR) that makes data-parallel structure explicit and amenable to formal reasoning. The design draws on applicative programming, Naperian-functor-based array combinators, and an algebraic effect system for managing memory and execution context.</p>
+
+      <p>The central ambition is a language in which high-level, shape-safe array programs can be written without the programmer reasoning about thread layout, memory coalescing, or warp divergence — and where correctness of the compilation to Metal shaders can be argued structurally.</p>
+
+      <h2 id="splined">Splined</h2>
+
+      <h1 id="education">Education</h1>
+
+      <h1 id="technical-environment">Technical Environment</h1>
+
+      <pre><code>
+<span class='keyword'>data</span> <span class='type'>Language</span> <span class='operator'>=</span> <span class='constructor'>Language</span>
+  <span class='punctuation bracket'>{</span> <span class='variable'>langName</span>   <span class='operator'>::</span> <span class='type'>String</span>
+  <span class='punctuation delimiter'>,</span> <span class='variable'>langDomain</span> <span class='operator'>::</span> <span class='type'>String</span>
+  <span class='punctuation bracket'>}</span> <span class='keyword'>deriving</span> <span class='punctuation bracket'>(</span><span class='type'>Show</span><span class='punctuation bracket'>)</span>
+
+<span class='type'>myStack</span> <span class='operator'>::</span> <span class='punctuation bracket'>[</span><span class='type'>Language</span><span class='punctuation bracket'>]</span>
+<span class='type'>myStack</span> <span class='operator'>=</span>
+  <span class='punctuation bracket'>[</span> <span class='constructor'>Language</span> <span class='string'>&quot;Haskell&quot;</span> <span class='string'>&quot;type theory, research tooling, proofs&quot;</span>
+  <span class='punctuation delimiter'>,</span> <span class='constructor'>Language</span> <span class='string'>&quot;Racket&quot;</span>  <span class='string'>&quot;compiler implementation, DSLs, macros&quot;</span>
+  <span class='punctuation delimiter'>,</span> <span class='constructor'>Language</span> <span class='string'>&quot;Rust&quot;</span>    <span class='string'>&quot;systems programming, game engines&quot;</span>
+  <span class='punctuation delimiter'>,</span> <span class='constructor'>Language</span> <span class='string'>&quot;Julia&quot;</span>   <span class='string'>&quot;GPU computing, scientific computing&quot;</span>
+  <span class='punctuation delimiter'>,</span> <span class='constructor'>Language</span> <span class='string'>&quot;Zig&quot;</span>     <span class='string'>&quot;low-level systems, build tooling&quot;</span>
+  <span class='punctuation delimiter'>,</span> <span class='constructor'>Language</span> <span class='string'>&quot;OCaml&quot;</span>   <span class='string'>&quot;type systems, formal methods&quot;</span>
+  <span class='punctuation bracket'>]</span>
+
+</code></pre>
+
+      <h1 id="contact">Contact</h1>
+
+      <p>I am reachable by <a href="mailto:luthenwald@pm.me">email</a>. If you are working on programming language theory, categorical semantics, GPU computing, or formal verification, I am glad to hear from you.</p>
+
+   </main>
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         const themeToggle = document.getElementById('theme-toggle');
+         const html = document.documentElement;
+         const savedTheme = localStorage.getItem('theme') || 'light';
+         html.setAttribute('data-theme', savedTheme);
+         themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+         });
+      });
+   </script>
+</body>
+</html>

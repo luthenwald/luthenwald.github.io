@@ -55,7 +55,7 @@ body {
    background: var(--bg);
    line-height: 1.44rem;
    display: grid;
-   grid-template-columns: 18.5% 79.5%;
+   grid-template-columns: 20% 80%;
    width: min(87.5%, 1440px);
    gap: 1.44rem;
    margin-inline: auto; }
