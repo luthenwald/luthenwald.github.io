@@ -30,11 +30,9 @@ pub fn generateBlogPage(
     try html.appendSlice(alloc, "      </div>\n");
     try std.fmt.format(w, "      <div class=\"description\">{s}</div>\n", .{blog.description});
 
-    var block_counter: usize = 0;
     for (blog.content) |block| {
-       try renderBlock(w, block, base_url, block_counter);
-       try w.writeAll("\n");
-       block_counter += 1; }
+       try renderBlock(w, block, base_url);
+       try w.writeAll("\n"); }
 
     try html.appendSlice(alloc, "   </main>\n");
     try renderThemeScript(w);
@@ -194,17 +192,17 @@ fn renderNavSidebar(writer: anytype, path: NavPath) !void {
    try writer.writeAll("   </aside>\n");
 }
 
-fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8, block_id: usize) !void {
+fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8) !void {
    _ = base_url;
 
    switch (block) {
       .heading => |h| {
-         try std.fmt.format(writer, "      <h{d} id=\"{s}\" data-block-id=\"block-{d}\">", .{ h.level, h.id, block_id });
+         try std.fmt.format(writer, "      <h{d} id=\"{s}\">", .{ h.level, h.id });
          try renderInlineElements(writer, h.content);
          try std.fmt.format(writer, "</h{d}>\n", .{h.level}); },
 
       .paragraph => |p| {
-         try std.fmt.format(writer, "      <p data-block-id=\"block-{d}\">", .{block_id});
+         try writer.writeAll("      <p>");
          try renderInlineElements(writer, p.content);
          try writer.writeAll("</p>\n"); },
 
@@ -214,22 +212,22 @@ fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8, 
          try writer.writeAll("</div>\n"); },
 
       .code => |c| {
-         try std.fmt.format(writer, "      <pre data-block-id=\"block-{d}\"><code>", .{block_id});
+         try writer.writeAll("      <pre><code>");
          try writer.writeAll(c.lines);
          try writer.writeAll("</code></pre>\n"); },
 
       .list => |l| {
-         try std.fmt.format(writer, "      <p class=\"l{d}-list\" data-block-id=\"block-{d}\">", .{ l.level, block_id });
+         try std.fmt.format(writer, "      <p class=\"l{d}-list\">", .{l.level});
          try renderInlineElements(writer, l.content);
          try writer.writeAll("</p>\n"); },
 
       .verbatim => |v| {
-         try std.fmt.format(writer, "      <pre class=\"verbatim\" data-block-id=\"block-{d}\"><code>", .{block_id});
+         try writer.writeAll("      <pre class=\"verbatim\"><code>");
          try escapeHtml(writer, v.content);
          try writer.writeAll("</code></pre>\n"); },
 
       .callout => |c| {
-         try std.fmt.format(writer, "      <blockquote class=\"callout\" data-block-id=\"block-{d}\">", .{block_id});
+         try writer.writeAll("      <blockquote class=\"callout\">");
          try renderInlineElements(writer, c.content);
          try writer.writeAll("</blockquote>\n"); },
 
@@ -240,7 +238,7 @@ fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8, 
              return;
          }; defer file.close();
 
-         try std.fmt.format(writer, "<div class=\"insert-container\" data-block-id=\"block-{d}\">", .{block_id});
+         try writer.writeAll("<div class=\"insert-container\">");
 
          var buf: [4096]u8 = undefined;
          while (true) { const n = try file.read(&buf); if (n == 0) break; try writer.writeAll(buf[0..n]); }

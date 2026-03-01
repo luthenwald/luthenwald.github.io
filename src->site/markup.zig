@@ -20,16 +20,8 @@ const Region = union(enum) {
 
 fn compareRegions(context: void, a: Region, b: Region) bool { _ = context; return a.startLine() < b.startLine(); }
 
-fn appendBlock(
-   alloc:         Allocator,
-   blocks:        *std.ArrayList(types.ParsedBlock),
-   last_block_id: *?[]const u8,
-   block_counter: *usize,
-   block:         types.ParsedBlock, ) !void {
-   try blocks.append(alloc, block);
-   if (last_block_id.*) |id| alloc.free(id);
-   last_block_id.* = try std.fmt.allocPrint(alloc, "block-{d}", .{block_counter.*});
-   block_counter.* += 1; }
+fn appendBlock(alloc: Allocator, blocks: *std.ArrayList(types.ParsedBlock), block: types.ParsedBlock) !void {
+   try blocks.append(alloc, block); }
 
 pub fn parseMarkup(
     alloc:       Allocator,
@@ -47,9 +39,6 @@ pub fn parseMarkup(
     for (code_blocks) |code_block| { try regions.append(alloc, .{ .code = code_block }); }
 
     std.sort.block(Region, regions.items, {}, compareRegions);
-
-    var block_counter: usize = 0;
-    var last_block_id: ?[]const u8 = null; defer if (last_block_id) |id| alloc.free(id);
 
     for (regions.items) |region| {
         switch (region) {
@@ -74,11 +63,11 @@ pub fn parseMarkup(
                             if (i + 1 < lines.len) { try verbatim_content.append(alloc, '\n'); }
                             i += 1; }
 
-                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, .{ .verbatim = .{ .content = try verbatim_content.toOwnedSlice(alloc) }, });
+                        try appendBlock(alloc, &blocks, .{ .verbatim = .{ .content = try verbatim_content.toOwnedSlice(alloc) }, });
                         continue; }
 
                     if (std.mem.startsWith(u8, line, "@insert")) {
-                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseInsert(alloc, line, filepath));
+                        try appendBlock(alloc, &blocks, try parseInsert(alloc, line, filepath));
                         i += 1; continue; }
 
                     if (std.mem.startsWith(u8, line, "^") and isValidFootnote(line)) {
@@ -93,17 +82,17 @@ pub fn parseMarkup(
                         const heading_text = try getPlainText(alloc, heading.heading.content); defer alloc.free(heading_text);
 
                         try outline.append(alloc, .{ .level = heading.heading.level, .text = try alloc.dupe(u8, heading_text), .id = try alloc.dupe(u8, heading.heading.id), });
-                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, heading);
+                        try appendBlock(alloc, &blocks, heading);
                         i += 1; continue; }
 
                     if (std.mem.startsWith(u8, line, "-")) {
                         const result = try consumeBlockLines(alloc, lines, i); defer alloc.free(result.content);
-                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseList(alloc, result.content));
+                        try appendBlock(alloc, &blocks, try parseList(alloc, result.content));
                         i = result.next_index; continue; }
 
                     if (std.mem.startsWith(u8, line, ">")) {
                         const result = try consumeBlockLines(alloc, lines, i); defer alloc.free(result.content);
-                        try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseCallout(alloc, result.content));
+                        try appendBlock(alloc, &blocks, try parseCallout(alloc, result.content));
                         i = result.next_index; continue; }
 
                     var para_lines: std.ArrayList([]const u8) = .{}; defer para_lines.deinit(alloc);
@@ -122,7 +111,7 @@ pub fn parseMarkup(
                         try para_lines.append(alloc, next_line); i += 1; }
 
                     const combined = try std.mem.join(alloc, " ", para_lines.items); defer alloc.free(combined);
-                    try appendBlock(alloc, &blocks, &last_block_id, &block_counter, try parseParagraph(alloc, combined)); } },
+                    try appendBlock(alloc, &blocks, try parseParagraph(alloc, combined)); } },
 
             .code => |code_block| {
                 var code_lines: std.ArrayList(u8) = .{}; defer code_lines.deinit(alloc);
@@ -135,7 +124,7 @@ pub fn parseMarkup(
                     has_content = true; }
 
                 if (has_content) {
-                    try appendBlock(alloc, &blocks, &last_block_id, &block_counter, .{ .code = .{ .lines = try code_lines.toOwnedSlice(alloc) }, }); } }, } }
+                    try appendBlock(alloc, &blocks, .{ .code = .{ .lines = try code_lines.toOwnedSlice(alloc) }, }); } }, } }
 
     for (footnotes.items) |footnote| { try blocks.append(alloc, footnote); }
 
