@@ -1,10 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeData #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE TypeData            #-}
+{-# LANGUAGE TypeFamilies        #-}
 
-import Data.Kind (Type)
-import GHC.TypeNats ( KnownNat, Nat )
+import           Data.Kind    ( Type )
+
+import           GHC.TypeNats ( KnownNat, Nat )
 
 -- This is a problem i met when trying to design a gpu programming language like futhark but exclusively for apple silicon.
 -- I need to know the position of a thread in the grid, or `thread_position_in_grid`.

@@ -48,8 +48,12 @@ module About where
 -- @img splined-o.webp
 
 -- | Education
+--
+-- I'm always the worst student in the grade.
 
 -- | Technical Environment
+--
+-- || Programming Language
 
 data Language = Language
    { langName   :: String
@@ -64,6 +68,8 @@ myStack =
    , Language "Julia"   "Prototyping, GPU computing, scientific computing"
    , Language "Zig"     "low-level systems, build tooling, gamedev"
    ]
+
+-- ||
 
 -- | Contact
 --

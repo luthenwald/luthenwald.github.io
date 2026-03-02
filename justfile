@@ -5,14 +5,13 @@ alias b := build
 alias c := compile
 alias p := preview
 
-# compile the src->site program
+# compile the site generator
 compile:
-   rm -rf ./.zig-cache
-   zig build
+   builtin cd site && cabal build
 
 # build the website
 build:
-   './zig-out/bin/src->site' ./src ./ luthenwald.github.io
+   builtin cd site && cabal run site -- ../src ../ luthenwald.github.io
 
 # open the built website
 preview:

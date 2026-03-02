@@ -5,8 +5,10 @@
 --               We'll further show that Monad is the constraint we need to form the valid Effect category.
 --               If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.
 
-import Data.Kind ( Type )
-import Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=<), (=<<), (>=>), (>>=) )
+import           Data.Kind ( Type )
+
+import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return,
+                             (<=<), (=<<), (>=>), (>>=) )
 
 -- | The Effect type
 --

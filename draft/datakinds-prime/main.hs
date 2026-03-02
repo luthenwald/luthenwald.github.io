@@ -1,10 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeData #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE TypeData            #-}
+{-# LANGUAGE TypeFamilies        #-}
 
-import Data.Kind (Type)
-import GHC.TypeNats ( KnownNat, Nat )
+import           Data.Kind    ( Type )
+
+import           GHC.TypeNats ( KnownNat, Nat )
 
 type data TidKind
    = Tid1 Nat

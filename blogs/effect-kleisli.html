@@ -1,125 +1,18 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Effect is Kleisli, etymologically</title>
-   <link rel="stylesheet" href="../styles/reset.css">
-   <link rel="stylesheet" href="../styles/prima.css">
-</head>
-<body class="blog-page">
-   <aside class="outline-sidebar">
-      <nav class="outline">
-         <a href="#the-effect-type" class="h1">The Effect type</a>
-         <a href="#the-oxford-definition-of-effect" class="h2">The Oxford definition of Effect</a>
-         <a href="#the-effect-category" class="h1">The Effect Category</a>
-         <a href="#category-fundamentals" class="h2">Category Fundamentals</a>
-         <a href="#the-monad-constraint" class="h2">The Monad Constraint</a>
-         <a href="#proofs-of-category-laws" class="h2">Proofs of Category Laws</a>
-         <a href="#maybe-an-impractical-example" class="h2">Maybe, an Impractical Example</a>
-         <a href="#the-effect-arrow" class="h1">The Effect Arrow</a>
-      </nav>
-      <nav class="bottom-nav">
-         <a href="../index.html">Home</a>
-         <a href="../tags/tagcloud.html">Tags</a>
-         <a href="../feed.xml">Feed</a>
-         <a href="#" id="theme-toggle" title="toggle theme">Theme</a>
-      </nav>
-   </aside>
-   <main class="main-content">
-      <h1>Effect is Kleisli, etymologically</h1>
-      <div class="metadata">
-         <span class="date">2025-11-26</span>
-         <span class="tags"><a href="../tags/effect-system.html">effect-system</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/monad.html">monad</a>, <a href="../tags/2025.html">2025</a></span>
-      </div>
-      <div class="description">It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell. We'll further show that Monad is the constraint we need to form the valid Effect category. If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.</div>
-      <pre><code>
-<span class='keyword'>import</span> <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Kind</span> <span class='punctuation bracket'>(</span> <span class='type'>Type</span> <span class='punctuation bracket'>)</span>
-<span class='keyword'>import</span> <span class='module'>Prelude</span>   <span class='keyword'>hiding</span> <span class='punctuation bracket'>(</span> <span class='type'>Just</span><span class='punctuation delimiter'>,</span> <span class='type'>Maybe</span><span class='punctuation delimiter'>,</span> <span class='type'>Monad</span><span class='punctuation delimiter'>,</span> <span class='type'>Nothing</span><span class='punctuation delimiter'>,</span> <span class='type'>id</span><span class='punctuation delimiter'>,</span> <span class='type'>return</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>)</span>
+<!DOCTYPE HTML>
+<html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Effect is Kleisli, etymologically</title><link rel="stylesheet" href="../styles/reset.css"><link rel="stylesheet" href="../styles/prima.css"></head><body class="blog-page"><aside class="outline-sidebar"><nav class="outline"><a href="#the-effect-type" class="h1">The Effect type</a><a href="#the-oxford-definition-of-effect" class="h2">The Oxford definition of Effect</a><a href="#the-effect-category" class="h1">The Effect Category</a><a href="#category-fundamentals" class="h2">Category Fundamentals</a><a href="#the-monad-constraint" class="h2">The Monad Constraint</a><a href="#proofs-of-category-laws" class="h2">Proofs of Category Laws</a><a href="#maybe-an-impractical-example" class="h2">Maybe, an Impractical Example</a><a href="#the-effect-arrow" class="h1">The Effect Arrow</a></nav><nav class="bottom-nav"><a href="../index.html">Home</a><a href="../tags/tagcloud.html">Tags</a><a href="../feed.xml">Feed</a><a href="#" id="theme-toggle" title="toggle theme">Theme</a></nav></aside><main class="main-content"><h1>Effect is Kleisli, etymologically</h1><div class="metadata"><span class="date">2025-11-26</span><span class="tags"><a href="../tags/effect-system.html">effect-system</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/monad.html">monad</a>, <a href="../tags/2025.html">2025</a></span></div><div class="description">It&#39;s pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell. We&#39;ll further show that Monad is the constraint we need to form the valid Effect category. If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.</div><pre><code><span class='keyword'>import</span>           <span class='module'>Data</span><span class='operator'>.</span><span class='module'>Kind</span> <span class='punctuation bracket'>(</span> <span class='type'>Type</span> <span class='punctuation bracket'>)</span>
 
-</code></pre>
-
-      <h1 id="the-effect-type">The Effect type</h1>
-
-      <p>When I was <a href="https://www.perplexity.ai/search/explain-what-is-effect-in-hask-TS.zYSCtRdqyUfWYX1UhWw#0">perplexitying</a> about effects in haskell, the result was disappointingly vague. A second attempt to <a href="https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0">define the effect type</a> revealed that <em>effect is defined differently with respect to every different effect system.</em></p>
-
-      <p>Thus speaking, the (precise) definition of effect in <a href="https://hackage.haskell.org/package/freer-simple-1.2.1.2/docs/Control-Monad-Freer.html#g:1">freer-simple</a> is different from that in <a href="https://hackage-content.haskell.org/package/data-effects-core-0.4.2.0/docs/Data-Effect.html#t:Effect">heftia</a>, and again different from those in other effect systems.</p>
-
-      <p>In this post, i shall define the <code class="inlinecode">Effect</code> type in a trivial effect system: an etymological one based on the Oxford English Dictionary. <sup><a href="#fn-1">1</a></sup></p>
-
-      <h2 id="the-oxford-definition-of-effect">The Oxford definition of Effect</h2>
-
-      <p>The Oxford Learners Dictionary <a href="https://www.oxfordlearnersdictionaries.com/definition/english/effect_1?q=effect">defines</a> <em>effect</em> as:</p>
-
-      <blockquote class="callout">a change that somebody/something causes in somebody/something else</blockquote>
-
-      <p>Parsing this structurally, we have:</p>
-
-      <p class="l1-list"><em>a change</em>, or some transformation we'll call <code class="inlinecode">m</code></p>
-
-      <p class="l1-list"><em>that something</em>, or an input value of type <code class="inlinecode">a</code></p>
-
-      <p class="l1-list"><em>causes</em>, or function application <code class="inlinecode">(->)</code></p>
-
-      <p class="l1-list"><em>in something else</em>, or an output value of type <code class="inlinecode">b</code></p>
-
-      <p>And the original definition can be rephrased to <code class="inlinecode">a</code> causes <code class="inlinecode">m</code> in <code class="inlinecode">b</code>, or isomorphically in haskell: <code class="inlinecode">a -> m b</code>.</p>
-
-      <p>This suggests our <code class="inlinecode">Effect</code> type should be parametrised by three things: the transformation <code class="inlinecode">m</code>, the input type <code class="inlinecode">a</code>, the output type <code class="inlinecode">b</code> & is essentially a morphism <code class="inlinecode">a -> m b</code>.</p>
-
-      <p>Using the <code class="inlinecode">runEffect</code> unwrapper/accessor, we can further make the semantics explicit:</p>
-
-      <pre><code>
-<span class='keyword'>newtype</span> <span class='type'>Effect</span> <span class='type'>m</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>{</span> <span class='variable'>runEffect</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span>
-
-</code></pre>
-
-      <p>If you are familiar with haskell, you might have noticed that the <code class="inlinecode">Effect</code> type here is exactly the traditional <code class="inlinecode">Kleisli</code> type <sup><a href="#fn-2">2</a></sup> in haskell.</p>
-
-      <pre><code>
-<span class='keyword'>newtype</span> <span class='type'>Kleisli</span> <span class='type'>m</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Kleisli</span> <span class='punctuation bracket'>{</span> <span class='variable'>runKleisli</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span>
-
-</code></pre>
-
-      <h1 id="the-effect-category">The Effect Category</h1>
-
-      <p>Having defined the Effect type, i (as an amateur of category theory) naturally want to define the <code class="inlinecode">Effect</code> category.</p>
-
-      <h2 id="category-fundamentals">Category Fundamentals</h2>
-
-      <p>A category consists of objects & morphisms between objects.</p>
-
-      <p>To form a valid category, we need an identity morphism <code class="inlinecode">id</code> for each object & a (binary) composition operator <code class="inlinecode">.</code> for morphisms. They must satisfy three laws: <code class="inlinecode">f . id = f, id . f = f, f . (g . h) = (f . g) . h</code>.</p>
-
-      <p>For convenience, we define both the <code class="inlinecode">(<=<)</code> & <code class="inlinecode">(>=>)</code> operators here, where <code class="inlinecode">(<=<)</code> is the traditional composition operator <code class="inlinecode">(.)</code> in category theory, and <code class="inlinecode">(>=>)</code> is the reverse composition operator.</p>
-
-      <pre><code>
-<span class='keyword'>class</span> <span class='type'>Category</span> <span class='punctuation bracket'>(</span><span class='type'>cat</span> <span class='operator'>::</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
+<span class='keyword'>import</span>           <span class='module'>Prelude</span>   <span class='keyword'>hiding</span> <span class='punctuation bracket'>(</span> <span class='type'>Just</span><span class='punctuation delimiter'>,</span> <span class='type'>Maybe</span><span class='punctuation delimiter'>,</span> <span class='type'>Monad</span><span class='punctuation delimiter'>,</span> <span class='type'>Nothing</span><span class='punctuation delimiter'>,</span> <span class='type'>id</span><span class='punctuation delimiter'>,</span> <span class='type'>return</span><span class='punctuation delimiter'>,</span>
+                             <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>)</span></code></pre><h1 id="the-effect-type">The Effect type</h1><p>When I was <a href="https://www.perplexity.ai/search/explain-what-is-effect-in-hask-TS.zYSCtRdqyUfWYX1UhWw#0">perplexitying</a> about effects in haskell, the result was disappointingly vague. A second attempt to <a href="https://www.perplexity.ai/search/define-the-effect-type-in-hask-Dc8z91r7SzOVQUjK.P011Q#0">define the effect type</a> revealed that <strong>effect is defined differently with respect to every different effect system.</strong></p><p>Thus speaking, the (precise) definition of effect in <a href="https://hackage.haskell.org/package/freer-simple-1.2.1.2/docs/Control-Monad-Freer.html#g:1">freer-simple</a> is different from that in <a href="https://hackage-content.haskell.org/package/data-effects-core-0.4.2.0/docs/Data-Effect.html#t:Effect">heftia</a>, and again different from those in other effect systems.</p><p>In this post, i shall define the <code class="inlinecode">Effect</code> type in a trivial effect system: an etymological one based on the Oxford English Dictionary. <sup><a href="#fn-1">1</a></sup></p><h2 id="the-oxford-definition-of-effect">The Oxford definition of Effect</h2><p>The Oxford Learners Dictionary <a href="https://www.oxfordlearnersdictionaries.com/definition/english/effect_1?q=effect">defines</a> <strong>effect</strong> as:</p><blockquote class="callout">a change that somebody/something causes in somebody/something else </blockquote><p>Parsing this structurally, we have:</p><p class="l1-list"><strong>a change</strong>, or some transformation we&#39;ll call <code class="inlinecode">m</code></p><p class="l1-list"><strong>that something</strong>, or an input value of type <code class="inlinecode">a</code></p><p class="l1-list"><strong>causes</strong>, or function application <code class="inlinecode">(-&gt;)</code></p><p class="l1-list"><strong>in something else</strong>, or an output value of type <code class="inlinecode">b</code></p><p>And the original definition can be rephrased to <code class="inlinecode">a</code> causes <code class="inlinecode">m</code> in <code class="inlinecode">b</code>, or isomorphically in haskell: <code class="inlinecode">a -&gt; m b</code>.</p><p>This suggests our <code class="inlinecode">Effect</code> type should be parametrised by three things: the transformation <code class="inlinecode">m</code>, the input type <code class="inlinecode">a</code>, the output type <code class="inlinecode">b</code> &amp; is essentially a morphism <code class="inlinecode">a -&gt; m b</code>.</p><p>Using the <code class="inlinecode">runEffect</code> unwrapper/accessor, we can further make the semantics explicit:</p><pre><code><span class='keyword'>newtype</span> <span class='type'>Effect</span> <span class='type'>m</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>{</span> <span class='variable'>runEffect</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span></code></pre><p>If you are familiar with haskell, you might have noticed that the <code class="inlinecode">Effect</code> type here is exactly the traditional <code class="inlinecode">Kleisli</code> type <sup><a href="#fn-2">2</a></sup> in haskell.</p><pre><code><span class='keyword'>newtype</span> <span class='type'>Kleisli</span> <span class='type'>m</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>=</span> <span class='constructor'>Kleisli</span> <span class='punctuation bracket'>{</span> <span class='variable'>runKleisli</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span> <span class='punctuation bracket'>}</span></code></pre><h1 id="the-effect-category">The Effect Category</h1><p>Having defined the Effect type, i (as an amateur of category theory) naturally want to define the <code class="inlinecode">Effect</code> category.</p><h2 id="category-fundamentals">Category Fundamentals</h2><p>A category consists of objects &amp; morphisms between objects.</p><p>To form a valid category, we need an identity morphism <code class="inlinecode">id</code> for each object &amp; a (binary) composition operator <code class="inlinecode">.</code> for morphisms. They must satisfy three laws: <code class="inlinecode">f . id = f, id . f = f, f . (g . h) = (f . g) . h</code>.</p><p>For convenience, we define both the <code class="inlinecode">(&lt;=&lt;)</code> &amp; <code class="inlinecode">(&gt;=&gt;)</code> operators here, where <code class="inlinecode">(&lt;=&lt;)</code> is the traditional composition operator <code class="inlinecode">(.)</code> in category theory, and <code class="inlinecode">(&gt;=&gt;)</code> is the reverse composition operator.</p><pre><code><span class='keyword'>class</span> <span class='type'>Category</span> <span class='punctuation bracket'>(</span><span class='type'>cat</span> <span class='operator'>::</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span> <span class='operator'>-&gt;</span> <span class='type'>Type</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
    <span class='type'>id</span>    <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>a</span>
    <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span> <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>c</span>
    <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span> <span class='operator'>::</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>cat</span> <span class='type'>a</span> <span class='type'>c</span>
 
    <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span>
-   <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span>
-
-</code></pre>
-
-      <h2 id="the-monad-constraint">The Monad Constraint</h2>
-
-      <p>Note that it's the partially parametrised <code class="inlinecode">Effect m</code> that matches the kind of <code class="inlinecode">cat</code> instead of the barebones <code class="inlinecode">Effect</code> itself. Meaning we are modeling the effect of <code class="inlinecode">m</code> as a category.</p>
-
-      <p>Substitute <code class="inlinecode">cat</code> with <code class="inlinecode">Effect m</code> & perform some further evaluations, we derive the actual type of <code class="inlinecode">id</code> & <code class="inlinecode">.</code>:</p>
-
-      <pre class="verbatim"><code>id :: Effect m a a
+   <span class='punctuation bracket'>(</span><span class='operator'>&gt;=&gt;</span><span class='punctuation bracket'>)</span> <span class='operator'>=</span> <span class='type'>flip</span> <span class='punctuation bracket'>(</span><span class='operator'>&lt;=&lt;</span><span class='punctuation bracket'>)</span></code></pre><h2 id="the-monad-constraint">The Monad Constraint</h2><p>Note that it&#39;s the partially parametrised <code class="inlinecode">Effect m</code> that matches the kind of <code class="inlinecode">cat</code> instead of the barebones <code class="inlinecode">Effect</code> itself. Meaning we are modeling the effect of <code class="inlinecode">m</code> as a category.</p><p>Substitute <code class="inlinecode">cat</code> with <code class="inlinecode">Effect m</code> &amp; perform some further evaluations, we derive the actual type of <code class="inlinecode">id</code> &amp; <code class="inlinecode">.</code>:</p><pre class="verbatim"><code>id :: Effect m a a
     = a -&gt; m a
 
 (.) :: Effect m b c -&gt; Effect m a b -&gt; Effect m a c
-     = (b -&gt; m c) -&gt; (a -&gt; m b) -&gt; (a -&gt; m c)
-</code></pre>
-
-      <p>I'll use a figure to illustrate what's going on here:</p>
-
-<div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+     = (b -&gt; m c) -&gt; (a -&gt; m b) -&gt; (a -&gt; m c)</code></pre><p>I&#39;ll use a figure to illustrate what&#39;s going on here:</p><div class="raw-block"><div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
   <defs>
    <marker id="arrowhead" markerWidth="10" markerHeight="6"
      refX="10" refY="3" orient="auto">
@@ -172,29 +65,7 @@
   <line x1="100" y1="100" x2="600" y2="237" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="230" y="120" class="arrow-label">arr4</text>
 </svg>
-</div>
-
-      <p>We have 6 objects <code class="inlinecode">a</code>, <code class="inlinecode">b</code>, <code class="inlinecode">c</code>, <code class="inlinecode">m a</code>, <code class="inlinecode">m b</code> & <code class="inlinecode">m c</code>. The morphisms mentioned in <code class="inlinecode">id</code> & <code class="inlinecode">(.)</code> are added to the figure. For convenience, we use <code class="inlinecode">arr1</code>, <code class="inlinecode">arr2</code>, etc. to indicate the morphisms.</p>
-
-      <p>It's clear that we need to somehow combine <code class="inlinecode">arr2</code> & <code class="inlinecode">arr3</code> to form a new morphism, then make this morphism match <code class="inlinecode">arr4</code>. However, the target of arr2 doesn't match the source of arr3 or vice versa. We need to map <code class="inlinecode">arr2</code>/<code class="inlinecode">arr3</code> into a continuous morphism, connecting their target & source.</p>
-
-      <p>We generally have these 2 options:</p>
-
-      <p class="l1-list">map <code class="inlinecode">arr3</code> to <code class="inlinecode">(a -> b)</code>, then compose it with <code class="inlinecode">arr2</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p>
-
-      <p class="l1-list">map <code class="inlinecode">arr2</code> to <code class="inlinecode">(m b -> m c)</code>, then compose it with <code class="inlinecode">arr3</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p>
-
-      <p>According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). <sup><a href="#fn-3">3</a></sup></p>
-
-      <p>The augmented figure below illustrates this mechanism. We use specific names instead of abstract <code class="inlinecode">arrx</code> here to imply they are highly related to monads.</p>
-
-      <p class="l1-list">The <code class="inlinecode">return</code> arrow lifts <code class="inlinecode">a</code> to <code class="inlinecode">m a</code>, serving as the identity morphism.</p>
-
-      <p class="l1-list">The <code class="inlinecode">(=<<)</code> arrow transforms our Effect arrow <code class="inlinecode">arr2</code> (<code class="inlinecode">b -> m c</code>) into the morphism <code class="inlinecode">arr5</code> (<code class="inlinecode">m b -> m c</code>).</p>
-
-      <p class="l1-list"><code class="inlinecode">arr4</code> is then formed by composing <code class="inlinecode">arr3</code> and <code class="inlinecode">arr5</code>.</p>
-
-<div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="430" viewBox="0 0 700 430">
+</div></div><p>We have 6 objects <code class="inlinecode">a</code>, <code class="inlinecode">b</code>, <code class="inlinecode">c</code>, <code class="inlinecode">m a</code>, <code class="inlinecode">m b</code> &amp; <code class="inlinecode">m c</code>. The morphisms mentioned in <code class="inlinecode">id</code> &amp; <code class="inlinecode">(.)</code> are added to the figure. For convenience, we use <code class="inlinecode">arr1</code>, <code class="inlinecode">arr2</code>, etc. to indicate the morphisms.</p><p>It&#39;s clear that we need to somehow combine <code class="inlinecode">arr2</code> &amp; <code class="inlinecode">arr3</code> to form a new morphism, then make this morphism match <code class="inlinecode">arr4</code>. However, the target of arr2 doesn&#39;t match the source of arr3 or vice versa. We need to map <code class="inlinecode">arr2</code>/<code class="inlinecode">arr3</code> into a continuous morphism, connecting their target &amp; source.</p><p>We generally have these 2 options:</p><p class="l1-list">map <code class="inlinecode">arr3</code> to <code class="inlinecode">(a -&gt; b)</code>, then compose it with <code class="inlinecode">arr2</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p><p class="l1-list">map <code class="inlinecode">arr2</code> to <code class="inlinecode">(m b -&gt; m c)</code>, then compose it with <code class="inlinecode">arr3</code> to form a new morphism, which is <code class="inlinecode">arr4</code>.</p><p>According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). <sup><a href="#fn-3">3</a></sup></p><p>The augmented figure below illustrates this mechanism. We use specific names instead of abstract <code class="inlinecode">arrx</code> here to imply they are highly related to monads.</p><p class="l1-list">The <code class="inlinecode">return</code> arrow lifts <code class="inlinecode">a</code> to <code class="inlinecode">m a</code>, serving as the identity morphism.</p><p class="l1-list">The <code class="inlinecode">(=&lt;&lt;)</code> arrow transforms our Effect arrow <code class="inlinecode">arr2</code> (<code class="inlinecode">b -&gt; m c</code>) into the morphism <code class="inlinecode">arr5</code> (<code class="inlinecode">m b -&gt; m c</code>).</p><p class="l1-list"><code class="inlinecode">arr4</code> is then formed by composing <code class="inlinecode">arr3</code> and <code class="inlinecode">arr5</code>.</p><div class="raw-block"><div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="430" viewBox="0 0 700 430">
   <defs>
    <marker id="arrowhead" markerWidth="10" markerHeight="6"
      refX="10" refY="3" orient="auto">
@@ -263,18 +134,7 @@
   <line x1="475" y1="168" x2="475" y2="255" class="arrow-line-dashed" marker-end="url(#dashedarrowhead)" />
   <text x="445" y="230" class="arrow-label">=<<</text>
 </svg>
-</div>
-
-      <p>And more importantly, this is precisely the Kleisli category for monad in category theory. Every monad gives rise to a Kleisli category where:</p>
-
-      <p class="l1-list">Objects are the same as the base category (Haskell types).</p>
-
-      <p class="l1-list">Morphisms from <code class="inlinecode">a</code> to <code class="inlinecode">b</code> are functions of type <code class="inlinecode">a -> m b</code>.</p>
-
-      <p>We then implement a typeclass as constraint for these two functions <code class="inlinecode">return</code> & <code class="inlinecode">=<<</code>, we call the typeclass <code class="inlinecode">Monad</code>.</p>
-
-      <pre><code>
-<span class='keyword'>class</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='keyword'>where</span>
+</div></div><p>And more importantly, this is precisely the Kleisli category for monad in category theory. Every monad gives rise to a Kleisli category where:</p><p class="l1-list">Objects are the same as the base category (Haskell types).</p><p class="l1-list">Morphisms from <code class="inlinecode">a</code> to <code class="inlinecode">b</code> are functions of type <code class="inlinecode">a -&gt; m b</code>.</p><p>We then implement a typeclass as constraint for these two functions <code class="inlinecode">return</code> &amp; <code class="inlinecode">=&lt;&lt;</code>, we call the typeclass <code class="inlinecode">Monad</code>.</p><pre><code><span class='keyword'>class</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='keyword'>where</span>
    <span class='type'>return</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>a</span>
    <span class='punctuation bracket'>(</span><span class='operator'>=&lt;&lt;</span><span class='punctuation bracket'>)</span>  <span class='operator'>::</span> <span class='punctuation bracket'>(</span><span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='type'>m</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span>
    <span class='punctuation bracket'>(</span><span class='operator'>&gt;&gt;=</span><span class='punctuation bracket'>)</span>  <span class='operator'>::</span> <span class='type'>m</span> <span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='type'>a</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='type'>m</span> <span class='type'>b</span>
@@ -284,22 +144,9 @@
 
 <span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='operator'>=&gt;</span> <span class='type'>Category</span> <span class='punctuation bracket'>(</span><span class='type'>Effect</span> <span class='type'>m</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
    <span class='type'>id</span>                        <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='type'>return</span>
-   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;=&gt;</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>g</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>g</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='variable'>x</span><span class='punctuation bracket'>)</span>
-
-</code></pre>
-
-      <h2 id="proofs-of-category-laws">Proofs of Category Laws</h2>
-
-      <p>Since we've already made <code class="inlinecode">Monad</code> as constraint for <code class="inlinecode">Effect</code>, we can assume the following Monad Laws as lemmas:</p>
-
-      <pre class="verbatim"><code>1. Right Identity: m &gt;&gt;= return = m
+   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;=&gt;</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>g</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>g</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='variable'>x</span><span class='punctuation bracket'>)</span></code></pre><h2 id="proofs-of-category-laws">Proofs of Category Laws</h2><p>Since we&#39;ve already made <code class="inlinecode">Monad</code> as constraint for <code class="inlinecode">Effect</code>, we can assume the following Monad Laws as lemmas:</p><pre class="verbatim"><code>1. Right Identity: m &gt;&gt;= return = m
 2. Left Identity: return x &gt;&gt;= f = f x
-3. Associativity: (m &gt;&gt;= f) &gt;&gt;= g = m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)
-</code></pre>
-
-      <p>Here's the proof that the effect does form a valid category:</p>
-
-      <pre class="verbatim"><code>Right Identity: f . id = f
+3. Associativity: (m &gt;&gt;= f) &gt;&gt;= g = m &gt;&gt;= (\x -&gt; f x &gt;&gt;= g)</code></pre><p>Here&#39;s the proof that the effect does form a valid category:</p><pre class="verbatim"><code>Right Identity: f . id = f
 Effect f . Effect return
    = Effect (\x -&gt; return =&lt;&lt; f x)
    = Effect (\x -&gt; f x &gt;&gt;= return)           -- definition of (=&lt;&lt;)
@@ -324,69 +171,24 @@ Effect f . (Effect g . Effect h)
    = Effect (\x -&gt; h =&lt;&lt; (g =&lt;&lt; f x))
    = Effect (\x -&gt; (f x &gt;&gt;= g) &gt;&gt;= h)
 
-These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;= (\x -&gt; g x &gt;&gt;= h)
-</code></pre>
-
-      <p>In other words, Monad is the constraint for the Effect type to be a category.</p>
-
-      <p>And i finally understand <a href="https://www.haskellforall.com/2012/12/the-continuation-monad.html">Gabriella's idea</a>.</p>
-
-      <blockquote class="callout">I firmly believe that the way to a Monads heart is through its Kleisli arrows, and if you want to study a Monads "purpose" or "motivation" you study what its Kleisli arrows do.</blockquote>
-
-      <h2 id="maybe-an-impractical-example">Maybe, an Impractical Example</h2>
-
-      <p>Let's define the <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html">Maybe</a> datatype to see how we can use the <code class="inlinecode">Effect</code> category.</p>
-
-      <pre><code>
-<span class='keyword'>data</span> <span class='type'>Maybe</span> <span class='type'>a</span> <span class='operator'>=</span> <span class='constructor'>Nothing</span> <span class='operator'>|</span> <span class='constructor'>Just</span> <span class='type'>a</span> <span class='keyword'>deriving</span> <span class='punctuation bracket'>(</span><span class='type'>Show</span><span class='punctuation bracket'>)</span>
+These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;= (\x -&gt; g x &gt;&gt;= h)</code></pre><p>In other words, Monad is the constraint for the Effect type to be a category.</p><p>And i finally understand <a href="https://www.haskellforall.com/2012/12/the-continuation-monad.html">Gabriella&#39;s idea</a>.</p><blockquote class="callout">I firmly believe that the way to a Monads heart is through its Kleisli arrows, and if you want to study a Monads &quot;purpose&quot; or &quot;motivation&quot; you study what its Kleisli arrows do.</blockquote><h2 id="maybe-an-impractical-example">Maybe, an Impractical Example</h2><p>Let&#39;s define the <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Maybe.html">Maybe</a> datatype to see how we can use the <code class="inlinecode">Effect</code> category.</p><pre><code><span class='keyword'>data</span> <span class='type'>Maybe</span> <span class='type'>a</span> <span class='operator'>=</span> <span class='constructor'>Nothing</span> <span class='operator'>|</span> <span class='constructor'>Just</span> <span class='type'>a</span> <span class='keyword'>deriving</span> <span class='punctuation bracket'>(</span><span class='type'>Show</span><span class='punctuation bracket'>)</span>
 
 <span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>Maybe</span> <span class='keyword'>where</span>
    <span class='type'>return</span> <span class='operator'>=</span> <span class='constructor'>Just</span>
 
    <span class='constructor'>Nothing</span>  <span class='operator'>&gt;&gt;=</span> <span class='operator'>_</span> <span class='operator'>=</span> <span class='constructor'>Nothing</span>
-   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Just</span> <span class='type'>x</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;&gt;=</span> <span class='type'>f</span> <span class='operator'>=</span> <span class='type'>f</span> <span class='type'>x</span>
-
-</code></pre>
-
-      <p>Now we can define some effects.</p>
-
-      <pre><code>
-<span class='function'><span class='function'><span class='type'>safeDiv</span> <span class='operator'>::</span> <span class='type'>Int</span> <span class='operator'>-&gt;</span> <span class='type'>Effect</span> <span class='type'>Maybe</span> <span class='type'>Int</span> <span class='type'>Int</span></span></span>
+   <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Just</span> <span class='type'>x</span><span class='punctuation bracket'>)</span></span> <span class='operator'>&gt;&gt;=</span> <span class='type'>f</span> <span class='operator'>=</span> <span class='type'>f</span> <span class='type'>x</span></code></pre><p>Now we can define some effects.</p><pre><code><span class='function'><span class='function'><span class='type'>safeDiv</span> <span class='operator'>::</span> <span class='type'>Int</span> <span class='operator'>-&gt;</span> <span class='type'>Effect</span> <span class='type'>Maybe</span> <span class='type'>Int</span> <span class='type'>Int</span></span></span>
 <span class='type'>safeDiv</span> <span class='variable parameter'><span class='number'>0</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='operator'>_</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Nothing</span><span class='punctuation bracket'>)</span>
-<span class='type'>safeDiv</span> <span class='type'>y</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>`</span><span class='type'>div</span><span class='operator'>`</span> <span class='type'>y</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span>
-
-</code></pre>
-
-      <p>And we can compose them using the <code class="inlinecode">Effect</code> category:</p>
-
-      <pre><code>
-<span class='type'>testSafeDiv</span> <span class='operator'>::</span> <span class='type'>IO</span> <span class='string special'><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
+<span class='type'>safeDiv</span> <span class='type'>y</span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>`</span><span class='type'>div</span><span class='operator'>`</span> <span class='type'>y</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span></code></pre><p>And we can compose them using the <code class="inlinecode">Effect</code> category:</p><pre><code><span class='type'>testSafeDiv</span> <span class='operator'>::</span> <span class='type'>IO</span> <span class='string special'><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
 <span class='type'>testSafeDiv</span> <span class='operator'>=</span> <span class='keyword'>do</span>
    <span class='type'>print</span> <span class='operator'>$</span> <span class='type'>runEffect</span> <span class='punctuation bracket'>(</span><span class='type'>safeDiv</span> <span class='number'>2</span> <span class='operator'>&gt;=&gt;</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>+</span> <span class='number'>1</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>10</span>
-   <span class='type'>print</span> <span class='operator'>$</span> <span class='type'>runEffect</span> <span class='punctuation bracket'>(</span><span class='type'>safeDiv</span> <span class='number'>0</span> <span class='operator'>&gt;=&gt;</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>+</span> <span class='number'>1</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>10</span>
-
-</code></pre>
-
-      <h1 id="the-effect-arrow">The Effect Arrow</h1>
-
-      <p>Having established that <code class="inlinecode">Effect</code> forms a valid Category (given a Monad), the next <em>natural</em> step is to see if it forms an <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Control-Arrow.html">Arrow</a>.</p>
-
-      <p>It turns out we get this <em>for free</em>. Just as <code class="inlinecode">Monad</code> was the key to the Category instance, the combination of <code class="inlinecode">Category</code> and <code class="inlinecode">Monad</code> gives us everything we need to implement <code class="inlinecode">Arrow</code>.</p>
-
-      <pre><code>
-<span class='keyword'>class</span> <span class='type'>Category</span> <span class='type'>a</span> <span class='operator'>=&gt;</span> <span class='type'>Arrow</span> <span class='type'>a</span> <span class='keyword'>where</span>
+   <span class='type'>print</span> <span class='operator'>$</span> <span class='type'>runEffect</span> <span class='punctuation bracket'>(</span><span class='type'>safeDiv</span> <span class='number'>0</span> <span class='operator'>&gt;=&gt;</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='constructor'>Just</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span> <span class='operator'>+</span> <span class='number'>1</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='number'>10</span></code></pre><h1 id="the-effect-arrow">The Effect Arrow</h1><p>Having established that <code class="inlinecode">Effect</code> forms a valid Category (given a Monad), the next <strong>natural</strong> step is to see if it forms an <a href="https://hackage.haskell.org/package/base-4.21.0.0/docs/Control-Arrow.html">Arrow</a>.</p><p>It turns out we get this <strong>for free</strong>. Just as <code class="inlinecode">Monad</code> was the key to the Category instance, the combination of <code class="inlinecode">Category</code> and <code class="inlinecode">Monad</code> gives us everything we need to implement <code class="inlinecode">Arrow</code>.</p><pre><code><span class='keyword'>class</span> <span class='type'>Category</span> <span class='type'>a</span> <span class='operator'>=&gt;</span> <span class='type'>Arrow</span> <span class='type'>a</span> <span class='keyword'>where</span>
   <span class='type'>arr</span>   <span class='operator'>::</span> <span class='punctuation bracket'>(</span><span class='type'>b</span> <span class='operator'>-&gt;</span> <span class='type'>c</span><span class='punctuation bracket'>)</span> <span class='operator'>-&gt;</span> <span class='type'>a</span> <span class='type'>b</span> <span class='type'>c</span>
   <span class='type'>first</span> <span class='operator'>::</span> <span class='type'>a</span> <span class='type'>b</span> <span class='type'>c</span> <span class='operator'>-&gt;</span> <span class='type'>a</span> <span class='punctuation bracket'>(</span><span class='type'>b</span><span class='punctuation delimiter'>,</span><span class='type'>d</span><span class='punctuation bracket'>)</span> <span class='punctuation bracket'>(</span><span class='type'>c</span><span class='punctuation delimiter'>,</span><span class='type'>d</span><span class='punctuation bracket'>)</span>
 
 <span class='keyword'>instance</span> <span class='type'>Monad</span> <span class='type'>m</span> <span class='operator'>=&gt;</span> <span class='type'>Arrow</span> <span class='punctuation bracket'>(</span><span class='type'>Effect</span> <span class='type'>m</span><span class='punctuation bracket'>)</span> <span class='keyword'>where</span>
    <span class='type'>arr</span> <span class='type'>f</span>            <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='punctuation bracket'>(</span><span class='type'>return</span> . <span class='type'>f</span><span class='punctuation bracket'>)</span>
-   <span class='type'>first</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='operator'>$</span> <span class='operator'>\</span><span class='variable parameter'><span class='punctuation bracket'>(</span><span class='type'>a</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span></span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>return</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='type'>a</span>
-
-</code></pre>
-
-      <p>The <code class="inlinecode">arr</code> function allows us to lift any pure function into our Effect world. It essentially composes the pure function with <code class="inlinecode">return</code>.</p>
-
-<div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+   <span class='type'>first</span> <span class='variable parameter'><span class='punctuation bracket'>(</span><span class='constructor'>Effect</span> <span class='type'>f</span><span class='punctuation bracket'>)</span></span> <span class='operator'>=</span> <span class='constructor'>Effect</span> <span class='operator'>$</span> <span class='operator'>\</span><span class='variable parameter'><span class='punctuation bracket'>(</span><span class='type'>a</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span></span> <span class='operator'>-&gt;</span> <span class='punctuation bracket'>(</span><span class='operator'>\</span><span class='variable'><span class='variable parameter'><span class='type'>x</span></span></span> <span class='operator'>-&gt;</span> <span class='type'>return</span> <span class='punctuation bracket'>(</span><span class='variable'>x</span><span class='punctuation delimiter'>,</span> <span class='type'>c</span><span class='punctuation bracket'>)</span><span class='punctuation bracket'>)</span> <span class='operator'>=&lt;&lt;</span> <span class='type'>f</span> <span class='type'>a</span></code></pre><p>The <code class="inlinecode">arr</code> function allows us to lift any pure function into our Effect world. It essentially composes the pure function with <code class="inlinecode">return</code>.</p><div class="raw-block"><div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
   <defs>
    <marker id="arrowhead" markerWidth="10" markerHeight="6"
      refX="10" refY="3" orient="auto">
@@ -436,11 +238,7 @@ These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;
   <line x1="160" y1="95" x2="520" y2="250" class="arrow-line" marker-end="url(#arrowhead)" />
   <text x="300" y="190" class="arrow-label">arr f</text>
 </svg>
-</div>
-
-      <p>The <code class="inlinecode">first</code> function handles side effects on the first component of a tuple while passing the second through unchanged. This is where the monadic binding shines, allowing us to thread the context through the computation.</p>
-
-<div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
+</div></div><p>The <code class="inlinecode">first</code> function handles side effects on the first component of a tuple while passing the second through unchanged. This is where the monadic binding shines, allowing us to thread the context through the computation.</p><div class="raw-block"><div class="insert-container"><svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330">
   <defs>
    <marker id="arrowhead" markerWidth="10" markerHeight="6"
      refX="10" refY="3" orient="auto">
@@ -502,29 +300,4 @@ These are equal by Monad Associativity: (m &gt;&gt;= g) &gt;&gt;= h = m &gt;&gt;
 
   <text x="530" y="125" class="arrow-label">bind</text>
 </svg>
-</div>
-
-      <div class="footnote" id="fn-1"><sup>1</sup> View the src of this post <a href="https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs">here</a></div>
-
-      <div class="footnote" id="fn-2"><sup>2</sup> <a href="https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli">Kleisli definition in Control.Arrow</a></div>
-
-      <div class="footnote" id="fn-3"><sup>3</sup> If you <a href="https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage">search</a> <code class="inlinecode">(a -> m b) -> (a -> b)</code> on Hoogle, you won't get any result.</div>
-
-   </main>
-   <script>
-      document.addEventListener('DOMContentLoaded', function() {
-         const themeToggle = document.getElementById('theme-toggle');
-         const html = document.documentElement;
-         const savedTheme = localStorage.getItem('theme') || 'light';
-         html.setAttribute('data-theme', savedTheme);
-         themeToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-         });
-      });
-   </script>
-</body>
-</html>
+</div></div><div class="footnote" id="fn-1"><sup>1</sup> View the src of this post <a href="https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs">here</a></div><div class="footnote" id="fn-2"><sup>2</sup> <a href="https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli">Kleisli definition in Control.Arrow</a></div><div class="footnote" id="fn-3"><sup>3</sup> If you <a href="https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&amp;scope=set%3Astackage">search</a> <code class="inlinecode">(a -&gt; m b) -&gt; (a -&gt; b)</code> on Hoogle, you won&#39;t get any result.</div></main><script>document.addEventListener('DOMContentLoaded', function() {  var themeToggle = document.getElementById('theme-toggle');  var html = document.documentElement;  var savedTheme = localStorage.getItem('theme') || 'light';  html.setAttribute('data-theme', savedTheme);  themeToggle.addEventListener('click', function(e) {    e.preventDefault();    var currentTheme = html.getAttribute('data-theme');    var newTheme = currentTheme === 'light' ? 'dark' : 'light';    html.setAttribute('data-theme', newTheme);    localStorage.setItem('theme', newTheme);  });});</script></body></html>

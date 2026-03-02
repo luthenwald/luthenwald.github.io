@@ -1,28 +1,26 @@
 -- title       = Hindley-milner type system demystified
 -- pubDate     = 2025-10-13
 -- tags        = haskell, hindley-milner, type-system, 2025
--- description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
+-- description = A guide to Hindley-Milner type system: types, unification & algorithm w with haskell implementation
 
--- | setup
+-- | Setup
 --
--- a [hindley-milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) is a
--- [type-system](https://en.wikipedia.org/wiki/Type_system) for
--- [λcalculus](https://en.wikipedia.org/wiki/Lambda_calculus) with
--- [parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism) (let statements).
+-- A [hindley-milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) is a [type-system](https://en.wikipedia.org/wiki/Type_system) for
+-- [λcalculus](https://en.wikipedia.org/wiki/Lambda_calculus) with [parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism) (let statements).
 --
--- hm type system is [complete](https://en.wikipedia.org/wiki/Completeness_(logic)) & has the ability to infer
+-- HM is [complete](https://en.wikipedia.org/wiki/Completeness_(logic)) & has the ability to infer
 -- the [most general type](https://en.wikipedia.org/wiki/Principal_type) of a given program without programmer-supplied
 -- [type annotations](https://en.wikipedia.org/wiki/Type_signature) or other hints.
 --
--- the prose is divided into 3 acts: type system, substitution/unification & algow. [^1]
+-- The prose is divided into 3 acts: type system, substitution/unification & algow.
 
-import Control.Monad        ( replicateM )
-import Control.Monad.Except
-import Control.Monad.State
+import           Control.Monad        ( replicateM )
+import           Control.Monad.Except
+import           Control.Monad.State
 
-import qualified Data.Map   as Map
-import           Data.Maybe ( isJust )
-import qualified Data.Set   as Set
+import qualified Data.Map             as Map
+import           Data.Maybe           ( isJust )
+import qualified Data.Set             as Set
 
 -- | hindley-milner type system
 --
@@ -793,6 +791,5 @@ main = do
 --   ---                   inference rule separator (premises above, conclusion below)
 -- ``````````````````````````````````````````````````````````````````````````````````
 
--- ^1. full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
 -- ^2. there should only exist the `Forall` constructor. we explicitly add a `Mono` branch here to simplify pattern matching.
 -- ^3. mgu is analogous to the initial object in the context of category theory.

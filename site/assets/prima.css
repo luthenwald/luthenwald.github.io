@@ -192,14 +192,17 @@ pre {
    font-family: monospace;
    font-size: 0.86rem;
    border: 0.58px solid var(--light-gray);
-   padding: 0rem 0.86rem;
+   padding: 0.86rem;
    overflow-x: auto; }
 
-pre code {
-   color: inherit; }
+pre code { color: inherit; }
 
-pre.verbatim code {
-   color: var(--fg); }
+pre.verbatim code { color: var(--fg); }
+
+.raw-block {
+   margin: 0;
+   padding: 0;
+   border: none; }
 
 pre code .keyword {
    color: #000000;
