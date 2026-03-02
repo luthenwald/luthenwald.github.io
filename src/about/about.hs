@@ -8,9 +8,28 @@
 -- @img me.webp
 --
 -- Student working at the intersection of |Programming Language Theory|, |Category Theory|, and |high-performance computing|.
--- Currently based in Wuhan/Shanghai, China.
+-- Currently based in Nantong/Shanghai/Wuhan China.
 
 module About where
+
+email :: String
+email = "luthenwald@pm.me"
+
+-- ````````````````````````````````````````````````````````````````
+-- -----BEGIN PGP PUBLIC KEY BLOCK-----
+--
+-- mDMEaaWe2RYJKwYBBAHaRw8BAQdA6WwBCw3rXlRckwbtBaiTZqKf5uVcUglsh6+4
+-- /XT0RT+0L2x1dGhlbndhbGQgKGdlbmVyYWwgcHVycG9zZSkgPGx1dGhlbndhbGRA
+-- cG0ubWU+iJMEExYKADsWIQRsi/Wc6vpgBqWdf7EsGv56B/cAgQUCaaWe2QIbAwUL
+-- CQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgAAKCRAsGv56B/cAgToXAQDXsg+Pi6wD
+-- fYN5cLrbjyRbY7KdVuyNenkt8xADEk7PAgEAwp4ETpZUq665IGXEURapaStVdQ9N
+-- TK861YsNLbZu6QS4OARppZ7ZEgorBgEEAZdVAQUBAQdA3eM2NjSbsmZDdp6ua79p
+-- BBMvOGtEC47usZuVj2GfOHkDAQgHiHgEGBYKACAWIQRsi/Wc6vpgBqWdf7EsGv56
+-- B/cAgQUCaaWe2QIbDAAKCRAsGv56B/cAgQz9AP4kHSktIsowrc4OBFU+zMrqMu69
+-- 8qXHgX86KuirrCw+DAD/Zc9JN6Nb03QzGACq8phFhWMPJVKvtsCXeyxsq5hYUQk=
+-- =DTwu
+-- -----END PGP PUBLIC KEY BLOCK-----
+-- ``````````````````````````````````````````````````````````````````
 
 -- | On Research
 --
@@ -76,5 +95,8 @@ myStack =
 -- I am reachable by [email](mailto:luthenwald@pm.me). If you are working on programming language theory, categorical semantics, GPU
 -- computing, or formal verification, I am glad to hear from you.
 --
+-- I have a YouTube channel, albeit i haven't started to regularly publish videos.
+--
+-- I don't use any social media
 --
 -- https://tangled.org/luthenwald.tngl.sh/

@@ -1,4 +1,4 @@
--- title       = Effect is Kleisli, etymologically
+-- title       = Effect is Kleisli, Etymologically
 -- pubDate     = 2025-11-26
 -- tags        = effect-system, haskell, monad, 2025
 -- description = It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell.

@@ -7,9 +7,9 @@ import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as TL
 
 import           Text.Blaze.Html.Renderer.Text ( renderHtml )
+import qualified Text.Blaze.Html5              as H
 import           Text.Blaze.Html5              ( Html, preEscapedText,
                                                  textValue, toHtml, (!) )
-import qualified Text.Blaze.Html5              as H
 import qualified Text.Blaze.Html5.Attributes   as A
 
 import           Typ
