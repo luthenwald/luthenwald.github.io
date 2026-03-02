@@ -1,9 +1,7 @@
-{-
-title       = Hindley-milner type system demystified
-pubDate     = 2025-10-13
-tags        = haskell, hindley-milner, type-system, 2025
-description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
--}
+-- title       = Hindley-milner type system demystified
+-- pubDate     = 2025-10-13
+-- tags        = haskell, hindley-milner, type-system, 2025
+-- description = a guide to hindley-milner type system: types, unification & algorithm w with haskell implementation
 
 -- | setup
 --
@@ -795,9 +793,6 @@ main = do
 --   ---                   inference rule separator (premises above, conclusion below)
 -- ``````````````````````````````````````````````````````````````````````````````````
 
-
-{-
-^1. full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
-^2. there should only exist the `Forall` constructor. we explicitly add a `Mono` branch here to simplify pattern matching.
-^3. mgu is analogous to the initial object in the context of category theory.
--}
+-- ^1. full source code available at [github](https://github.com/luthenwald/luthenwald.github.io/blob/prima/blogs/type-theory/hindley-milner.hs).
+-- ^2. there should only exist the `Forall` constructor. we explicitly add a `Mono` branch here to simplify pattern matching.
+-- ^3. mgu is analogous to the initial object in the context of category theory.

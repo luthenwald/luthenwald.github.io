@@ -38,6 +38,8 @@
          <a href="#case-4-incompatible-structures" class="h4">case 4: incompatible structures</a>
          <a href="#algorithm-w" class="h1">algorithm w</a>
          <a href="#inference-monad" class="h2">inference monad</a>
+         <a href="#" class="h1">|</a>
+         <a href="#inner-state-for-fresh-vars" class="h1">inner: state for fresh vars</a>
          <a href="#fresh-type-variables" class="h2">fresh type variables</a>
          <a href="#generalization" class="h2">generalization</a>
          <a href="#instantiation" class="h2">instantiation</a>
@@ -561,11 +563,13 @@ example 2: unify (α → β) String
       <pre><code>
 <span class='keyword'>type</span> <span class='type'>InferM</span> <span class='operator'>=</span> <span class='type'>ExceptT</span> <span class='type'>String</span> <span class='punctuation bracket'>(</span><span class='type'>State</span> <span class='type'>Int</span><span class='punctuation bracket'>)</span>
 <span class='comment'>--            ^^^^^^^^^^^^^^ ^^^^^^^^^^^</span>
-<span class='comment'>--            |              |</span>
-<span class='comment'>--            |              inner: state for fresh vars</span>
-<span class='comment'>--            outer: error handling</span>
-
 </code></pre>
+
+      <h1 id="">|</h1>
+
+      <h1 id="inner-state-for-fresh-vars">inner: state for fresh vars</h1>
+
+      <p>outer: error handling</p>
 
       <p>we define a function to lift unification from <code class="inlinecode">UnifyM</code> into <code class="inlinecode">InferM</code>. this bridges the gap between the two monads so we can use <code class="inlinecode">unify</code> inside <code class="inlinecode">inferW</code>.</p>
 

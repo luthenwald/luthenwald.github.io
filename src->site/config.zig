@@ -1,13 +1,11 @@
 const std = @import("std");
 
 pub const LangConfig = struct { name:                 []const u8,
-                                single_line_comment: ?[]const u8,
-                                multi_line_start:    ?[]const u8,
-                                multi_line_end:      ?[]const u8, };
+                                single_line_comment: ?[]const u8, };
 
 pub const langs = [_]LangConfig{
-    .{ .name = "haskell", .single_line_comment = "--", .multi_line_start = "{-", .multi_line_end = "-}", },
-    .{ .name = "fish",    .single_line_comment = "#",  .multi_line_start = "/*", .multi_line_end = "*/", }, };
+    .{ .name = "haskell", .single_line_comment = "--", },
+    .{ .name = "fish",    .single_line_comment = "#", }, };
 
 pub const ext_map = std.StaticStringMap([]const u8).initComptime(.{
     .{ ".fish", "fish" },

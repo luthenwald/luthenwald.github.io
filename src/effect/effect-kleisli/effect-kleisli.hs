@@ -1,11 +1,9 @@
-{-
-title       = Effect is Kleisli, etymologically
-pubDate     = 2025-11-26
-tags        = effect-system, haskell, monad, 2025
-description = It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell.
-              We'll further show that Monad is the constraint we need to form the valid Effect category.
-              If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.
--}
+-- title       = Effect is Kleisli, etymologically
+-- pubDate     = 2025-11-26
+-- tags        = effect-system, haskell, monad, 2025
+-- description = It's pretty intriguing that the Effect type in this blog is exactly the traditional Kleisli type in haskell.
+--               We'll further show that Monad is the constraint we need to form the valid Effect category.
+--               If you are wondering about the meaning of effects in the haskell world, I believe this blog will help gain some understanding.
 
 import Data.Kind ( Type )
 import Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return, (<=<), (=<<), (>=>), (>>=) )
@@ -229,9 +227,7 @@ instance Monad m => Arrow (Effect m) where
 --
 -- @insert fig04.svg
 
-{-
-^1. View the src of this post [here](https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs)
-^2. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
-^3. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
-    `(a -> m b) -> (a -> b)` on Hoogle, you won't get any result.
--}
+-- ^1. View the src of this post [here](https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs)
+-- ^2. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
+-- ^3. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
+--     `(a -> m b) -> (a -> b)` on Hoogle, you won't get any result.

@@ -128,10 +128,9 @@ pub const InlineElement = union(enum) {
 pub const Link = struct { text: []const u8, url: []const u8, };
 
 pub const CommentBlock = struct {
-    content:      []const u8,
-    start_line:   usize,
-    end_line:     usize,
-    is_multiline: bool,
+    content:    []const u8,
+    start_line: usize,
+    end_line:   usize,
 
     pub fn deinit(self: *CommentBlock, alloc: Allocator) void { alloc.free(self.content); } };
 

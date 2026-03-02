@@ -43,25 +43,6 @@ pub fn extractBlocks(
     while (i < lines.items.len) {
         const line = trimLine(lines.items[i]);
 
-        if (lang_config.multi_line_start) |ml_start| {
-            if (std.mem.startsWith(u8, line, ml_start)) {
-                const start_line = i;
-                const is_isolated_before = i == 0 or isEmptyLine(lines.items[i - 1]) or isCommentLine(lines.items[i - 1], lang_config);
-
-                var end_line: ?usize = null;
-                var j = i;
-
-                while (j < lines.items.len) : (j += 1) { const current = trimLine(lines.items[j]);
-                                                         if (std.mem.endsWith(u8, current, lang_config.multi_line_end.?)) { end_line = j; break; } }
-
-                if (end_line) |end| {
-                    const is_isolated_after = end + 1 >= lines.items.len or isEmptyLine(lines.items[end + 1]) or isCommentLine(lines.items[end + 1], lang_config);
-
-                    if (is_isolated_before and is_isolated_after) {
-                        const block_content = try extractMultiLineContent(alloc, lines.items[start_line .. end + 1], ml_start, lang_config.multi_line_end.?,);
-                        try comments.append(alloc, .{ .content = block_content, .start_line = start_line + 1, .end_line = end + 1, .is_multiline = true, });
-                        i = end + 1; continue; } } } }
-
         if (lang_config.single_line_comment) |sl_comment| {
             if (std.mem.startsWith(u8, line, sl_comment)) {
                 const is_isolated_before = i == 0 or isEmptyLine(lines.items[i - 1]) or isCommentLineStart(lines.items[i - 1], lang_config);
@@ -92,7 +73,7 @@ pub fn extractBlocks(
                     const is_isolated_after = end_line >= lines.items.len or isEmptyLine(lines.items[end_line]);
 
                     if (is_isolated_after) {
-                        try comments.append(alloc, .{ .content = try block_content.toOwnedSlice(alloc), .start_line = start_line + 1, .end_line = end_line, .is_multiline = end_line - start_line > 1, });
+                        try comments.append(alloc, .{ .content = try block_content.toOwnedSlice(alloc), .start_line = start_line + 1, .end_line = end_line, });
                         i = end_line; continue; } } } }
 
         i += 1; }
@@ -101,42 +82,11 @@ pub fn extractBlocks(
 
     return .{ .comments = try comments.toOwnedSlice(alloc), .code_blocks = try code_blocks.toOwnedSlice(alloc), .alloc = alloc, }; }
 
-fn extractMultiLineContent(
-   alloc:        Allocator,
-   lines:        [][]const u8,
-   start_marker: []const u8,
-   end_marker:   []const u8, ) ![]const u8 {
-
-   var content: std.ArrayList(u8) = .{}; defer content.deinit(alloc);
-
-   for (lines, 0..) |line, idx| {
-       var processed_line = std.mem.trimRight(u8, line, line_trim_chars);
-
-       if (idx == 0) { if (std.mem.indexOf(u8, processed_line, start_marker)) |pos| { processed_line = std.mem.trimLeft(u8, processed_line[pos + start_marker.len ..], " \t"); } }
-
-       if (idx == lines.len - 1) { if (std.mem.lastIndexOf(u8, processed_line, end_marker)) |pos| { processed_line = std.mem.trimRight(u8, processed_line[0..pos], " \t"); } }
-
-       if (processed_line.len > 0 or idx < lines.len - 1) { try content.appendSlice(alloc, processed_line); if (idx < lines.len - 1) { try content.append(alloc, '\n'); } } }
-
-   return content.toOwnedSlice(alloc); }
-
 fn isEmptyLine(line: []const u8) bool { return trimLine(line).len == 0; }
-
-fn isCommentLine(line: []const u8, lang_config: config.LangConfig) bool {
-    const trimmed = trimLine(line);
-
-    if (lang_config.single_line_comment) |sl| { if (std.mem.startsWith(u8, trimmed, sl)) return true; }
-    if (lang_config.multi_line_start) |ml_start| { if (std.mem.startsWith(u8, trimmed, ml_start)) return true; }
-    if (lang_config.multi_line_end) |ml_end| { if (std.mem.endsWith(u8, trimmed, ml_end)) return true; }
-
-    return false; }
 
 fn isCommentLineStart(line: []const u8, lang_config: config.LangConfig) bool {
    const trimmed = trimLine(line);
-
-   if (lang_config.multi_line_start) |ml_start| { if (std.mem.startsWith(u8, trimmed, ml_start)) return true; }
-   if (lang_config.multi_line_end) |ml_end| { if (std.mem.endsWith(u8, trimmed, ml_end)) return true; }
-
+   if (lang_config.single_line_comment) |sl| { if (std.mem.startsWith(u8, trimmed, sl)) return true; }
    return false; }
 
 fn identifyCodeBlocks(
