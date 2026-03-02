@@ -76,6 +76,8 @@ h1 { font-size: 2.99rem; }
 
 h2 { font-size: 2.07rem; }
 
+h3 { font-size: 1.44rem;}
+
 .outline-sidebar {
    display: flex;
    flex-direction: column;
@@ -177,6 +179,8 @@ blockquote.callout {
 img, svg {
    max-width: 100%;
    height: auto; }
+
+strong { font-weight: bold; }
 
 .insert-container {
    width: 100%;

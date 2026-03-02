@@ -22,7 +22,7 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return,
 -- is different from that in [heftia](https://hackage-content.haskell.org/package/data-effects-core-0.4.2.0/docs/Data-Effect.html#t:Effect),
 -- and again different from those in other effect systems.
 --
--- In this post, i shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary. [^1]
+-- In this post, we shall define the `Effect` type in a trivial effect system: an etymological one based on the Oxford English Dictionary.
 --
 -- || The Oxford definition of Effect
 --
@@ -38,20 +38,19 @@ import           Prelude   hiding ( Just, Maybe, Monad, Nothing, id, return,
 --
 -- And the original definition can be rephrased to `a` causes `m` in `b`, or isomorphically in haskell: `a -> m b`.
 --
--- This suggests our `Effect` type should be parametrised by three things:
--- the transformation `m`, the input type `a`, the output type `b` & is essentially a morphism `a -> m b`.
+-- This suggests our `Effect` type should be parametrised by three things: the transformation `m`, the input type `a`, the output type `b` & is essentially a morphism `a -> m b`.
 --
 -- Using the `runEffect` unwrapper/accessor, we can further make the semantics explicit:
 
 newtype Effect m a b = Effect { runEffect :: a -> m b }
 
--- If you are familiar with haskell, you might have noticed that the `Effect` type here is exactly the traditional `Kleisli` type [^2] in haskell.
+-- If you are familiar with haskell, you might have noticed that the `Effect` type here is exactly the traditional `Kleisli` type [^1] in haskell.
 
 newtype Kleisli m a b = Kleisli { runKleisli :: a -> m b }
 
 -- | The Effect Category
 --
--- Having defined the Effect type, i (as an amateur of category theory) naturally want to define the `Effect` category.
+-- Having defined the Effect type, we naturally want to define the `Effect` category.
 --
 -- || Category Fundamentals
 --
@@ -60,8 +59,7 @@ newtype Kleisli m a b = Kleisli { runKleisli :: a -> m b }
 -- To form a valid category, we need an identity morphism `id` for each object & a (binary) composition operator `.` for morphisms.
 -- They must satisfy three laws: `f . id = f, id . f = f, f . (g . h) = (f . g) . h`.
 --
--- For convenience, we define both the `(<=<)` & `(>=>)` operators here,
--- where `(<=<)` is the traditional composition operator `(.)` in category theory, and `(>=>)` is the reverse composition operator.
+-- For convenience, we define both the `(<=<)` & `(>=>)` operators here, where `(<=<)` is the traditional composition operator `(.)` in category theory, and `(>=>)` is the reverse composition operator.
 
 class Category (cat :: Type -> Type -> Type) where
    id    :: cat a a
@@ -86,22 +84,22 @@ class Category (cat :: Type -> Type -> Type) where
 --      = (b -> m c) -> (a -> m b) -> (a -> m c)
 -- ``````````````````````````````````````````````````````````````````````````````````
 --
--- I'll use a figure to illustrate what's going on here:
+-- We'll use a figure to illustrate what's going on here:
 --
 -- @insert fig01.svg
 --
--- We have 6 objects `a`, `b`, `c`, `m a`, `m b` & `m c`. The morphisms mentioned in `id` & `(.)` are added to the figure.
+-- There are 6 objects `a`, `b`, `c`, `m a`, `m b` & `m c`. The morphisms mentioned in `id` & `(.)` are added to the figure.
 -- For convenience, we use `arr1`, `arr2`, etc. to indicate the morphisms.
 --
 -- It's clear that we need to somehow combine `arr2` & `arr3` to form a new morphism, then make this morphism match `arr4`.
 -- However, the target of arr2 doesn't match the source of arr3 or vice versa. We need to map `arr2`/`arr3` into a continuous morphism,
 -- connecting their target & source.
 --
--- We generally have these 2 options:
+-- There are these 2 options:
 -- - map `arr3` to `(a -> b)`, then compose it with `arr2` to form a new morphism, which is `arr4`.
 -- - map `arr2` to `(m b -> m c)`, then compose it with `arr3` to form a new morphism, which is `arr4`.
 --
--- According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). [^3]
+-- According to the second law of thermodynamics, we prefer the second option (as we generally cannot extract a pure value from an effectful context). [^2]
 --
 -- The augmented figure below illustrates this mechanism. We use specific names instead of abstract `arrx` here to imply
 -- they are highly related to monads.
@@ -229,7 +227,6 @@ instance Monad m => Arrow (Effect m) where
 --
 -- @insert fig04.svg
 
--- ^1. View the src of this post [here](https://github.com/luthenwald/luthenwald.github.io/blob/prima/src/pl/effect/effect-kleisli.hs)
--- ^2. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
--- ^3. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
+-- ^1. [Kleisli definition in Control.Arrow](https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Control.Arrow.html#Kleisli)
+-- ^2. If you [search](https://hoogle.haskell.org/?hoogle=%28a+-%3E+m+b%29+-%3E+%28a+-%3E+b%29&scope=set%3Astackage)
 --     `(a -> m b) -> (a -> b)` on Hoogle, you won't get any result.
