@@ -56,7 +56,9 @@ pub fn highlightCode(
             .callout => |c| {
                 try result.append(alloc, .{ .callout = .{ .content = try copyInlineSlice(alloc, c.content), }, }); },
 
-            .insert => |i| { try result.append(alloc, .{ .insert = .{ .path = try alloc.dupe(u8, i.path) }, }); }, } }
+            .insert => |i| { try result.append(alloc, .{ .insert = .{ .path = try alloc.dupe(u8, i.path) }, }); },
+
+            .image => |m| { try result.append(alloc, .{ .image = .{ .path = try alloc.dupe(u8, m.path) }, }); }, } }
 
     return result.toOwnedSlice(alloc); }
 

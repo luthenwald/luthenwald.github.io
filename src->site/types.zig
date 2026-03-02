@@ -45,6 +45,7 @@ pub const ParsedBlock = union(enum) {
     verbatim:  Verbatim,
     callout:   Callout,
     insert:    Insert,
+    image:     Image,
 
     pub fn deinit(self: *ParsedBlock, alloc: Allocator) void {
         switch (self.*) {
@@ -55,7 +56,8 @@ pub const ParsedBlock = union(enum) {
             .list      => |*l| l.deinit(alloc),
             .verbatim  => |*v| v.deinit(alloc),
             .callout   => |*c| c.deinit(alloc),
-            .insert    => |*i| i.deinit(alloc), } } };
+            .insert    => |*i| i.deinit(alloc),
+            .image     => |*m| m.deinit(alloc), } } };
 
 pub const Heading = struct {
     level:   u8,
@@ -100,6 +102,11 @@ pub const Insert = struct {
     path: []const u8,
 
     pub fn deinit(self: *Insert, alloc: Allocator) void { alloc.free(self.path); } };
+
+pub const Image = struct {
+    path: []const u8,
+
+    pub fn deinit(self: *Image, alloc: Allocator) void { alloc.free(self.path); } };
 
 pub const InlineElement = union(enum) {
     text:         []const u8,

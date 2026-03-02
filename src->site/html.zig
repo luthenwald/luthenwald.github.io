@@ -242,7 +242,26 @@ fn renderBlock(writer: anytype, block: types.ParsedBlock, base_url: []const u8) 
 
          var buf: [4096]u8 = undefined;
          while (true) { const n = try file.read(&buf); if (n == 0) break; try writer.writeAll(buf[0..n]); }
-         try writer.writeAll("</div>\n"); }, } }
+         try writer.writeAll("</div>\n"); },
+
+      .image => |m| {
+         const file = std.fs.cwd().openFile(m.path, .{}) catch |err| {
+             std.debug.print("error: failed to open image file '{s}': {any}\n", .{ m.path, err });
+             try std.fmt.format(writer, "<!-- failed to embed image: {s} -->\n", .{m.path});
+             return;
+         }; defer file.close();
+
+         const data = file.readToEndAlloc(std.heap.page_allocator, 16 * 1024 * 1024) catch |err| {
+             std.debug.print("error: failed to read image file '{s}': {any}\n", .{ m.path, err });
+             try std.fmt.format(writer, "<!-- failed to read image: {s} -->\n", .{m.path});
+             return;
+         }; defer std.heap.page_allocator.free(data);
+
+         const mime = mimeFromPath(m.path);
+         const encoded = std.base64.standard.Encoder.encode(std.heap.page_allocator.alloc(u8, std.base64.standard.Encoder.calcSize(data.len)) catch return error.OutOfMemory, data);
+         defer std.heap.page_allocator.free(encoded);
+
+         try std.fmt.format(writer, "      <img src=\"data:{s};base64,{s}\">\n", .{ mime, encoded }); }, } }
 
 fn renderInlineElements(writer: anytype, elements: []types.InlineElement) !void {
    for (elements) |elem| {
@@ -263,3 +282,13 @@ fn escapeHtml(writer: anytype, text: []const u8) !void {
           '"'  => try writer.writeAll("&quot;"),
           '\'' => try writer.writeAll("&#39;"),
           else => try writer.writeByte(c), } } }
+
+fn mimeFromPath(path: []const u8) []const u8 {
+   const ext = std.fs.path.extension(path);
+   if (std.mem.eql(u8, ext, ".png"))  return "image/png";
+   if (std.mem.eql(u8, ext, ".jpg"))  return "image/jpeg";
+   if (std.mem.eql(u8, ext, ".jpeg")) return "image/jpeg";
+   if (std.mem.eql(u8, ext, ".gif"))  return "image/gif";
+   if (std.mem.eql(u8, ext, ".webp")) return "image/webp";
+   if (std.mem.eql(u8, ext, ".svg"))  return "image/svg+xml";
+   return "application/octet-stream"; }

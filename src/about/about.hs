@@ -7,8 +7,10 @@ description = The typical about me page.
 
 -- | Lμthenwałd/Luth, He/Him
 --
+-- @img me.webp
+--
 -- Student working at the intersection of |Programming Language Theory|, |Category Theory|, and |high-performance computing|.
--- I am currently based in Wuhan/Shanghai, China.
+-- Currently based in Wuhan/Shanghai, China.
 
 module About where
 
@@ -37,27 +39,38 @@ module About where
 -- argued structurally.
 
 -- || Splined
+--
+-- Iterative image reconstruction using random [cubic bézier](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves) strokes, accelerated on [metal](https://en.wikipedia.org/wiki/Metal_(API)).
+--
+-- [src](https://tangled.org/luthenwald.tngl.sh/splined) | [bad apple](https://youtu.be/oVTDzle9qz8?si=DIWqILNn21JHVsnL)
+--
+-- > The image used here is under open access by [The Met](https://www.metmuseum.org/hubs/open-access).
+--
+-- @img splined-i.webp
+-- @img splined-o.webp
 
 -- | Education
 
 -- | Technical Environment
 
 data Language = Language
-  { langName   :: String
-  , langDomain :: String
-  } deriving (Show)
+   { langName   :: String
+   , langDomain :: String
+   } deriving (Show)
 
 myStack :: [Language]
 myStack =
-  [ Language "Haskell" "type theory, research tooling, proofs"
-  , Language "Racket"  "compiler implementation, DSLs, macros"
-  , Language "Rust"    "systems programming, game engines"
-  , Language "Julia"   "GPU computing, scientific computing"
-  , Language "Zig"     "low-level systems, build tooling"
-  , Language "OCaml"   "type systems, formal methods"
-  ]
+   [ Language "Haskell" "type theory, research tooling, proofs"
+   , Language "Racket"  "compiler implementation, DSLs, macros"
+   , Language "Rust"    "systems programming"
+   , Language "Julia"   "Prototyping, GPU computing, scientific computing"
+   , Language "Zig"     "low-level systems, build tooling, gamedev"
+   ]
 
 -- | Contact
 --
 -- I am reachable by [email](mailto:luthenwald@pm.me). If you are working on programming language theory, categorical semantics, GPU
 -- computing, or formal verification, I am glad to hear from you.
+--
+--
+-- https://tangled.org/luthenwald.tngl.sh/

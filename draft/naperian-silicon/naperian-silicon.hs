@@ -1,0 +1,4 @@
+-- title       = About
+-- pubDate     = 2036-11-18
+-- tags        = about, personal
+-- description = The typical about me page.

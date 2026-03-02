@@ -70,6 +70,10 @@ pub fn parseMarkup(
                         try appendBlock(alloc, &blocks, try parseInsert(alloc, line, filepath));
                         i += 1; continue; }
 
+                    if (std.mem.startsWith(u8, line, "@img")) {
+                        try appendBlock(alloc, &blocks, try parseImage(alloc, line, filepath));
+                        i += 1; continue; }
+
                     if (std.mem.startsWith(u8, line, "^") and isValidFootnote(line)) {
                         const result = try consumeBlockLines(alloc, lines, i); defer alloc.free(result.content);
 
@@ -107,6 +111,7 @@ pub fn parseMarkup(
                         if (std.mem.startsWith(u8, next_line, "-")) break;
                         if (std.mem.startsWith(u8, next_line, ">")) break;
                         if (std.mem.startsWith(u8, next_line, "@insert")) break;
+                        if (std.mem.startsWith(u8, next_line, "@img")) break;
 
                         try para_lines.append(alloc, next_line); i += 1; }
 
@@ -176,7 +181,8 @@ fn isBlockStart(line: []const u8) bool {
           std.mem.startsWith(u8, line, ">") or
           std.mem.startsWith(u8, line, "|") or
           std.mem.startsWith(u8, line, "^") or
-          std.mem.startsWith(u8, line, "@insert"); }
+          std.mem.startsWith(u8, line, "@insert") or
+          std.mem.startsWith(u8, line, "@img"); }
 
 fn parsePrefixLevel(line: []const u8, ch: u8) struct { level: u8, rest: []const u8 } {
    var level: u8 = 0;
@@ -250,6 +256,15 @@ fn parseInsert(alloc: Allocator, line: []const u8, filepath: []const u8) !types.
    const full_path = try std.fs.path.join(alloc, &.{ dir, text });
 
    return .{ .insert = .{ .path = full_path, }, }; }
+
+fn parseImage(alloc: Allocator, line: []const u8, filepath: []const u8) !types.ParsedBlock {
+   const text = std.mem.trim(u8, line[4..], " \t");
+   if (text.len == 0) { return error.InvalidMetadata; }
+
+   const dir = std.fs.path.dirname(filepath) orelse ".";
+   const full_path = try std.fs.path.join(alloc, &.{ dir, text });
+
+   return .{ .image = .{ .path = full_path, }, }; }
 
 fn flushText(alloc: Allocator, elements: *std.ArrayList(types.InlineElement), current: *std.ArrayList(u8)) !void {
    if (current.items.len > 0) {
