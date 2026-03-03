@@ -1,4 +1,4 @@
--- title       = Metal Programming with Naperian Functors
+-- title       = Silicon Programming with Naperian Functors
 -- pubDate     = 2026-11-1
 -- tags        = gpu, haskell
 -- description = An attempt to adapt the Naperian Functors from Gibbons ("APLicative Programming with Naperian Functors", 2017) to apple silicon (metal) ecosystem.
@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeAbstractions    #-}
 {-# LANGUAGE TypeFamilies        #-}
 
-module HyperMTL where
+module SiliconNaperian where
 
 import           Control.Monad.State  ( State, evalState, get, put )
 import           Control.Monad.Writer ( WriterT, runWriterT, tell )
@@ -22,16 +22,14 @@ import           Data.Word            ( Word32 )
 
 import           GHC.TypeNats         ( KnownNat, Nat, natVal )
 
-import           Prelude              hiding ( Applicative (..), Foldable (..),
-                                        Functor (..), Traversable (..), and,
-                                        foldr, length, null, or )
+import           Prelude              hiding ( Applicative (..), Foldable (..), Functor (..), foldr )
 import qualified Prelude              as P
 
--- | The Silicon Lambda Hierarchy
+-- Please note that this blog is a censored version. For example, we intentionally omit the `Traversable` typeclass to...
+--
+-- | The Silicon-Naperian Typeclass Hierarchy
 --
 -- || A Leap against array
---
--- TODO: validate per-thread function is indeed a kernel
 --
 -- [Futhark](https://futhark-lang.org/) is a purely functional, statically typed, data-parallel array language designed for GPUs.
 -- It takes *array* as its primitive. Substantially, array is a triad notion: a (contiguous) flat-memory layout, an integer-offset
@@ -52,9 +50,9 @@ import qualified Prelude              as P
 --
 -- The following categories of functions will be omitted across this prose:
 --
--- - functions that are only meaningful in the context of arrays. e.g. length, head, take
+-- - functions that are only meaningful in the context of (flat) arrays. e.g. length, head, take
 -- - functions that are rarely what you actually want. e.g. foldl, scan
--- - functions whose signature can't be expressed in the context of dependent types. e.g. partition (dynamic size)
+-- - functions whose signature can't be expressed in the context of dependent types. e.g. partition (dynamic size at runtime)
 -- - functions that are trivial to implement. e.g. mapk (i.e. liftAk)
 --
 -- Then we can filter out the following functions:
@@ -62,18 +60,18 @@ import qualified Prelude              as P
 -- ``````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
 -- # prelude/array
 -- open import "/prelude/zip"
--- val replicate                    't : 	(n: i64) -> (x: t) -> *[n]t
--- val transpose            [n] [m] 't : 	(a: [n][m]t) -> [m][n]t
--- val foldr                 [n] 'a 'b : 	(f: b -> a -> a) -> (acc: a) -> (bs: [n]b) -> a
--- val tabulate                     'a : 	(n: i64) -> (f: i64 -> a) -> *[n]a
+-- val replicate                     't : (n: i64)         -> (x: t)        -> *[n]t
+-- val transpose             [n] [m] 't : (a: [n][m]t)     -> [m][n]t
+-- val foldr                  [n] 'a 'b : (f: b -> a -> a) -> (acc: a)      -> (bs: [n]b) -> a
+-- val tabulate                      'a : (n: i64)         -> (f: i64 -> a) -> *[n]a
 --
 -- # prelude/soacs
--- val map                            'a [n] 'x : 	(f: a -> x) -> (as: [n]a) -> *[n]x
+-- val map                    'a [n] 'x : (f: a -> x)      -> (as: [n]a)    -> *[n]x
 -- ``````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
 --
--- There are 6 of them (including the `zip`), we shall substitute `[]` with `f` to leap from array to a more generic substance.
+-- There are 6 of them (including `zip`), we shall substitute `[]` with `f` to leap from array to a more generic substance.
 --
--- Some functions can be trivially abstracted with typeclasses we are familiar with:
+-- Some functions can be abstracted with typeclasses we are familiar with:
 --
 -- - `map` applies a function uniformly to every element, whose abstraction is `Functor`.
 
@@ -83,102 +81,82 @@ class Functor f where
 -- - `foldr` uses an associative binary operator to aggregate values to a summary value, whose abstraction is `Foldable`.
 
 class Foldable t where
-   foldr  :: (a -> b -> b) -> b -> t a -> b
+   foldr :: (a -> b -> b) -> b -> t a -> b
 
--- - `replicate` fills every position with the same value, we shall rename it as `pure`. `zip` (from prelude/zip) is `liftA2 (,)`,
---   which can be represented with `fmap` & `(<*>)`, so we can abstract the `Applicative`.
+-- - `replicate` fills every position with the same value, we rename it as `pure`. `zip` is `liftA2 (,)`,
+--   which can be represented with `fmap` & `(<*>)`, so we can abstract them with `Applicative`.
 
 class Functor f => Applicative f where
-   pure   :: a -> f a
-   (<*>)  :: f (a -> b) -> f a -> f b
+   pure   :: a             -> f a
+   (<*>)  :: f (a -> b)    -> f a -> f b
    liftA2 :: (a -> b -> c) -> f a -> f b -> f c
+
    liftA2 f fa fb = fmap f fa <*> fb
 
--- The remaining two — `transpose` and `tabulate` have no counterparts in the standard typeclass hierarchy. The root cause is
--- structural: `Functor`, `Applicative` & `Foldable` all speak of *elements*, never of *positions*. `tabulate` constructs a container
--- by evaluating a function at each position; `transpose` reorders two layers of nesting by exchanging coordinates. Neither is
--- expressible without first naming what a *position* is.
+-- However, the remaining `transpose` and `tabulate` have no (obvious) counterparts in the standard typeclass hierarchy. The
+-- fundamental cause is structural: `Functor`, `Applicative` & `Foldable` all speak of *elements*, never of *positions*. `tabulate`
+-- constructs a container by evaluating a function at each position; `transpose` reorders two layers of nesting by exchanging
+-- coordinates. Neither is expressible without first formalizing what a *position* is.
 
 -- ||| Naperian Functors is all you need
 --
--- The Naperian functor names that missing concept. A functor `f` is Naperian when it admits the isomorphism
+-- The Naperian functor justifies that missing concept. A functor `f` is Naperian when it admits the isomorphism
 --
--- >  f a  ≅  Log f → a
+-- > f a  ≅  Log f → a
 --
--- where `Log f` — the *logarithm* of `f` — is the type of positions. The two directions of the isomorphism
--- are `tabulate` and `index`: `tabulate` builds a container by evaluating a function at every position;
--- `index` is its inverse, treating a container as a function on positions.
+-- where `Log f` (the *logarithm* of `f`) is the type of positions. The two directions of the isomorphism are `tabulate` and `index`:
+-- `tabulate` builds a container by evaluating a function at every position; `index` is its inverse, treating a container as a
+-- function on positions.
 --
--- With these two primitives, `transpose` is no longer an axiom but a consequence. Given two Naperian
--- functors `f` and `g`, we have `f (g a) ≅ Log f → Log g → a` and `g (f a) ≅ Log g → Log f → a`; the
--- two are isomorphic by argument-swapping, giving the derivation:
---
--- >  transpose :: (Naperian f, Naperian g) => f (g a) -> g (f a)
--- >  transpose xss = tabulate (\j -> tabulate (\i -> xss `index` i `index` j))
---
--- No array-specific machinery is required — transposition is the commutativity of the logarithm product.
--- With the positional gap now filled, we can state the class:
+-- `transpose` can then be expressed with these two primitives. Given two Naperian functors `f` and `g`, we have `f (g a) ≅ Log f →
+-- Log g → a` and `g (f a) ≅ Log g → Log f → a`, where the two are isomorphic by argument-swapping, giving the derivation:
+
+transpose :: (Naperian f, Naperian g) => f (g a) -> g (f a)
+transpose xss = tabulate (\j -> tabulate (\i -> xss `index` i `index` j))
+
+-- With the positional gap now filled, we can state the class as:
 
 class Functor f => Naperian f where
    type Log f
    tabulate :: (Log f -> a) -> f a
-   index    :: f a -> Log f -> a
-
--- || Beyond Futhark
---
--- Two more classes complete the hierarchy, both well-motivated by the GPU context even though Futhark has no
--- direct analogs.
---
--- `Applicative` deserves a note here, because Naperian functors carry a *canonical* zippy instance:
--- `pure x = tabulate (const x)` fills every position with the same value, and
--- `fs <*> xs = tabulate (\i -> (fs \`index\` i) (xs \`index\` i))` applies functions pointwise.
--- This is the shape-fixed elementwise structure that every GPU programmer expects from `liftA2 (+)`.
--- Unlike the list `Applicative` (which is non-deterministic), the Naperian one is determined entirely
--- by `Log f` — two containers of the same type always zip position-for-position.
---
--- `Traversable` enters because the Haskell side of this system is effectful even when the target kernel
--- is pure. The Metal emitter (Section 2) accumulates MSL source text through a `WriterT` monad, and a
--- `traverse` over a Naperian container threads that effect uniformly across every position while
--- preserving shape. More broadly, `traverse` subsumes any pass that carries state, failure, or
--- nondeterminism element-by-element — initialisation from `IO`, bounds-checking under `Maybe`, etc.
-
-class (Functor t, Foldable t) => Traversable t where
-   traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
+   index    :: f a          -> Log f -> a
 
 -- || Dimension and Hyper
 --
--- Gibbons bundles Naperian + Applicative + Traversable + Foldable into his `Dimension` class, or the exact interface a single data-parallel axis requires:
+-- We now bundle `Naperian :*: Applicative :*: Foldable` into the `Dimension` typeclass, or the exact constraint a single
+data-parallel axis requires.
+--
+-- > Strictly speaking, there should be `Traversable` as well.
 
-class (Naperian f, Applicative f, Traversable f, Foldable f) => Dimension f
+class (Naperian f, Applicative f, Foldable f) => Dimension f
 
--- Gibbons' `Hyper` type promotes a list of `Dimension` functors into a single rank-polymorphic tensor. Its
--- definition is a GADT indexed by the list, ordered *innermost-first*:
+-- The `Hyper` type promotes a list of `Dimension` functors into a single rank-polymorphic tensor/hypercuboid:
 
 type Hyper :: [Type -> Type] -> Type -> Type
 data Hyper fs a where
-   HScalar :: a           -> Hyper '[]       a
+   HScalar ::                a              -> Hyper '[]       a
    HPrism  :: Dimension f => Hyper fs (f a) -> Hyper (f ': fs) a
 
--- `Scalar` closes the recursion at rank zero. `Prism` peels one dimension: a `Hyper '[Vec 4] Float` is a
--- 4-vector; a `Hyper '[Vec 4, Mat 2 3] Float` is a 2×3 matrix of 4-vectors.
+-- where `Scalar` closes the recursion at rank zero; `Prism` peels one dimension.
 --
--- Gibbons' paper also defines a `Shapely` class that provides a uniform `foldr` over the entire nested
--- structure. We omit it here: in our setting, aggregation is the responsibility of Metal reduction kernels,
--- not the Haskell runtime. The `Foldable` constraint already bundled into `Dimension` is sufficient for
--- type-checking purposes.
+-- > Gibbons' paper also defines a `Shapely` class that provides a uniform `foldr` over the entire nested
+--   structure. In our setting, aggregation is the responsibility of Metal reduction kernels,
+--   not the Haskell runtime. The `Foldable` constraint already bundled into `Dimension` is sufficient for
+--   type-checking purposes.
 
 -- | The type-theoretic core of metal
 --
--- The former section completes the algebraic frontend. The typeclass hierarchy `Functor`, `Foldable`, `Applicative`, `Traversable`,
--- `Naperian`, `Dimension` characterises a data-parallel axis with full mathematical precision, and `Hyper` assembles those axes
--- into a rank-polymorphic tensor. Every operation we care about is now either a typeclass method or derived from one; the shape of a
--- computation is tracked entirely at the type level.
+-- The former section completes the algebraic frontend. The typeclass hierarchy `Functor`, `Foldable`, `Applicative`, `Naperian`,
+-- `Dimension` characterises a data-parallel axis with full mathematical precision, and `Hyper` assembles those axes into a
+-- rank-polymorphic tensor. Every operation we care about is now either a typeclass method or derived from one.
 --
 -- What remains entirely abstract is the GPU itself. We have no notion of a thread, a buffer, or a dispatch call. In this section
--- we shall bridges that gap: `Dimension` acquires a dispatch geometry, `Log f` is identified with Metal's thread-position type,
--- and `tabulate ∘ f ∘ index` compiles to a single GPU kernel.
+-- we shall bridge that gap: `Dimension` acquires a dispatch geometry, `Log f` is identified with Metal's thread-position type, and
+-- `tabulate ∘ f ∘ index` compiles to a single GPU kernel.
 
 -- || Type-level encoding of Metal's thread-address space
+--
+-- NOTE: current progression
 --
 -- `MTLTidKind` is a closed promoted data kind enumerating the three Metal dispatch geometries, i.e. the set of types of
 -- `thread_position_in_grid`.
@@ -1115,9 +1093,6 @@ instance Functor (Vec n) where
 instance Foldable (Vec n) where
    foldr f z (Vec xs) = P.foldr f z xs
 
-instance Traversable (Vec n) where
-   traverse f (Vec xs) = fmap Vec (traverseList f xs)
-
 instance KnownNat n => Applicative (Vec n) where
    pure x         = Vec (replicate n' x)
       where n'    = fromIntegral (natVal (Proxy @n))
@@ -1161,9 +1136,6 @@ instance Functor (Mat m n) where
 
 instance Foldable (Mat m n) where
    foldr f z (Mat xs) = P.foldr f z xs
-
-instance Traversable (Mat m n) where
-   traverse f (Mat xs) = fmap Mat (traverseList f xs)
 
 instance (KnownNat m, KnownNat n) => Applicative (Mat m n) where
    pure x         = Mat (replicate (m' * n') x)
@@ -1222,9 +1194,6 @@ instance Functor (Cube d m n) where
 
 instance Foldable (Cube d m n) where
    foldr f z (Cube xs) = P.foldr f z xs
-
-instance Traversable (Cube d m n) where
-   traverse f (Cube xs) = fmap Cube (traverseList f xs)
 
 instance (KnownNat d, KnownNat m, KnownNat n) => Applicative (Cube d m n) where
    pure x            = Cube (replicate (d' * m' * n') x)
