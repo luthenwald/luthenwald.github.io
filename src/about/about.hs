@@ -1,28 +1,13 @@
 -- title       = About
 -- pubDate     = 2036-11-18
 -- tags        = about, personal
--- description = Personal info, projects & contact.
+-- description = Personal info, contact & projects.
 
 -- | Lμthenwałd/Luth, He/Him
 --
 -- @img me.webp
 --
--- Working at the intersection/propagation of |Programming Language Theory|, |Category Theory|, and |High-Performance Computing|.
--- Currently based in Nantong/Shanghai/Wuhan China.
---
--- | Projects
---
--- || Splined
---
--- Iterative image reconstruction using random [cubic bézier](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves)
--- strokes, accelerated on [metal](https://en.wikipedia.org/wiki/Metal_(API)).
---
--- [src](https://tangled.org/luthenwald.tngl.sh/splined) | [bad apple](https://youtu.be/oVTDzle9qz8?si=DIWqILNn21JHVsnL)
---
--- > The image used here is under open access by [The Met](https://www.metmuseum.org/hubs/open-access).
---
--- @img splined-i.webp
--- @img splined-o.webp
+-- Working at the intersection/propagation of |Programming Language Theory|, |Category Theory|, & |High-Performance Computing|.
 --
 -- | Contact
 --
@@ -43,3 +28,17 @@
 -- =DTwu
 -- -----END PGP PUBLIC KEY BLOCK-----
 -- ``````````````````````````````````````````````````````````````````
+--
+-- | Projects
+--
+-- || Splined
+--
+-- Iterative image reconstruction using random [cubic bézier](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves)
+-- strokes, accelerated on [metal](https://en.wikipedia.org/wiki/Metal_(API)).
+--
+-- [src](https://tangled.org/luthenwald.tngl.sh/splined) | [bad apple](https://youtu.be/oVTDzle9qz8?si=DIWqILNn21JHVsnL)
+--
+-- > The image used here is under open access by [The Met](https://www.metmuseum.org/hubs/open-access).
+--
+-- @img splined-i.webp
+-- @img splined-o.webp

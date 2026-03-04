@@ -52,7 +52,7 @@ import qualified Prelude              as P
 --
 -- - functions that are only meaningful in the context of (flat) arrays. e.g. length, head, take
 -- - functions that are rarely what you actually want. e.g. foldl, scan
--- - functions whose signature can't be expressed in the context of dependent types. e.g. partition (dynamic size at runtime)
+-- - functions whose signature can't be expressed in the context of dependently types. e.g. partition (dynamic size at runtime)
 -- - functions that are trivial to implement. e.g. mapk (i.e. liftAk)
 --
 -- Then we can filter out the following functions:
@@ -124,7 +124,7 @@ class Functor f => Naperian f where
 -- || Dimension and Hyper
 --
 -- We now bundle `Naperian :*: Applicative :*: Foldable` into the `Dimension` typeclass, or the exact constraint a single
-data-parallel axis requires.
+-- data-parallel axis requires.
 --
 -- > Strictly speaking, there should be `Traversable` as well.
 
@@ -148,7 +148,7 @@ data Hyper fs a where
 --
 -- The former section completes the algebraic frontend. The typeclass hierarchy `Functor`, `Foldable`, `Applicative`, `Naperian`,
 -- `Dimension` characterises a data-parallel axis with full mathematical precision, and `Hyper` assembles those axes into a
--- rank-polymorphic tensor. Every operation we care about is now either a typeclass method or derived from one.
+-- rank-polymorphic tensor.
 --
 -- What remains entirely abstract is the GPU itself. We have no notion of a thread, a buffer, or a dispatch call. In this section
 -- we shall bridge that gap: `Dimension` acquires a dispatch geometry, `Log f` is identified with Metal's thread-position type, and
@@ -156,10 +156,8 @@ data Hyper fs a where
 
 -- || Type-level encoding of Metal's thread-address space
 --
--- NOTE: current progression
---
 -- `MTLTidKind` is a closed promoted data kind enumerating the three Metal dispatch geometries, i.e. the set of types of
--- `thread_position_in_grid`.
+-- `thread_position_in_grid`. We won't distinguish between `ushort` & `uint` in this prose.
 
 type MTLTidKind :: Type
 data MTLTidKind
@@ -168,10 +166,10 @@ data MTLTidKind
    | Tid3 Nat Nat Nat   -- uint3 tid   ── 3-D dispatch (x, y, z)
 
 -- `SMTLTid` is a *singleton* witness for `MTLTidKind`. In Haskell, type-level `Nat` values are erased before runtime, so there is no
--- way to inspect them in ordinary term-level code. The standard workaround is a singleton GADT: each constructor mirrors one variant
--- of `MTLTidKind` and, crucially, brings `KnownNat` constraints into scope. When code pattern-matches on e.g. `STid2`, GHC unpacks
--- both `KnownNat m` and `KnownNat n`, making `natVal` available for extracting the concrete `Integer` values that the MSL emitter
--- needs (grid sizes, flat-index formulas, etc.).
+-- way to inspect them in ordinary term-level code. The standard workaround is a [singleton GADT](https://www.seas.upenn.edu/~sweirich/papers/haskell12.pdf):
+-- each constructor mirrors one variant of `MTLTidKind` and, crucially, brings `KnownNat` constraints into scope. When code
+-- pattern-matches on e.g. `STid2`, GHC unpacks both `KnownNat m` and `KnownNat n`, making `natVal` available for extracting the
+-- concrete `Integer` values that the MSL emitter needs (grid sizes, flat-index formulas, etc.).
 --
 -- Effectively, `SMTLTid k` is a runtime proof that `k` is a specific `MTLTidKind` whose `Nat` parameters are all known.
 
@@ -189,23 +187,22 @@ data SMTLTid k where
 -- Each query function pattern-matches on the singleton, thereby gaining access to the `KnownNat` dictionaries, and projects a
 -- concrete Metal artifact from the type-level dimension encoding.
 --
--- Total element count (= total number of GPU threads to dispatch). For a 1-D grid this is just `n`; for higher ranks it is the
--- product of all dimension sizes. The emitter uses this to size Metal buffers and to populate the `gsize` uniform in reduction
--- kernels.
+-- `tidFlatSize`/Total element count (= total number of GPU threads to dispatch). It is the product of all dimension sizes.
+-- The emitter uses this to size Metal buffers and to populate the `gsize` uniform in reduction kernels.
 
 tidFlatSize :: SMTLTid k -> Int
 tidFlatSize (STid1 @n)       = fromIntegral (natVal (Proxy @n))
 tidFlatSize (STid2 @m @n)    = fromIntegral (natVal (Proxy @m) * natVal (Proxy @n))
 tidFlatSize (STid3 @d @m @n) = fromIntegral (natVal (Proxy @d) * natVal (Proxy @m) * natVal (Proxy @n))
 
--- The MSL type keyword that will appear after `\[\[thread_position_in_grid\]\]` in the generated kernel signature: `uint`, `uint2`, or `uint3`.
+-- `tidMSLType`/The MSL type keyword that will appear after `\[\[thread_position_in_grid\]\]` in the generated kernel signature: `uint`, `uint2`, or `uint3`.
 
 tidMSLType :: SMTLTid k -> String
 tidMSLType STid1{} = "uint"
 tidMSLType STid2{} = "uint2"
 tidMSLType STid3{} = "uint3"
 
--- Produce the `(width, height, depth)` triple for `MTLSize` in the Swift dispatch call. Metal convention places the innermost
+-- `tidMTLSize`/Produce the `(width, height, depth)` triple for `MTLSize` in the Swift dispatch call. Metal convention places the innermost
 -- (fastest-varying) axis in `width` (= `x`), so for `Tid2 m n` we emit `width = n`, `height = m`. Unused axes are set to 1.
 
 tidMTLSize :: SMTLTid k -> (Int, Int, Int)
@@ -220,7 +217,7 @@ tidMTLSize (STid3 @d @m @n) =
    , fromIntegral (natVal (Proxy @m))
    , fromIntegral (natVal (Proxy @d)) )
 
--- Emit the MSL expression that linearises a multi-dimensional thread id into a flat buffer index. For 1-D the thread id is the
+-- `tidFlatExpr`/Emit the MSL expression that linearises a multi-dimensional thread id into a flat buffer index. For 1-D the thread id is the
 -- index. For higher ranks it computes the standard row-major formula:
 --
 -- > 2-D:  tid.y * n       + tid.x
@@ -229,29 +226,21 @@ tidMTLSize (STid3 @d @m @n) =
 -- The string argument `v` is the MSL variable name (usually `tid`).
 
 tidFlatExpr :: SMTLTid k -> String -> String
-tidFlatExpr STid1{} v = v
-tidFlatExpr (STid2 @m @n) v =
+tidFlatExpr STid1{}          v = v
+tidFlatExpr (STid2 @m @n)    v =
    v ++ ".y * " ++ show (natVal (Proxy @n)) ++ "u + " ++ v ++ ".x"
 tidFlatExpr (STid3 @d @m @n) v =
    v ++ ".z * " ++ show (natVal (Proxy @m) * natVal (Proxy @n)) ++ "u"
    ++ " + " ++ v ++ ".y * " ++ show (natVal (Proxy @n)) ++ "u"
    ++ " + " ++ v ++ ".x"
 
--- ||| Interlude: why MTLTidKind -> MTLTidKind compiles but Tid1 -> Tid2 doesn't
---
--- When I was
-
--- `Fin n` is the standard finite set {0, 1, ..., n-1}, carried here as a runtime `Int` with the bound `n` tracked at the type level.
--- It serves as the *logarithm* (position type) of a Naperian functor of size `n`: given `f a  ≅  Fin n → a`, `Fin n` is exactly
--- `Log f`.
-
-newtype Fin (n :: Nat) = Fin Int
-
--- `TidIndex` is a /type family/ that maps each `MTLTidKind` variant to the appropriate Haskell index type, mirroring the Metal coordinate type:
+-- `TidIndex`/A type family that maps each `MTLTidKind` variant to the appropriate Haskell index type, mirroring the Metal coordinate type:
 --
 -- - `Tid1 n`       ↦  `Fin n`                 (a single uint)
 -- - `Tid2 m n`     ↦  `(Fin m, Fin n)`        (a uint2: row, column)
 -- - `Tid3 d m n`   ↦  `(Fin d, Fin m, Fin n)` (a uint3: slice, row, column)
+
+newtype Fin (n :: Nat) = Fin Int
 
 type TidIndex :: MTLTidKind -> Type
 type family TidIndex tid where
@@ -259,6 +248,9 @@ type family TidIndex tid where
    TidIndex ('Tid2 m n)   = (Fin m, Fin n)
    TidIndex ('Tid3 d m n) = (Fin d, Fin m, Fin n)
 
+-- Remember that in `Naperian` we have `Log f` which is the type of positions. In the context of metal, the position of a thread in a grid,
+-- i.e. `thread_position_in_grid` is of type uint1, uint2 or uint3, so we can
+--
 -- These are the position types that `tabulate` and `index` in `DimMTL` operate over.  When the emitter writes `input[tid]`, it
 -- is effectively invoking `index` at the Metal level; when it writes `output[tid] = ...`, it is invoking `tabulate`.
 --
@@ -365,6 +357,7 @@ type family TidIndex tid where
 -- By construction, `Log f = TidIndex (TidOf f)` for every `DimMTL` instance — the Naperian
 -- position type and the Metal thread-index type coincide.
 
+-- TODO: we are not using TidOf, and the typefamily above.
 class Dimension f => DimMTL f where
 
    -- The Metal grid kind for this dimension.
@@ -373,12 +366,10 @@ class Dimension f => DimMTL f where
    -- Singleton value; lets the emitter inspect sizes at runtime.
    stid :: SMTLTid (TidOf f)
 
-
 -- || HyperMTL GADT
 
--- `HyperMTL` is a rank-polymorphic tensor indexed by a type-level list
--- of dimension functors, directly mirroring Gibbons' `Hyper` type.
--- The list is ordered /innermost-first/:
+-- `HyperMTL` is a rank-polymorphic tensor indexed by a type-level list of dimension functors, directly mirroring Gibbons' `Hyper`
+-- type. The list is ordered /innermost-first/:
 --
 -- >  HyperMTL '[Vec 4, Mat 2 3] Float
 -- >  =  a Mat 2 3 of (Vec 4 of Float)
@@ -387,12 +378,9 @@ class Dimension f => DimMTL f where
 -- Two constructors build the structure:
 --
 -- - `Scalar a` — a rank-0 tensor (a single value, no dimensions).
--- - `Prism (HyperMTL fs (f a))`` — peels one dimension off.  The
---   `DimMTL f` constraint is stored /inside/ the constructor as
---   existential evidence, so pattern-matching on `Prism` brings the
---   full DimMTL dictionary (including `stid`, `tabulate`, `index`)
---   into scope.  This is how kernel combinators recover the dispatch
---   geometry from the tensor's type without the caller threading
+-- - `Prism (HyperMTL fs (f a))`` — peels one dimension off. The `DimMTL f` constraint is stored inside the constructor as
+--   existential evidence, so pattern-matching on `Prism` brings the full DimMTL dictionary (including `stid`, `tabulate`, `index`)
+--   into scope. This is how kernel combinators recover the dispatch geometry from the tensor's type without the caller threading
 --   explicit dictionaries.
 
 type HyperMTL :: [Type -> Type] -> Type -> Type
@@ -403,57 +391,46 @@ data HyperMTL fs a where
           => HyperMTL fs (f a)
           -> HyperMTL (f ': fs) a
 
--- | A /typed/ abstract-syntax tree for Metal Shading Language expressions.
+-- | A typed AST for Metal Shading Language expressions.
 --
--- Kernel combinators (in "MetalM") do not build MSL source strings
--- directly.  Instead they compose @MSLExpr@ trees whose type parameter
--- tracks the MSL type of the expression.  This brings two benefits:
+-- Kernel combinators (in the next section) do not build MSL source strings directly. Instead they compose `MSLExpr` trees whose type
+-- parameter tracks the MSL type of the expression. This brings two benefits:
 --
---   1. /Compile-time safety/:  The GADT constrains which constructors can
---      be combined.  You cannot, for instance, pass an @MSLExpr Bool@ to
---      @AddF@ — the Haskell type checker rejects it.  Every well-typed
---      @MSLExpr a@ is guaranteed to emit well-typed MSL.
+-- - *Compile-time safety*:  The GADT constrains which constructors can be combined.  You cannot, for instance, pass an `MSLExpr
+--   Bool` to `AddF` — the Haskell type checker rejects it.  Every well-typed `MSLExpr a` is guaranteed to emit well-typed MSL.
 --
---   2. /Compositionality/:  Kernel body functions are ordinary Haskell
---      functions @MSLExpr Float -> MSLExpr Float@ (or similar).  The user
---      builds the expression tree with algebraic combinators; the emitter
---      flattens it to a string at the end.
+-- - *Compositionality*:  Kernel body functions are ordinary Haskell
+--   functions `MSLExpr Float -> MSLExpr Float` (or similar).  The user
+--   builds the expression tree with algebraic combinators; the emitter
+--   flattens it to a string at the end.
 
--- ─── Typed MSL expression tree ───────────────────────────────────────────────
-
--- | @MSLExpr a@ is a GADT indexed by the Haskell type that mirrors the
--- MSL type of the expression:
+-- || Typed MSL expression tree
 --
---   * @MSLExpr Float@  ≈  @float@ in MSL
---   * @MSLExpr Word32@ ≈  @uint@  in MSL
---   * @MSLExpr Bool@   ≈  @bool@  in MSL
---   * @MSLExpr (a,b)@  ≈  a struct / float2 pair
+-- `MSLExpr a` is a GADT indexed by the Haskell type that mirrors the MSL type of the expression:
+--
+-- * `MSLExpr Float`  ≈  `float` in MSL
+-- * `MSLExpr Word32` ≈  `uint`  in MSL
+-- * `MSLExpr Bool`   ≈  `bool`  in MSL
+-- * `MSLExpr (a,b)`  ≈  a struct / float2 pair
 --
 -- The constructors fall into six families:
 --
---   (i)    /Literals and variables/ — inject Haskell values or named
---          MSL variables into the tree.  @Var@ is polymorphic in @a@
---          to allow the emitter to reference pre-declared locals of
---          any type.
+-- - *Literals and variables* inject Haskell values or named MSL variables into the tree.  `Var` is polymorphic in `a` to allow the
+--   emitter to reference pre-declared locals of any type.
 --
---   (ii)   /Thread position/ — @TidFlat@, @TidX@, @TidY@, @TidZ@ are
---          nullary constructors representing the @\[\[thread_position_in_grid\]\]@
---          components.  They are injected by the emitter, never by user code.
+-- - *Thread position* `TidFlat`, `TidX`, `TidY`, `TidZ` are nullary constructors representing the `\[\[thread_position_in_grid\]\]`
+--   components.
 --
---   (iii)  /Float arithmetic/ — the standard math operations
---          (@+, -, *, /@, transcendentals, min/max, abs).
+-- - *Float arithmetic* is the standard math operations (`+, -, *, /`, transcendentals, min/max, abs).
 --
---   (iv)   /Uint arithmetic/ — @AddU@, @MulU@ for index computation
---          (flat-index formulas).
+-- - *Uint arithmetic*:`AddU`, `MulU` for index computation (flat-index formulas).
 --
---   (v)    /Boolean/ — comparisons (@<, >, <=, >=, ==@), connectives
---          (@&&, ||, !@), and @SelF@ which compiles to Metal's @select()@
---          intrinsic (a branchless ternary).
+-- - *Boolean*: comparisons (`<, >, <=, >=, ==`), connectives (`&&, ||, !`), and `SelF` which compiles to Metal's `select()`
+--   intrinsic (a branchless ternary).
 --
---   (vi)   /Products and buffer access/ — @PairE@/@FstE@/@SndE@ model
---          multi-value returns (emitted as struct literals / @.x@, @.y@
---          accessors), and @BufIdx@ models a device-buffer subscript
---          @buf[i]@.
+-- - *products and buffer access*: `paire`/`fste`/`snde` model multi-value returns (emitted as struct literals / `.x`, `.y`
+--   accessors), and `bufidx` models a device-buffer subscript `buf[i]`.
+
 data MSLExpr :: Type -> Type where
    LitF    :: Float   -> MSLExpr Float
    LitU    :: Int     -> MSLExpr Word32
@@ -484,27 +461,23 @@ data MSLExpr :: Type -> Type where
 
    BufIdx  :: String -> MSLExpr Word32 -> MSLExpr Float
 
--- ─── Emitter ─────────────────────────────────────────────────────────────────
-
--- | Syntax-directed translation from the typed expression tree to an MSL
--- source string.  Each GADT constructor maps to exactly one MSL syntax
--- form — the translation is a simple structural recursion with no
--- non-trivial optimisation passes.
+-- || The expression emitter
 --
--- Because @MSLExpr@ is a GADT, the pattern match is exhaustive by
--- construction: every constructor has a clause, and the Haskell type
--- system ensures that the recursive calls produce strings of the correct
--- MSL type.  For example, @AddF :: MSLExpr Float -> MSLExpr Float ->
--- MSLExpr Float@ guarantees both operands emit as @float@ expressions,
--- so the parenthesised infix @"(a + b)"@ is well-typed MSL.
+-- Syntax-directed translation from the typed expression tree to an MSL source string. Each GADT constructor maps to exactly one
+-- MSL syntax form, the translation is a simple structural recursion with no non-trivial optimisation passes.
+--
+-- Because `MSLExpr` is a GADT, the pattern match is exhaustive by construction: every constructor has a clause, and the Haskell type
+-- system ensures that the recursive calls produce strings of the correct MSL type. For example, `AddF :: MSLExpr Float -> MSLExpr
+-- Float -> MSLExpr Float` guarantees both operands emit as `float` expressions, so the parenthesised infix `(a + b)` is well-typed
+-- MSL.
 --
 -- Notable details:
---   * Float literals are suffixed with @"f"@ (e.g. @3.14f@) per MSL rules.
---   * Uint  literals are suffixed with @"u"@.
---   * @SelF@ emits @select(f, t, c)@ — Metal's branchless ternary; note
---     the argument order is (false-value, true-value, condition).
---   * @PairE@ emits a brace-initialiser @{a, b}@ (struct literal).
---   * @FstE@/@SndE@ emit @.x@/@.y@ component access.
+-- * Float literals are suffixed with `f` (e.g. `3.14f`) per MSL rules.
+-- * Uint  literals are suffixed with `u`.
+-- * `SelF` emits `select(f, t, c)` Metal's branchless ternary; note the argument order is (false-value, true-value, condition).
+-- * `PairE` emits a brace-initialiser `{a, b}` (struct literal).
+-- * `FstE`/`SndE` emit `.x`/`.y` component access.
+
 emitExpr :: MSLExpr a -> String
 emitExpr (LitF f)       = show f ++ "f"
 emitExpr (LitU n)       = show n ++ "u"
@@ -544,87 +517,71 @@ emitExpr (MulU a b)     = "(" ++ emitExpr a ++ " * " ++ emitExpr b ++ ")"
 emitExpr (BufIdx buf i) = buf ++ "[" ++ emitExpr i ++ "]"
 emitExpr (PairE a b)    = "{" ++ emitExpr a ++ ", " ++ emitExpr b ++ "}"
 
--- ─── Monoid descriptor ───────────────────────────────────────────────────────
-
--- | An @MSLMonoid@ names an /associative binary operation with identity/
--- — the algebraic structure required for a correct parallel reduction.
--- Associativity is what allows the GPU to partition the input arbitrarily
--- across SIMD lanes and threadgroups, combine partial results in any
--- order, and still obtain the same answer.
+-- || The necessity of a monoid descriptor
+--
+-- An `MSLMonoid` names an *associative binary operation with identity*, the algebraic structure required for a correct parallel
+-- reduction. Associativity is what allows the GPU to partition the input arbitrarily across SIMD lanes and threadgroups, combine
+-- partial results in any order, and still obtain the same answer.
 --
 -- Each variant determines three code-generation artefacts:
 --
---   * @monoidUnit@ — the identity element, used to pad out-of-bounds lanes
---     so they do not affect the result.
---   * @monoidOp@   — the scalar binary combiner, used in the inter-group
---     reduction pass.
---   * @monoidSimd@ — the Apple SIMD-group intrinsic (@simd_sum@, etc.)
---     that reduces a warp's worth of values in hardware.
+-- - `monoidUnit` is the identity element, used to pad out-of-bounds lanes so they do not affect the result.
+-- - `monoidOp`   is the scalar binary combiner, used in the inter-group reduction pass.
+-- - `monoidSimd` is the Apple SIMD-group intrinsic (`simd_sum`, etc.) that reduces a warp's worth of values in hardware.
 --
--- Together, these three projections let the @foldK@ combinator emit a
--- fully specialised reduction kernel for any of the four common monoids
--- without runtime branching.
+-- Together, these three projections let the `foldK` combinator emit a fully specialised reduction kernel for any of the four common
+-- monoids without runtime branching.
+
 data MSLMonoid
    = MonoidSum     -- identity 0.0,  op +,   intrinsic simd_sum
    | MonoidProduct -- identity 1.0,  op *,   intrinsic simd_product
    | MonoidMax     -- identity -INF, op max, intrinsic simd_max
    | MonoidMin     -- identity +INF, op min, intrinsic simd_min
 
--- | The identity element as an MSL literal string.
+-- The identity element as an MSL literal string.
+
 monoidUnit :: MSLMonoid -> String
 monoidUnit MonoidSum     = "0.0f"
 monoidUnit MonoidProduct = "1.0f"
 monoidUnit MonoidMax     = "-INFINITY"
 monoidUnit MonoidMin     = "INFINITY"
 
--- | The scalar binary combiner, emitted as an infix expression or
--- function call.
+-- The scalar binary combiner, emitted as an infix expression or function call.
+
 monoidOp :: MSLMonoid -> String -> String -> String
 monoidOp MonoidSum     a b = "(" ++ a ++ " + " ++ b ++ ")"
 monoidOp MonoidProduct a b = "(" ++ a ++ " * " ++ b ++ ")"
 monoidOp MonoidMax     a b = "max(" ++ a ++ ", " ++ b ++ ")"
 monoidOp MonoidMin     a b = "min(" ++ a ++ ", " ++ b ++ ")"
 
--- | The SIMD-group intrinsic that reduces all lanes in a single warp.
--- On Apple Silicon a SIMD group is 32 threads; these intrinsics execute
--- in hardware with no shared-memory traffic.
+-- The SIMD-group intrinsic that reduces all lanes in a single warp. On Apple Silicon a SIMD group is 32 threads; these intrinsics
+-- execute in hardware with no shared-memory traffic.
+
 monoidSimd :: MSLMonoid -> String -> String
 monoidSimd MonoidSum     v = "simd_sum(" ++ v ++ ")"
 monoidSimd MonoidProduct v = "simd_product(" ++ v ++ ")"
 monoidSimd MonoidMax     v = "simd_max(" ++ v ++ ")"
 monoidSimd MonoidMin     v = "simd_min(" ++ v ++ ")"
 
-
-
-
 -- | Kernel specification, combinators, and two-backend emitter.
---
--- The code-generation pipeline has two phases:
---
---   /Phase 1 (combinators)/:  @mapK@, @foldK@, @stencilK@, @conv2dK@ each
---   construct a declarative @KernelSpec@ value — a plain record with no
---   closures — describing a single Metal compute kernel.  The @MetalM@
---   monad collects these specs via @WriterT@.
---
---   /Phase 2 (emitters)/:  @emitMSLFile@ renders the specs into a @.metal@
---   source file; @emitSwiftFile@ renders a companion Swift harness that
---   compiles the MSL at runtime, allocates buffers, dispatches kernels,
---   and reads back results.  Because both emitters consume the same
---   @KernelSpec@, the MSL and Swift outputs are guaranteed to agree on
---   buffer indices, grid sizes, and uniform bindings.
 
-
-
--- ─── KernelSpec ─────────────────────────────────────────────────────────────
-
--- | Describes one Metal buffer parameter.
+-- The code-generation pipeline is twofold:
 --
---   * @bsIndex@  — the @\[\[buffer(i)\]\]@ binding index.
---   * @bsAccess@ — the MSL access qualifier, e.g. @"device const float*"@
---                  for a read-only input or @"device float*"@ for output.
---   * @bsName@   — the variable name used inside the kernel body.
---   * @bsSize@   — element count; used by the Swift emitter to allocate
---                  the corresponding @MTLBuffer@.
+-- *Phase 1 (combinators)*: `mapK` & `foldK`, each construct a declarative `KernelSpec` value: a plain record
+-- with no closures — describing a single Metal compute kernel.  The `MetalM` monad collects these specs via `WriterT`.
+--
+-- *Phase 2 (emitters)*: `emitMSLFile` renders the specs into a `.metal` source file; `emitSwiftFile` renders a companion Swift
+-- harness that compiles the MSL at runtime, allocates buffers, dispatches kernels, and reads back results.  Because both emitters
+-- consume the same `KernelSpec`, the MSL and Swift outputs are guaranteed to agree on buffer indices, grid sizes, and uniform
+-- bindings.
+
+-- || How to describe one Metal buffer parameter.
+--
+-- * `bsIndex` / the `\[\[buffer(i)\]\]` binding index.
+-- * `bsAccess`/ the MSL access qualifier, e.g. `device const float*` for a read-only input or `device float*` for output.
+-- * `bsName`  / the variable name used inside the kernel body.
+-- * `bsSize`  / the element count; used by the Swift emitter to allocate the corresponding `MTLBuffer`.
+
 data BufferSpec = BufferSpec
    { bsIndex  :: Int
    , bsAccess :: String
@@ -632,25 +589,25 @@ data BufferSpec = BufferSpec
    , bsSize   :: Int
    }
 
--- | A fully inspectable, closure-free description of a single Metal
--- compute kernel.  This is the /sole intermediate representation/ between
--- the combinators and both emitters — a deliberate design choice that
--- keeps the two backends decoupled and each individually testable.
+-- A fully inspectable, closure-free description of a single Metal compute kernel.  This is the /sole intermediate representation/
+-- between the combinators and both emitters — a deliberate design choice that keeps the two backends decoupled and each individually
+-- testable.
 --
---   * @ksName@       — the kernel function name (@kernel void <name>@).
---   * @ksTidType@    — @"uint"@, @"uint2"@, or @"uint3"@; determines the
---                      type of the @tid@ parameter.
---   * @ksMTLSize@    — @(width, height, depth)@ for @MTLSize@ in the
---                      Swift @dispatchThreads@ call.
---   * @ksBuffers@    — ordered list of buffer bindings.
---   * @ksUniforms@   — @(msl-type, name, swift-value)@ triples; emitted
---                      as @constant uint& name \[\[buffer(...)\]\]@ in MSL
---                      and as a small @MTLBuffer@ in Swift.
---   * @ksTGMem@      — optional threadgroup shared memory allocation
---                      @(element-type, count)@.
---   * @ksExtraAttrs@ — additional @\[\[...\]\]@ kernel parameters such as
---                      @lid@, @gid@, @tpg@ for reduction/stencil kernels.
---   * @ksBodyLines@  — the actual MSL statements forming the kernel body.
+-- * `ksName`        the kernel function name (`kernel void <name>`).
+-- * `ksTidType`     `uint`, `uint2`, or `uint3`; determines the
+--                    type of the `tid` parameter.
+-- * `ksMTLSize`     `(width, height, depth)` for `MTLSize` in the
+--                    Swift `dispatchThreads` call.
+-- * `ksBuffers`     ordered list of buffer bindings.
+-- * `ksUniforms`    `(msl-type, name, swift-value)` triples; emitted
+--                    as `constant uint& name \[\[buffer(...)\]\]` in MSL
+--                    and as a small `MTLBuffer` in Swift.
+-- * `ksTGMem`       optional threadgroup shared memory allocation
+--                    `(element-type, count)`.
+-- * `ksExtraAttrs`  additional `\[\[...\]\]` kernel parameters such as
+--                    `lid`, `gid`, `tpg` for reduction/stencil kernels.
+-- * `ksBodyLines`   the actual MSL statements forming the kernel body.
+
 data KernelSpec = KernelSpec
    { ksName       :: String
    , ksTidType    :: String
@@ -662,39 +619,40 @@ data KernelSpec = KernelSpec
    , ksBodyLines  :: [String]
    }
 
--- | @MetalM@ is @WriterT [KernelSpec] (State Int)@.
--- The @WriterT@ layer accumulates kernel specs as each combinator fires;
--- the @State Int@ layer provides a monotonic counter for generating fresh
--- variable names (used when a combinator needs auxiliary locals).
+-- || MetalM is WriterT [KernelSpec] (State Int).
+--
+-- The `WriterT` layer accumulates kernel specs as each combinator fires; the `State Int` layer provides a monotonic counter for
+-- generating fresh variable names (used when a combinator needs auxiliary locals).
+
 type MetalM = WriterT [KernelSpec] (State Int)
 
--- | Generate a fresh variable name (@v0@, @v1@, ...).
+-- Generate a fresh variable name (`v0`, `v1`, ...).
+
 fresh :: MetalM String
 fresh = do n <- get; put (n+1); return ("v" ++ show n)
 
--- | Append a kernel spec to the writer output.
+--  Append a kernel spec to the writer output.
+
 emit :: KernelSpec -> MetalM ()
 emit k = tell [k]
 
--- ─── Kernel combinators ───────────────────────────────────────────────────────
+-- || Kernel combinators
 
--- | The fundamental parallel map — the GPU realisation of Gibbons'
--- @tabulate . f . lookup@ fusion.
+-- `mapK`/The fundamental parallel map the GPU realisation of Gibbons' `tabulate . f . lookup` fusion.
 --
--- Semantics: given an input tensor of shape @f@ and a per-element
--- function @body@, emit a kernel where each thread:
+-- Semantics: given an input tensor of shape @f@ and a per-element function `body`, emit a kernel where each thread:
 --
---   1. computes its flat buffer index from @tid@ (via @tidFlatExpr@),
---   2. reads @input[idx]@,
---   3. applies @body@ (an @MSLExpr Float -> MSLExpr Float@ — a HOAS
---      function that builds the expression tree for the transformation),
---   4. writes the result to @output[idx]@.
+-- - computes its flat buffer index from `tid` (via `tidFlatExpr`),
+-- - reads `input[idx]`,
+-- - applies `body` (an `MSLExpr Float -> MSLExpr Float` — a HOAS function that builds the expression tree for the transformation),
+-- - writes the result to `output[idx]`.
 --
--- The @HyperMTL '[f] Float@ argument is used /only/ for its type: the
--- emitter calls @stid \@f@ to recover grid sizes and the MSL tid type.
--- Its runtime value is discarded (hence @_@).  This is a deliberate
--- design: shape information flows entirely through the type parameter @f@,
+-- The `HyperMTL '[f] Float` argument is used /only/ for its type: the
+-- emitter calls `stid \`f` to recover grid sizes and the MSL tid type.
+-- Its runtime value is discarded (hence `_`).  This is a deliberate
+-- design: shape information flows entirely through the type parameter `f`,
 -- not through runtime data.
+
 mapK :: forall f. DimMTL f
      => String                             -- kernel name
      -> HyperMTL '[f] Float                -- input (for shape info only)
@@ -718,26 +676,20 @@ mapK name _ body = emit KernelSpec
            , "output[idx] = " ++ outExpr ++ ";" ]
    }
 
--- | Parallel reduction using Apple Silicon's SIMD-group intrinsics and
--- threadgroup shared memory.
+-- `foldk`/Parallel reduction using Apple Silicon's SIMD-group intrinsics and threadgroup shared memory.
 --
 -- The generated kernel implements a two-level reduction:
 --
---   1. /Intra-SIMD-group/:  Each thread loads one element (or the monoid
---      identity if out of bounds).  The @simd_sum@ / @simd_max@ / etc.
---      intrinsic reduces all 32 lanes in hardware — no shared-memory
---      traffic, no explicit loop.
+-- - *Intra-SIMD-group*:  Each thread loads one element (or the monoid identity if out of bounds).  The `simd_sum` / `simd_max` /
+--      etc. intrinsic reduces all 32 lanes in hardware — no shared-memory traffic, no explicit loop.
 --
---   2. /Inter-SIMD-group/:  The first lane of each SIMD group writes its
---      partial result into threadgroup shared memory.  After a barrier,
---      the first SIMD group reduces these partials with a second call to
---      the same SIMD intrinsic.  Thread 0 then writes the threadgroup's
---      result to the @partials@ output buffer.
+-- - *Inter-SIMD-group*:  The first lane of each SIMD group writes its partial result into threadgroup shared memory.  After a
+--      barrier, the first SIMD group reduces these partials with a second call to the same SIMD intrinsic.  Thread 0 then writes the
+--      threadgroup's result to the `partials` output buffer.
 --
--- Regardless of the input tensor's dimensionality, reductions are always
--- dispatched as a flat 1-D grid (@ksTidType = "uint"@).  The @MSLMonoid@
--- parameter determines which identity, combiner, and SIMD intrinsic
--- appear in the generated code.
+-- Regardless of the input tensor's dimensionality, reductions are always dispatched as a flat 1-D grid (`ksTidType = "uint"``). The
+-- `MSLMonoid` parameter determines which identity, combiner, and SIMD intrinsic appear in the generated code.
+
 foldK :: forall f. DimMTL f
       => String
       -> HyperMTL '[f] Float
@@ -766,127 +718,25 @@ foldK name _ m = emit KernelSpec
        , "if (lid == 0) partials[gid] = val;" ]
    }
 
--- | Stencil / comonad extend — each output element is computed from a
--- /neighbourhood/ of input elements.
+-- || Emitters
 --
--- In the comonad reading, @extend@ has type @(w a -> b) -> w a -> w b@:
--- the body function receives the /entire/ focused structure and produces
--- one output value.  On the GPU this is implemented via threadgroup
--- shared memory with halo ("ghost") elements:
+-- The two emitters below translate the list of `KernelSpec`s into complete, self-contained source files:
 --
---   1. Each thread loads its own element into @shared[lid + radius]@.
---   2. Threads at the left boundary of the threadgroup also load the
---      @radius@ halo elements to the left; threads at the right boundary
---      load the right halo.
---   3. A @threadgroup_barrier@ ensures all loads are visible.
---   4. The user-supplied body reads from @shared@ at any offset within
---      @[-radius, +radius]@ of its own position — all reads are fast
---      threadgroup-memory accesses, not device-memory loads.
+-- - `emitMSLFile`  → `kernels.metal`  (Metal Shading Language)
+-- - `emitSwiftFile` → `harness.swift` (Swift host program)
 --
--- The @radius@ parameter controls how many elements to each side are
--- accessible (e.g. radius 1 for a 3-element 1-D stencil).  The
--- threadgroup allocation is @tgsz + 2 * radius@ to accommodate the halos.
-stencilK :: forall f. DimMTL f
-         => String
-         -> HyperMTL '[f] Float
-         -> Int                            -- stencil radius
-         -> (String -> MSLExpr Word32 -> MSLExpr Float)  -- body: shared-buf-name, tid -> out
-         -> MetalM ()
-stencilK name _ radius body =
-   let n    = tidFlatSize (stid @f)
-       tgsz = 256
-       padded = tgsz + 2 * radius
-   in emit KernelSpec
-   { ksName       = name
-   , ksTidType    = tidMSLType (stid @f)
-   , ksMTLSize    = tidMTLSize (stid @f)
-   , ksBuffers    =
-       [ BufferSpec 0 "device const float*" "input"  n
-       , BufferSpec 1 "device       float*" "output" n ]
-   , ksUniforms   = [("uint", "gsize", show n)]
-   , ksTGMem      = Just ("float", padded)
-   , ksExtraAttrs =
-       [ ("uint", "lid [[thread_position_in_threadgroup]]")
-       , ("uint", "tpg [[threads_per_threadgroup]]") ]
-   , ksBodyLines  =
-       [ "uint globalSize = gsize;"
-       , "shared[lid + " ++ show radius ++ "] = (tid < globalSize) ? input[tid] : 0.0f;"
-       , "if (lid < " ++ show radius ++ ")"
-       , "    shared[lid] = (tid >= " ++ show radius ++ ") ? input[tid - " ++ show radius ++ "] : 0.0f;"
-       , "if (lid >= tpg - " ++ show radius ++ ")"
-       , "    shared[lid + " ++ show (2 * radius) ++ "] = (tid + " ++ show radius ++ " < globalSize) ? input[tid + " ++ show radius ++ "] : 0.0f;"
-       , "threadgroup_barrier(mem_flags::mem_threadgroup);"
-       , "if (tid < globalSize)"
-       , "    output[tid] = " ++ emitExpr (body "shared" (Var ("(lid + " ++ show radius ++ ")"))) ++ ";" ]
-   }
+-- Each `KernelSpec` field maps to a specific region of the output:
+--
+--   `ksBuffers`    →  `[[buffer(i)]]` params (MSL) / `makeBuffer` calls (Swift)
+--   `ksTGMem`      →  `[[threadgroup(0)]]` param / `setThreadgroupMemoryLength`
+--   `ksUniforms`   →  `constant uint& name [[buffer(...)]]` / small UInt32 buffers
+--   `ksTidType`    →  `uint / uint2 / uint3 tid [[thread_position_in_grid]]`
+--   `ksExtraAttrs` →  additional Metal attribute params (lid, gid, tpg)
+--   `ksMTLSize`    →  `MTLSize(width:height:depth:)` in the dispatch call
+--   `ksBodyLines`  →  the kernel function body, indented 4 spaces
 
--- | 2-D convolution — one thread per output pixel.
---
--- This is a specialisation of the stencil pattern where the
--- neighbourhood weights are stored in a separate /filter/ buffer rather
--- than being hard-coded in the kernel body.  All four dimension parameters
--- (@h@, @w@, @kh@, @kw@) are type-level @Nat@s, so the output size
--- @(h - kh + 1) × (w - kw + 1)@ and the loop bounds are computed at
--- Haskell compile time and baked into the generated MSL as integer
--- literals — no runtime overhead for bounds computation.
---
--- The dispatch grid is 2-D (@uint2 tid@), with one thread per output
--- pixel.  Each thread runs the naive double loop over the filter window,
--- accumulating the dot product of the input patch and the filter.
-conv2dK :: forall h w kh kw.
-           (KnownNat h, KnownNat w, KnownNat kh, KnownNat kw)
-        => String
-        -> MetalM ()
-conv2dK name =
-   let h  = fromIntegral (natVal (Proxy @h))
-       w  = fromIntegral (natVal (Proxy @w))
-       kh = fromIntegral (natVal (Proxy @kh))
-       kw = fromIntegral (natVal (Proxy @kw))
-       oh = h - kh + 1
-       ow = w - kw + 1
-   in emit KernelSpec
-   { ksName       = name
-   , ksTidType    = "uint2"
-   , ksMTLSize    = (ow, oh, 1)
-   , ksBuffers    =
-       [ BufferSpec 0 "device const float*" "input"  (h * w)
-       , BufferSpec 1 "device const float*" "filt"   (kh * kw)
-       , BufferSpec 2 "device       float*" "output" (oh * ow) ]
-   , ksUniforms   = []
-   , ksTGMem      = Nothing
-   , ksExtraAttrs = []
-   , ksBodyLines  =
-       [ "uint out_x = tid.x, out_y = tid.y;"
-       , "float sum = 0.0f;"
-       , "for (uint ky = 0; ky < " ++ show kh ++ "; ++ky)"
-       , "  for (uint kx = 0; kx < " ++ show kw ++ "; ++kx) {"
-       , "    uint in_y = out_y + ky, in_x = out_x + kx;"
-       , "    sum += input[in_y * " ++ show w ++ " + in_x]"
-       , "         * filt[ky * " ++ show kw ++ " + kx];"
-       , "  }"
-       , "output[out_y * " ++ show ow ++ " + out_x] = sum;" ]
-   }
+-- Render the full `.metal` source file: standard includes, namespace declaration, then each kernel in sequence.
 
--- ─── Emitters ─────────────────────────────────────────────────────────────────
---
--- The two emitters below translate the list of @KernelSpec@s into
--- complete, self-contained source files:
---
---   * @emitMSLFile@  → @kernels.metal@  (Metal Shading Language)
---   * @emitSwiftFile@ → @harness.swift@ (Swift host program)
---
--- Each @KernelSpec@ field maps to a specific region of the output:
---
---   @ksBuffers@    →  @[[buffer(i)]]@ params (MSL) / @makeBuffer@ calls (Swift)
---   @ksTGMem@      →  @[[threadgroup(0)]]@ param / @setThreadgroupMemoryLength@
---   @ksUniforms@   →  @constant uint& name [[buffer(...)]]@ / small UInt32 buffers
---   @ksTidType@    →  @uint / uint2 / uint3 tid [[thread_position_in_grid]]@
---   @ksExtraAttrs@ →  additional Metal attribute params (lid, gid, tpg)
---   @ksMTLSize@    →  @MTLSize(width:height:depth:)@ in the dispatch call
---   @ksBodyLines@  →  the kernel function body, indented 4 spaces
-
--- | Render the full @.metal@ source file: standard includes, namespace
--- declaration, then each kernel in sequence.
 emitMSLFile :: [KernelSpec] -> String
 emitMSLFile ks = unlines $
    [ "#include <metal_stdlib>"
@@ -895,9 +745,9 @@ emitMSLFile ks = unlines $
    , "" ] ++
    concatMap emitOneKernel ks
 
--- | Render one @kernel void@ function.  The parameter list is assembled
--- from the spec's buffers, threadgroup memory, uniforms, tid, and extra
--- attributes, then joined with commas.
+-- Render one `kernel void` function. The parameter list is assembled from the spec's buffers, threadgroup memory, uniforms, tid,
+-- and extra attributes, then joined with commas.
+
 emitOneKernel :: KernelSpec -> [String]
 emitOneKernel KernelSpec{..} =
    let params =
@@ -918,18 +768,18 @@ emitOneKernel KernelSpec{..} =
        [ "    " ++ line | line <- ksBodyLines ] ++
        [ "}", "" ]
 
--- | Render the complete Swift harness: preamble (device/queue setup,
--- helper functions), one runner function per kernel, and a @validate()@
--- entry point that exercises them all.
+-- Render the complete Swift harness: preamble (device/queue setup, helper functions), one runner function per kernel, and a
+-- `validate()` entry point that exercises them all.
+
 emitSwiftFile :: [KernelSpec] -> String
 emitSwiftFile ks = unlines $
    swiftPreamble ++
    concatMap emitSwiftRunner ks ++
    swiftMain ks
 
--- | Shared Swift boilerplate: acquire the default Metal device, create a
--- command queue, compile the MSL source at runtime, and provide helper
--- functions for buffer allocation and readback.
+-- Shared Swift boilerplate: acquire the default Metal device, create a command queue, compile the MSL source at runtime, and provide
+-- helper functions for buffer allocation and readback.
+
 swiftPreamble :: [String]
 swiftPreamble =
    [ "import Metal"
@@ -962,14 +812,14 @@ swiftPreamble =
    , "let library = compileKernels(mslPath: \"kernels.metal\")"
    , "" ]
 
--- | Generate a Swift function @run_<name>(inputs...) -> [Float]@ that:
---   1. Looks up the kernel function in the compiled library.
---   2. Creates a compute pipeline state.
---   3. Allocates input buffers (from the caller's @[Float]@ arrays) and
---      output buffers (empty, sized from @bsSize@).
---   4. Binds all buffers, uniforms, and threadgroup memory.
---   5. Dispatches with the grid/threadgroup sizes from @ksMTLSize@.
---   6. Waits for completion and reads back the output buffer(s).
+-- Generate a Swift function `run_<name>(inputs...) -> [Float]` that:
+-- - Looks up the kernel function in the compiled library.
+-- - Creates a compute pipeline state.
+-- - Allocates input buffers (from the caller's `[Float]` arrays) and output buffers (empty, sized from `bsSize`).
+-- - Binds all buffers, uniforms, and threadgroup memory.
+-- - Dispatches with the grid/threadgroup sizes from `ksMTLSize`.
+-- - Waits for completion and reads back the output buffer(s).
+
 emitSwiftRunner :: KernelSpec -> [String]
 emitSwiftRunner KernelSpec{..} =
    let inBufs  = filter (\b -> "const" `isInfixOf` bsAccess b) ksBuffers
@@ -1010,8 +860,9 @@ emitSwiftRunner KernelSpec{..} =
    , "}"
    , "" ]
 
--- | Emit the @validate()@ entry point that creates synthetic input data
--- for every kernel, runs it, and prints the first 8 output elements.
+-- Emit the `validate()` entry point that creates synthetic input data for every kernel, runs it, and prints the first 8 output
+-- elements.
+
 swiftMain :: [KernelSpec] -> [String]
 swiftMain ks =
    [ "// ── Validation entry point ───────────────────────────────────────────"
@@ -1035,17 +886,17 @@ validationSnippet KernelSpec{..} =
        [ "    print(\"  " ++ ksName ++ ": \\(" ++ pre ++ "out.prefix(8))\")"
        , "" ]
 
--- ─── Top-level runner ─────────────────────────────────────────────────────────
+-- || Top-level runner
 
--- | Run the @MetalM@ monadic program, extract the accumulated
--- @[KernelSpec]@, render both output files, write them to disk, and print
+-- Run the `MetalM` monadic program, extract the accumulated `[KernelSpec]`, render both output files, write them to disk, and print
 -- the generated source together with a build command.
 --
 -- The evaluation sequence is:
---   1. @runWriterT prog@ produces @((), [KernelSpec])@ inside @State Int@.
---   2. @evalState ... 0@ runs the fresh-name counter starting at 0.
---   3. @emitMSLFile@ and @emitSwiftFile@ render the specs to strings.
---   4. @writeFile@ persists them as @kernels.metal@ and @harness.swift@.
+-- - `runWriterT prog` produces `((), [KernelSpec])` inside `State Int`.
+-- - `evalState ... 0` runs the fresh-name counter starting at 0.
+-- - `emitMSLFile` and `emitSwiftFile` render the specs to strings.
+-- - `writeFile` persists them as `kernels.metal` and `harness.swift`.
+
 runMetal :: MetalM () -> IO ()
 runMetal prog = do
    let (_, kernels) = evalState (runWriterT prog) 0
@@ -1057,25 +908,22 @@ runMetal prog = do
    putStrLn $ "=== harness.swift ===\n" ++ swift
    putStrLn "Build with:\n  xcrun -sdk macosx swiftc harness.swift -o run_kernels && ./run_kernels"
 
-
 -- | Concrete instances of 'DimMTL' for 1-D, 2-D, and 3-D array shapes.
 --
--- Each newtype wraps a flat Haskell list but carries its shape at the type
--- level via @Nat@ parameters.  For each shape we provide:
+-- Each newtype wraps a flat Haskell list but carries its shape at the type level via @Nat@ parameters.  For each shape we provide:
 --
---   * A @Naperian@ instance — the position type @Log f@ and the iso (@tabulate@ / @index@).
---   * A zippy @Applicative@ instance — @(\<*\>)@ pairs elements position-wise.
---   * A @Dimension@ instance (implied by the above plus derived @Functor@, @Foldable@, @Traversable@).
---   * A @DimMTL@ instance — @TidOf@ and @stid@ for Metal dispatch.
+-- - A `Naperian` instance — the position type `Log f` and the iso (`tabulate` / `index`).
+-- - A zippy `Applicative` instance — `(\<*\>)` pairs elements position-wise.
+-- - A `Dimension` instance (implied by the above plus derived `Functor`, `Foldable`, `Traversable`).
+-- - A `DimMTL` instance — `TidOf` and `stid` for Metal dispatch.
 
-
--- ── Vec n ───────────────────────────────────────────────────────────────────
-
--- | A 1-D array of exactly @n@ elements — the simplest Naperian functor.
+-- || Vec n
 --
--- Its logarithm is @Fin n@ (a single bounded integer), and the
--- corresponding Metal dispatch is a flat @uint tid@ grid of @n@ threads.
--- @tabulate f = Vec [f (Fin 0), f (Fin 1), ..., f (Fin (n-1))]@ — one
+-- A 1-D array of exactly `n` elements — the simplest Naperian functor.
+--
+-- Its logarithm is `Fin n` (a single bounded integer), and the
+-- corresponding Metal dispatch is a flat `uint tid` grid of `n` threads.
+-- `tabulate f = Vec [f (Fin 0), f (Fin 1), ..., f (Fin (n-1))]` — one
 -- element per position, mirroring one GPU thread per output slot.
 --
 -- Mapping to Metal:
@@ -1083,6 +931,7 @@ runMetal prog = do
 -- >  TidOf (Vec n) = Tid1 n
 -- >  → kernel void k(..., uint tid [[thread_position_in_grid]])
 -- >  → dispatchThreads(MTLSize(width: n, height: 1, depth: 1), ...)
+
 type Vec :: Nat -> Type -> Type
 newtype Vec n a = Vec { unVec :: [a] }
    deriving (Show)
@@ -1110,23 +959,22 @@ instance KnownNat n => DimMTL (Vec n) where
    type TidOf (Vec n) = 'Tid1 n
    stid               = STid1
 
--- ── Mat m n ─────────────────────────────────────────────────────────────────
-
--- | A 2-D row-major matrix with @m@ rows and @n@ columns.
+-- || Mat m n
 --
--- The logarithm is @(Fin m, Fin n)@ — a (row, column) pair — and the
--- Metal dispatch is @uint2 tid@ where, by Metal convention, @tid.x@ is
--- the column (inner/fastest axis) and @tid.y@ is the row.  The flat
--- buffer index is the standard row-major formula:
+-- A 2-D row-major matrix with `m` rows and `n` columns.
 --
--- >  flat = row * n + col
+-- The logarithm is `(Fin m, Fin n)`, a (row, column) pair and the Metal dispatch is `uint2 tid` where, by Metal convention,
+-- `tid.x` is the column (inner/fastest axis) and `tid.y` is the row. The flat buffer index is the standard row-major formula:
+--
+-- > flat = row * n + col
 --
 -- Mapping to Metal:
 --
--- >  TidOf (Mat m n) = Tid2 m n
--- >  → kernel void k(..., uint2 tid [[thread_position_in_grid]])
--- >  → dispatchThreads(MTLSize(width: n, height: m, depth: 1), ...)
--- >  → flat index: tid.y * n + tid.x
+-- > TidOf (Mat m n) = Tid2 m n
+-- > → kernel void k(..., uint2 tid [[thread_position_in_grid]])
+-- > → dispatchThreads(MTLSize(width: n, height: m, depth: 1), ...)
+-- > → flat index: tid.y * n + tid.x
+
 type Mat :: Nat -> Nat -> Type -> Type
 newtype Mat m n a = Mat { unMat :: [a] }
    deriving (Show)
@@ -1161,30 +1009,22 @@ instance (KnownNat m, KnownNat n) => DimMTL (Mat m n) where
    type TidOf (Mat m n) = 'Tid2 m n
    stid                 = STid2
 
--- | @Image h w@ is a semantic alias for @Mat h w@, conveying the intent
--- that the matrix represents a 2-D pixel grid (height × width) rather than
--- an abstract linear-algebra object.  Because it is a type synonym, it
--- inherits the @DimMTL@ instance of @Mat@ and generates the same
--- @uint2@-dispatched kernels.
-type Image h w = Mat h w
+-- || Cube d m n
 
-
--- ── Cube d m n ──────────────────────────────────────────────────────────────
-
--- | A 3-D tensor with @d@ slices, @m@ rows, and @n@ columns.
+-- A 3-D tensor with `d` slices, `m` rows, and `n` columns.
 --
--- The logarithm is @(Fin d, Fin m, Fin n)@ — a (slice, row, column)
--- triple — and the Metal dispatch is @uint3 tid@.  The flat buffer index
--- extends the row-major convention to three axes:
+-- The logarithm is `(Fin d, Fin m, Fin n)`, a (slice, row, column) triple — and the Metal dispatch is `uint3 tid`. The flat buffer
+-- index extends the row-major convention to three axes:
 --
--- >  flat = slice * (m * n) + row * n + col
+-- > flat = slice * (m * n) + row * n + col
 --
 -- Mapping to Metal:
 --
--- >  TidOf (Cube d m n) = Tid3 d m n
--- >  → kernel void k(..., uint3 tid [[thread_position_in_grid]])
--- >  → dispatchThreads(MTLSize(width: n, height: m, depth: d), ...)
--- >  → flat index: tid.z * (m*n) + tid.y * n + tid.x
+-- > TidOf (Cube d m n) = Tid3 d m n
+-- > → kernel void k(..., uint3 tid [[thread_position_in_grid]])
+-- > → dispatchThreads(MTLSize(width: n, height: m, depth: d), ...)
+-- > → flat index: tid.z * (m*n) + tid.y * n + tid.x
+
 type Cube :: Nat -> Nat -> Nat -> Type -> Type
 newtype Cube d m n a = Cube { unCube :: [a] }
    deriving (Show)
@@ -1224,34 +1064,27 @@ instance (KnownNat d, KnownNat m, KnownNat n) => DimMTL (Cube d m n) where
    type TidOf (Cube d m n) = 'Tid3 d m n
    stid                    = STid3
 
--- | Example kernel definitions exercising the hyper-silicon pipeline.
+-- || Example kernel definitions
 --
 -- Each example follows the same pattern:
 --
---   1. Build a Haskell-side tensor via @tabulate \@Shape@ — this fixes the
---      functor type (and therefore the Metal dispatch geometry) at the
---      type level.
---   2. Wrap it in @Prism (Scalar inp)@ to form a rank-1 @HyperMTL@.
---   3. Pass it to a kernel combinator (@mapK@, @foldK@, ...) together with
---      the body expression.  The combinator emits a @KernelSpec@.
+-- - Build a Haskell-side tensor via `tabulate \`Shape` — this fixes the functor type (and therefore the Metal dispatch geometry) at
+--   the type level.
+-- - Wrap it in `Prism (Scalar inp)` to form a rank-1 `HyperMTL`.
+-- - Pass it to a kernel combinator (`mapK`, `foldK`, ...) together with the body expression. The combinator emits a `KernelSpec`.
 --
--- The @TypeApplications@ syntax @\@(Vec 8)@ is how Haskell's visible type
--- application selects which @DimMTL@ instance — and hence which Metal
--- dispatch geometry — the kernel will use.  Changing @\@(Vec 8)@ to
--- @\@(Mat 4 2)@ would change the generated kernel from a 1-D @uint@
--- dispatch to a 2-D @uint2@ dispatch with no other code changes.
+-- The `TypeApplications` syntax `\``(Vec 8)` is how Haskell's visible type application selects which `DimMTL` instance — and hence
+-- which Metal dispatch geometry, the kernel will use. Changing `\``(Vec 8)` to `\``(Mat 4 2)` would change the generated kernel from
+-- a 1-D `uint` dispatch to a 2-D `uint2` dispatch with no other code changes.
 
-
--- ── Vec 8:  x -> x * 2 + 1 ─────────────────────────────────────────────────
-
--- | A 1-D element-wise map over 8 elements.
+-- ||| Vec 8:  x -> x * 2 + 1
 --
--- @tabulate \@(Vec 8)@ creates an 8-element vector [0..7] on the Haskell
--- side (used only for shape witness — the runtime values are irrelevant
--- to code generation).  @mapK \@(Vec 8)@ emits a kernel dispatched as
--- @MTLSize(width: 8, height: 1, depth: 1)@ with @uint tid@.  The HOAS
--- body @\\x -> AddF (MulF x (LitF 2.0)) (LitF 1.0)@ compiles to the MSL
--- expression @(input[tid] * 2.0f) + 1.0f@.
+-- A 1-D element-wise map over 8 elements.
+--
+-- `tabulate \@(Vec 8)` creates an 8-element vector [0..7] on the Haskell side (used only for shape witness — the runtime values are
+-- irrelevant to code generation).  `mapK \@(Vec 8)` emits a kernel dispatched as `MTLSize(width: 8, height: 1, depth: 1)` with @uint
+-- tid@.  The HOAS body `\\x -> AddF (MulF x (LitF 2.0)) (LitF 1.0)` compiles to the MSL expression `(input[tid] * 2.0f) + 1.0f`.
+
 vecMap :: MetalM ()
 vecMap = do
    let inp = tabulate @(Vec 8) (\(Fin i) -> fromIntegral i)
@@ -1259,15 +1092,13 @@ vecMap = do
       (Prism (Scalar inp))
       (\x -> AddF (MulF x (LitF 2.0)) (LitF 1.0))
 
-
--- ── Mat 4 4:  x -> sqrt(x) ─────────────────────────────────────────────────
-
--- | A 2-D element-wise map over a 4x4 matrix.
+-- ||| Mat 4 4:  x -> sqrt(x)
 --
--- @Mat 4 4@ selects @Tid2 4 4@, so the generated kernel receives
--- @uint2 tid@ and dispatches as @MTLSize(width: 4, height: 4, depth: 1)@.
--- The flat index formula is @tid.y * 4u + tid.x@.  The body is simply
--- @SqrtF@ — a single MSL @sqrt()@ call per element.
+-- A 2-D element-wise map over a 4x4 matrix.
+--
+-- `Mat 4 4` selects `Tid2 4 4`, so the generated kernel receives `uint2 tid` and dispatches as `MTLSize(width: 4, height: 4, depth:
+-- 1)`. The flat index formula is `tid.y * 4u + tid.x`. The body is simply `SqrtF`, a single MSL `sqrt()` call per element.
+
 matMap :: MetalM ()
 matMap = do
    let inp = tabulate @(Mat 4 4) (\(Fin r, Fin c) -> fromIntegral (r * 4 + c + 1))
@@ -1275,14 +1106,13 @@ matMap = do
       (Prism (Scalar inp))
       SqrtF
 
-
--- ── Cube 2 3 4:  x -> sin(x) ───────────────────────────────────────────────
-
--- | A 3-D element-wise map over a 2x3x4 tensor (24 elements).
+-- ||| Cube 2 3 4:  x -> sin(x)
 --
--- @Cube 2 3 4@ selects @Tid3 2 3 4@, yielding @uint3 tid@ and
--- @MTLSize(width: 4, height: 3, depth: 2)@.  The flat index formula is
--- @tid.z * 12u + tid.y * 4u + tid.x@.  The body applies @sin()@.
+-- A 3-D element-wise map over a 2x3x4 tensor (24 elements).
+--
+-- `Cube 2 3 4` selects `Tid3 2 3 4`, yielding `uint3 tid` and `MTLSize(width: 4, height: 3, depth: 2)`. The flat index formula is
+-- `tid.z * 12u + tid.y * 4u + tid.x`. The body applies `sin()`.
+
 cubeMap :: MetalM ()
 cubeMap = do
    let inp = tabulate @(Cube 2 3 4) (\(Fin s, Fin r, Fin c) ->
@@ -1291,15 +1121,14 @@ cubeMap = do
       (Prism (Scalar inp))
       SinF
 
+-- ||| Vec 256: sum reduction
 
--- ── Vec 256:  sum reduction ─────────────────────────────────────────────────
-
--- | A parallel sum reduction over 256 elements.
+-- A parallel sum reduction over 256 elements.
 --
--- @foldK@ always dispatches as a flat 1-D grid regardless of the input
--- shape.  @MonoidSum@ selects identity @0.0f@, combiner @(+)@, and SIMD
--- intrinsic @simd_sum@.  The output is a partial-sums buffer (one entry
--- per threadgroup); a second pass would reduce these partials to a scalar.
+-- `foldK` always dispatches as a flat 1-D grid regardless of the input shape. `MonoidSum` selects identity `0.0f`, combiner `(+)`,
+-- and SIMD intrinsic `simd_sum`. The output is a partial-sums buffer (one entry per threadgroup); a second pass would reduce these
+-- partials to a scalar.
+
 vecFold :: MetalM ()
 vecFold = do
    let inp = tabulate @(Vec 256) (\(Fin i) -> 1.0)
@@ -1310,10 +1139,9 @@ vecFold = do
 
 -- | At last
 --
--- `runMetal` executes the @MetalM@ do-block: all four kernel specs are
--- collected by the Writer, then rendered into @kernels.metal@ and
--- @harness.swift@.  Running the program produces both files and prints
--- a one-liner build command.
+-- `runMetal` executes the `MetalM` do-block: all four kernel specs are collected by the Writer, then rendered into `kernels.metal`
+-- and `harness.swift`.  Running the program produces both files and prints a one-liner build command.
+
 main :: IO ()
 main = runMetal $ do
    vecMap
