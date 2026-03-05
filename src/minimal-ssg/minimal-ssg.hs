@@ -1,11 +1,18 @@
--- title       = Mssg: A minimal ssg after ten months' crawling
+-- title       = Agora: A minimal ssg after ten months' crawling
 -- pubDate     = 2026-03-06
 -- tags        = haskell, parser, 2026
 -- description =
 
 import qualified Data.Text           as T
 
+-- > Please note that *Agora* is absolutely opinionated & have zero configuration support. Unless we share the same appreciation, it
+--   would be confusing/imperfect for you to build your own site.
+--
 -- | Why building a ssg (april.2025)
+--
+--
+--
+--
 --
 -- The first attemp to actually build my own ssg began in April, 2025. It is written in Nim lang, and is (poorly) named `stoa`. To be
 -- precisely, `stoa` is the markup language for that ssg, `stoae` (the plural of `stoa`, i suppose) is the directory/foundation where
@@ -13,7 +20,15 @@ import qualified Data.Text           as T
 --
 -- | The crawling to stoa 1.0.0
 --
--- | The hierarchy of mssg
+-- | The hierarchy of agora
+--
+-- | Stoa the markup language
+--
+-- || Interlude: an aching depart from lisp markup
+--
+-- | Polis the generated site
+--
+-- | Stoac the compiler (might need a better name)
 --
 -- || The necessary parts we need
 --
