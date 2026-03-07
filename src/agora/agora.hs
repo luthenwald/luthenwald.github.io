@@ -5,10 +5,19 @@
 --               build the perfect static site generator for my preferences. It takes eleven months to reach version 1.0.0. This
 --               is the story/design behind the agora.
 
-import           Data.Text           ( Text )
-import qualified Data.Text           as T
+-- So we can use string literals as Text values
+{-# LANGUAGE OverloadedStrings #-}
 
-import           Options.Applicative
+import           Data.Text            ( Text )
+import qualified Data.Text            as T
+import           Data.Void            ( Void )
+
+import           Options.Applicative  ( ParserInfo, argument, fullDesc, header,
+                                        help, helper, info, metavar, str )
+
+import           Text.Megaparsec      ( Parsec, choice, eof, many, some,
+                                        takeWhile1P, takeWhileP )
+import           Text.Megaparsec.Char ( char, hspace1, newline, string )
 
 -- > Please note that *Agora* is absolutely opinionated & have zero configuration support. Unless we share the same appreciation, it
 --   would be confusing/inefficient for you to use.
@@ -27,37 +36,126 @@ import           Options.Applicative
 --
 -- In other words, this is how i crafted the ssg that would do exactly what i want.
 --
--- | The crawling to agora 1.0.0
+-- | The crawling to ἀγορά 1.0.0
 --
--- || Genesis: a minimal markup language
+-- || Genesis of στοά: a minimal markup language
 --
--- > (Un)fortunately, the revision of this version of `stoa` is completely lost.
+-- > (Un)fortunately, the revision of this version of στοά is completely lost.
 --
--- The first attemp to actually build my own ssg began in April, 2025. It is written in Nim lang, and is named `stoa`. To be
--- precisely, `stoa` is the markup language for that ssg, `stoae` (the plural of `stoa`) is the directory/foundation where `stoa`
--- files are located, and `stoac` is the compiler that compiles `stoae` into the polis/website. Other terms/aliases are also derived
--- based on the central greek word `stoa`.
+-- The first attemp to actually build my own ssg began in April.2025. It is written in Nim lang, named *stoa/στοά*. To be precisely,
+-- στοά is the markup language for ἀγορά, *stoae/στοές* (the plural of stoa) is the directory/foundation where στοά files are
+-- located, and *stoac* is the compiler that compiles στοές into the *polis/πόλις/website*. Other terms/aliases are also derived
+-- based on the central greek word στοά.
 --
--- ||| Why not use markdown
+-- ||| Why not markdown
 --
--- It's more of an aesthetic matter than anything else. For example, I find `|` is prettier than `#` as the delimiter of headings.
--- As I've mentioned earlier, it's more possible to write something of great value when I'm using a markup language I'm most
--- comfortable with. Thus if i this `|` is prettier than `#`, then this single matter is enough for me to design another
--- markup language.
+-- It's more of an aesthetic matter. For example, I find `|` is prettier than `#` as the delimiter of headings. As I've mentioned
+-- earlier, it's more possible to write something of value when I'm using a markup language most comfortable with. Thus if
+-- i consider `|` prettier than `#`, then this single deviation is enough for me to design another markup language. And then i'm
+-- free to use any delimiter, any markup, i.e. a totally ideomatic markup language.
 --
--- The design rule of `stoa` is simple: only add a new markup when i actually need it, and give it the most minimal & elegant syntax.
+-- The syntax rule of `stoa` is simple: a new markup is added only when i actually need it, and give it the most minimal & elegant
+-- syntax.
 --
--- The very initial vocabulary of `stoa` is:
+-- We can already describe it as a tiny language & implement a parser for it. We use `Gen*` names so this genesis vocabulary stays
+-- distinct from the later, formal definitions of stoa.
 --
--- -- TODO: use a haskell representation for this
+-- The foundational form is *lexis/λέξις/inline*, which is a sum of bold, link & regular text.
+
+-- We define a tiny parser for this data model with [megaparsec](https://hackage.haskell.org/package/megaparsec):
+type GenPar = Parsec Void Text
+
+-- `megaparsec` does not go back automatically. take this example from [Megaparsec tutorial](https://markkarpov.com/tutorial/megaparsec.html)
+
+alternatives :: GenPar (Char, Char)
+alternatives = foo <|> bar
+  where
+   foo = (,) <$> char 'a' <*> char 'b'
+   bar = (,) <$> char 'a' <*> char 'c'
+
+
+-- this works
 --
--- - `| xxx`/`- xxx` for headings/(unordered-)lists where different nums of `|`/`-` indicate different levels.
--- - `*xxx*` for inline bolds
--- - `[xxx](xxx)` for inline links
--- - `|> lang ... |>` for code blocks
+-- ````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+-- λ> parseTest alternatives "ab"
+-- ('a','b')
+-- ````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
 --
--- and that's all.
+-- but this doesn't
 --
+-- ````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+-- λ> parseTest alternatives "ac"
+-- 1:2:
+--   |
+-- 1 | ac
+--   |  ^
+-- unexpected 'c'
+-- expecting 'b'
+-- ````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+--
+-- i'll just paste the explanation from the tutorial:
+--
+-- > What happens here is that char 'a' part of `foo` (which is tried first) succeeded and consumed an a from the input stream. char
+--   'b' then failed to match against 'c' and so we ended up with this error. An important detail here is that `(<|>)` did not even try
+--   `bar` because `foo` has consumed some input
+--
+-- Note that `megaparsec` do support backtracking, but i take this as a very intriguing point & will adopt in my markup.
+--
+-- Thus an important principle for our markup language is: the alternatives should always work, i.e. any markup should have the unique
+-- starting delimiter/char.
+
+data GenInl
+   = GenTxt Text
+   | GenBld Text
+   | GenLnk Text Text
+   deriving (Show, Eq)
+
+genInl :: GenPar GenInl
+genInl = choice
+   [ GenBld <$> (char '*' *> takeWhile1P Nothing (/= '*') <* char '*')
+   , do
+      lbl <- char '[' *> takeWhile1P Nothing (/= ']') <* string "]("
+      url <- takeWhile1P Nothing (/= ')') <* char ')'
+      pure (GenLnk lbl url)
+   , GenTxt <$> takeWhile1P Nothing (`notElem` ("*[" :: String))
+   ]
+
+-- - `choice` is
+-- - `(*>)`/`(<*)` is
+-- - `takeWhile1P` is
+-- - `notElem` is
+
+
+-- The next level is *meros/μέρος/block*, which is a sum of heading, (unordered-)list & (fenced) code block. Heading & list are constituted by
+-- a list of inlines, where code block is the language name plus the raw text of code.
+
+data GenBlk
+   = GenHdg Int [GenInl]
+   | GenLst Int [GenInl]
+   | GenCde Text Text
+   deriving (Show, Eq)
+
+-- TODO: check this for parsing list indentation
+-- https://markkarpov.com/tutorial/megaparsec.html#parsing-a-simple-indented-list
+
+-- TODO: use takeWhile instead of some/many
+
+genBlk :: GenPar GenBlk
+genBlk = choice [genHdg, genLst, genCde]
+ where
+   genLvl chr = length <$> some (char chr) <* hspace1
+   genTxt     = many genInl <* eof
+
+   genHdg = GenHdg <$> genLvl '|' <*> genTxt
+   genLst = GenLst <$> genLvl '-' <*> genTxt
+   genCde = do
+      _   <- string "|>" *> hspace1
+      lng <- takeWhileP Nothing (/= '\n')
+      _   <- newline
+      bod <- takeWhileP Nothing (/= '|')
+      _   <- newline *> string "|>" *> eof
+      pure (GenCde lng bod)
+
 -- Essentially, the five elements above are already sufficient for a decent markup language. The design of agora will start from this.
 --
 -- || From markup language to literate programming
@@ -180,17 +278,16 @@ data Opt = Opt
    }
 
 opt :: ParserInfo Opt
-opt = info (hlp <*> prs) (fullDesc <> header "site - static site generator")
+opt = info (helper <*> prs) (fullDesc <> header "site - static site generator")
  where
    prs = Opt
       <$> argument str (metavar "SRC_DIR"  <> help "source directory")
       <*> argument str (metavar "OUT_DIR"  <> help "output directory")
       <*> argument str (metavar "BASE_URL" <> help "base URL for the site")
-   hlp = helper
 
 -- main :: IO ()
 -- main = do
 --    o <- execParser opt
---    bld (optSrc o) (optOut o) (T.pack (optUrl o))
+--    bld (optSrc o) (optOut o) (optUrl o)
 
 -- | Reflexions

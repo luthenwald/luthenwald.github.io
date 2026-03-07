@@ -1,2 +1,3 @@
-:set -package text
+:set -package megaparsec
 :set -package optparse-applicative
+:set -package text
