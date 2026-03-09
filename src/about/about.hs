@@ -3,7 +3,7 @@
 -- tags        = about, personal
 -- description = Personal info, contact & projects.
 
--- | Lμthenwałd/Luth, He/Him
+-- | Lμthenwałd/Luth/λμτη, He/Him
 --
 -- @img me.webp
 --
