@@ -141,14 +141,14 @@ h3 { font-size: 1.44rem;}
 .l1-list::before {
    content: "•";
    color: var(--gray);
-   margin-right: 0.29rem;
+   margin-right: 0.43rem;
    font-size: 0.86em;
    opacity: 0.6; }
 
 .l2-list::before {
    content: "◦";
    color: var(--gray);
-   margin-right: 0.29rem;
+   margin-right: 0.43rem;
    margin-left: 1.44rem;
    font-size: 0.86em;
    opacity: 0.5; }
@@ -156,7 +156,7 @@ h3 { font-size: 1.44rem;}
 .l3-list::before {
    content: "▪";
    color: var(--gray);
-   margin-right: 0.29rem;
+   margin-right: 0.43rem;
    margin-left: 2.88rem;
    font-size: 0.86em;
    opacity: 0.4; }
