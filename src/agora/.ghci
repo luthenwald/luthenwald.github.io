@@ -1,3 +1,7 @@
+:set -package containers
+:set -package directory
+:set -package filepath
 :set -package megaparsec
 :set -package optparse-applicative
 :set -package text
+:set -package typed-process

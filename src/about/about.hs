@@ -7,7 +7,7 @@
 --
 -- @img me.webp
 --
--- Working at the intersection/propagation of |Programming Language Theory|, |Category Theory|, & |High-Performance Computing|.
+-- Working at the intersection/propagation of Programming Language Theory, Category Theory, & High-Performance Computing.
 --
 -- | Contact
 --

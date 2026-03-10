@@ -114,6 +114,9 @@ h3 { font-size: 1.44rem;}
    line-height: 1.2;
    color: var(--gray); }
 
+.main-content {
+   padding-bottom: 4.32rem; }
+
 .main-content > * {
    margin-bottom: 0.86rem; }
 
