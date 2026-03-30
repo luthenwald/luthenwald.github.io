@@ -42,3 +42,30 @@
 --
 -- @img splined-i.webp
 -- @img splined-o.webp
+--
+-- | Links
+--
+-- || Blogsites
+--
+-- - [Alexis King](https://lexi-lambda.github.io)
+-- - [Bartosz Milewski](https://bartoszmilewski.com/)
+-- - [Iago Leal de Freitas](https://iagoleal.com/)
+-- - [Jesper Cockx](https://jesper.cx/)
+-- - [Oleg Kiselyov](https://okmij.org/ftp/)
+-- - [Tony Zorman](https://tony-zorman.com)
+-- - [Wen Kokke](https://wen.works/)
+--
+-- || Textbooks
+--
+-- - [Beautiful Racket](https://beautifulracket.com/)
+-- - [Category Theory for Programmers](https://github.com/hmemcpy/milewski-ctfp-pdf)
+-- - [Programming Language Foundations in Agda](https://plfa.github.io/20.07/)
+--
+-- || Dissertations
+--
+-- - [Fexprs as the basis of Lisp function application; or, $vau: the ultimate abstraction](http://lambda-the-ultimate.org/node/4093)
+--
+-- || Entertainment
+--
+-- - [nLab](https://ncatlab.org/nlab/show/HomePage)
+-- - [Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/cgi-bin/encyclopedia/random)
