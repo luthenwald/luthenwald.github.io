@@ -41,7 +41,7 @@ homePage docs = page "home" "styles/" "home-page" $ do
       H.div ! A.class_ "spacer" $ mempty
       botNav Root
    H.main ! A.class_ "main-content" $ do
-      H.h1 "all posts"
+      H.h1 "please visit luth.works instead"
       mapM_ (\(d, t, p) -> blogEntry "blogs/" "tags/" d t p) docs
 
 tagCloud :: [Tag] -> Html

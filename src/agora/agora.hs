@@ -1277,7 +1277,7 @@ blogEntry blgPfx tagPfx doc tgs pid = T.concat
 homePage :: [(Doc, [Text], Text)] -> Text
 homePage docs = page "styles/" "home" bdy
  where
-   bdy = "<main class=\"main-content\">\n<h1>all posts</h1>\n"
+   bdy = "<main class=\"main-content\">\n<h1>please visite <a href="luth.works">luth.works</a>instead</h1>\n"
       <> T.concat (map (\(d, t, p) -> blogEntry "blogs/" "tags/" d t p) docs)
       <> "</main>\n"
 
